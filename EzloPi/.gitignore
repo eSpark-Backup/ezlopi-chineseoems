@@ -1,5 +1,4 @@
 *.old
-*.bin
 firmware/**
 firmware/v*/**
 firmware/releaseNote.txt
@@ -14,10 +13,8 @@ firmware/ezlopi/build/*
 firmware/ezlopi/v*/*
 firmware/GPIO_CFG/v*/*
 **/*.zip
-**/*.bin
 build*/
 boards/*
-bin/*
 dlls/*
 docs/doxygen/*
 build-esp_gpio_config-Desktop-Debug/*
