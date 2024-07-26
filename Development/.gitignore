@@ -4,6 +4,7 @@ deprecated/*
 key/
 key/*
 *.old
+*.bin
 firmware/**
 firmware/v*/**
 firmware/releaseNote.txt
@@ -18,7 +19,7 @@ firmware/ezlopi/build/*
 firmware/ezlopi/v*/*
 firmware/GPIO_CFG/v*/*
 **/*.zip
-#**/*.bin
+**/*.bin
 build*/
 boards/*
 bin/*

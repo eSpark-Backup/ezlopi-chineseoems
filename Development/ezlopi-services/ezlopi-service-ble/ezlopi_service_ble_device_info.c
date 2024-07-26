@@ -599,7 +599,7 @@ static void EZPI_SERVICE_BLE_net_info(esp_gatt_value_t* value, esp_ble_gatts_cb_
         cJSON* cj_network = cJSON_CreateObject(__FUNCTION__);
         if (cj_network)
         {
-            char* wifi_ssid = ezlopi_factory_info_v3_get_ssid();
+            char* wifi_ssid = ezlopi_factory_info_v3_get_ssid(false);
             cJSON_AddStringToObject(__FUNCTION__, cj_network, ezlopi_ssid_str, wifi_ssid ? wifi_ssid : "");
             ezlopi_factory_info_v3_free(wifi_ssid);
 
@@ -726,7 +726,7 @@ static char* device_info_jsonify(void)
         __add_factory_info_to_root(root, (char*)ezlopi_manufacturer_str, ezlopi_factory_info_v3_get_manufacturer());
         cJSON_AddNumberToObject(__FUNCTION__, root, ezlopi_serial_str, ezlopi_factory_info_v3_get_id());
 
-        char* ssid = ezlopi_factory_info_v3_get_ssid();
+        char* ssid = ezlopi_factory_info_v3_get_ssid(false);
         if (ssid)
         {
             cJSON_AddStringToObject(__FUNCTION__, root, ezlopi_wifi_ssid_str, (isprint(ssid[0])) ? ssid : ezlopi__str);

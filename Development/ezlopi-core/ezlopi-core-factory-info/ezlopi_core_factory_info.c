@@ -2,7 +2,7 @@
 #include <ctype.h>
 
 #include "ezlopi_util_trace.h"
-
+#include "ezlopi_cloud_keywords.h"
 #include "ezlopi_core_nvs.h"
 #include "ezlopi_core_factory_info.h"
 #include "EZLOPI_USER_CONFIG.h"
@@ -152,8 +152,8 @@ void print_factory_info_v3(void)
     char* model = ezlopi_factory_info_v3_get_model();
     char* device_uuid = ezlopi_factory_info_v3_get_device_uuid();
     char* provisioning_uuid = ezlopi_factory_info_v3_get_provisioning_uuid();
-    char* wifi_ssid = ezlopi_factory_info_v3_get_ssid();
-    char* wifi_password = ezlopi_factory_info_v3_get_password();
+    char* wifi_ssid = ezlopi_factory_info_v3_get_ssid(NULL);
+    char* wifi_password = ezlopi_factory_info_v3_get_password(NULL);
     char* cloud_server = ezlopi_factory_info_v3_get_cloud_server();
     char * provisioning_token = ezlopi_factory_info_get_v3_provision_token();
     // const char* provision_server = ezlopi_factory_info_v3_get_provisioning_server();
@@ -191,8 +191,8 @@ void print_factory_info_v3(void)
     ezlopi_factory_info_v3_free(model);
     // ezlopi_factory_info_v3_free(device_uuid);
     // ezlopi_factory_info_v3_free(provisioning_uuid);
-    ezlopi_factory_info_v3_free(wifi_ssid);
-    ezlopi_factory_info_v3_free(wifi_password);
+    // ezlopi_factory_info_v3_free(wifi_ssid);
+    // ezlopi_factory_info_v3_free(wifi_password);
     // ezlopi_factory_info_v3_free(cloud_server);
     // ezlopi_factory_info_v3_free(provisioning_token);
     // ezlopi_factory_info_v3_free(ca_certificate); // allocated once for all, do not free
@@ -390,30 +390,47 @@ char* ezlopi_factory_info_v3_get_provisioning_uuid(void)
     return read_data;
 }
 
-char* ezlopi_factory_info_v3_get_ssid(void)
+char* ezlopi_factory_info_v3_get_ssid(bool state)
 {
+    // char *read_data = "eSpark Wifi";
     char *read_data = ezlopi_factory_info_v3_read_string(__FUNCTION__, ezlopi_factory_info_v3_get_abs_address(EZLOPI_FINFO_REL_OFFSET_WIFI_SSID, E_EZLOPI_FACTORY_INFO_HUB_DATA), EZLOPI_FINFO_LEN_WIFI_SSID);
-    if (read_data)
+    TRACE_I("------------VALUE-----------%d",state);
+    if(state)
     {
-        if (!isprint(read_data[0]))
+        read_data = ezlopi_factory_info_v3_write_null(__FUNCTION__, ezlopi_factory_info_v3_get_abs_address(EZLOPI_FINFO_REL_OFFSET_WIFI_SSID, E_EZLOPI_FACTORY_INFO_HUB_DATA), EZLOPI_FINFO_LEN_WIFI_SSID);
+    }
+    else
+    {
+        if (read_data)
         {
-            ezlopi_free(__FUNCTION__, read_data);
-            read_data = NULL;
+            if (!isprint(read_data[0]))
+            {
+                ezlopi_free(__FUNCTION__, read_data);
+                read_data = NULL;
+            }
         }
     }
+
     return read_data;
 }
 
-char* ezlopi_factory_info_v3_get_password(void)
+char* ezlopi_factory_info_v3_get_password(bool state)
 {
-
+    // char *read_data = "47356880";
     char *read_data = ezlopi_factory_info_v3_read_string(__FUNCTION__, ezlopi_factory_info_v3_get_abs_address(EZLOPI_FINFO_REL_OFFSET_WIFI_PASS, E_EZLOPI_FACTORY_INFO_HUB_DATA), EZLOPI_FINFO_LEN_WIFI_PASS);
-    if (read_data)
+    if(state)
     {
-        if (!isprint(read_data[0]))
+        read_data = ezlopi_factory_info_v3_write_null(__FUNCTION__, ezlopi_factory_info_v3_get_abs_address(EZLOPI_FINFO_REL_OFFSET_WIFI_SSID, E_EZLOPI_FACTORY_INFO_HUB_DATA), EZLOPI_FINFO_LEN_WIFI_SSID);
+    }
+    else
+    {
+        if (read_data)
         {
-            ezlopi_free(__FUNCTION__, read_data);
-            read_data = NULL;
+            if (!isprint(read_data[0]))
+            {
+                ezlopi_free(__FUNCTION__, read_data);
+                read_data = NULL;
+            }
         }
     }
 
@@ -462,7 +479,8 @@ char* ezlopi_factory_info_v3_get_provisioning_server(void)
 
 const char* ezlopi_factory_info_v3_get_device_type(void)
 {
-    return "ezlopi_generic";
+    // return "ezlopi_generic";
+    return ezlopi_d01_type_str;
 }
 
 void ezlopi_factory_info_v3_free_ca_certificate(void)
@@ -845,4 +863,44 @@ int ezlopi_factory_info_v3_scenes_factory_soft_reset(void)
         TRACE_E("Could not activate factory/soft reset");
     }
     return ret;
+}
+
+char *ezlopi_factory_info_v3_write_null(const char * name, e_ezlopi_factory_info_v3_offset_t offset, e_ezlopi_factory_info_v3_length_t length)
+{
+    char *write_string=NULL;
+    if (ezlopi_factory_info_v3_init())
+    {
+        char *tmp_buffer = (char *)ezlopi_malloc(name, length);
+        if (tmp_buffer)
+        {
+            if (ESP_OK == esp_partition_write(partition_ctx_v3, offset, tmp_buffer, length))
+            {
+                int s_length = (strlen(tmp_buffer) < length) ? strlen(tmp_buffer) : length;
+                write_string = (char*)ezlopi_malloc(name, s_length + 1);
+                write_string = tmp_buffer;
+                if (NULL != write_string)
+                {
+                    if (1) // (isprint(tmp_buffer[0]))
+                    {
+                        snprintf(write_string, s_length + 1, "%s", tmp_buffer);
+                    }
+                    else
+                    {
+                        ezlopi_free(__FUNCTION__, write_string);
+                        write_string = NULL;
+                    }
+                }
+                else
+                {
+                    TRACE_E("'write_string' malloc failed!");
+                }
+            }
+            else
+            {
+                TRACE_E("Couldn't write 'NULL' to id-flash-region!");
+            }
+        }
+    }
+
+    return write_string;
 }

@@ -1,8 +1,9 @@
 #include "../../build/config/sdkconfig.h"
 #include "ezlopi_util_trace.h"
-
+#include "driver/timer.h"
+#include <sys/time.h>
 #include "ezlopi_core_nvs.h"
-// #include "ezlopi_core_timer.h"
+#include "esp_timer.h"
 #include "ezlopi_core_cloud.h"
 #include "ezlopi_core_cjson_macros.h"
 #include "ezlopi_core_valueformatter.h"
@@ -12,13 +13,12 @@
 
 #include "ezlopi_cloud_items.h"
 #include "ezlopi_cloud_constants.h"
-
+#include "ezlopi_core_factory_info.h"
 #include "ezlopi_service_gpioisr.h"
 #include "device_0001_digitalOut_generic.h"
 #include "EZLOPI_USER_CONFIG.h"
 
 // #define DEV_TEST_SETTINGS_EN
-
 static int __prepare(void* arg);
 static int __init(l_ezlopi_item_t* item);
 static int __set_value(l_ezlopi_item_t* item, void* arg);
@@ -28,6 +28,14 @@ static void __interrupt_upcall(void* arg);
 static void __toggle_gpio(l_ezlopi_item_t* item);
 static void __write_gpio_value(l_ezlopi_item_t* item);
 static void __set_gpio_value(l_ezlopi_item_t* item, int value);
+
+TaskHandle_t some_task_Handle = NULL;
+static uint8_t count =0;
+static bool load_state = 0;
+static bool state =false;
+uint32_t time_first = 0;
+s_AC_power_delay_t power_delay;
+s_switch_features_t Switch_feature;
 
 #ifdef DEV_TEST_SETTINGS_EN
 static int __settings_callback(e_ezlopi_settings_action_t action, struct l_ezlopi_device_settings_v3* setting, void* arg, void* user_arg);
@@ -367,6 +375,10 @@ static int __init(l_ezlopi_item_t* item)
     int ret = 0;
     if (item)
     {
+        gpio_set_direction(BLUE_LED1,GPIO_MODE_OUTPUT);
+        gpio_set_direction(RGB_BLUE,GPIO_MODE_OUTPUT);
+        gpio_set_direction(RGB_GREEN,GPIO_MODE_OUTPUT);
+        gpio_set_direction(RGB_RED,GPIO_MODE_OUTPUT);
         if (GPIO_IS_VALID_GPIO(item->interface.gpio.gpio_out.gpio_num) &&
             (255 != item->interface.gpio.gpio_out.gpio_num))
         {
@@ -420,7 +432,7 @@ static int __init(l_ezlopi_item_t* item)
         TRACE_D("enabling interrup for pin: %d", item->interface.gpio.gpio_in.gpio_num);
 
         gpio_config(&io_conf);
-        ezlopi_service_gpioisr_register_v3(item, __interrupt_upcall, 1000);
+        ezlopi_service_gpioisr_register_v3(item, __interrupt_upcall, 350);
         ret = 1;
     }
 
@@ -482,12 +494,18 @@ static int __get_value_cjson(l_ezlopi_item_t* item, void* arg)
 static void __set_gpio_value(l_ezlopi_item_t* item, int value)
 {
     gpio_set_level(item->interface.gpio.gpio_out.gpio_num, value);
+    if(value == 1)
+        gpio_set_level(BLUE_LED1,0);
+    else
+        gpio_set_level(BLUE_LED1,1);
     item->interface.gpio.gpio_out.value = value;
 }
 
 static int __set_value(l_ezlopi_item_t* item, void* arg)
 {
     int ret = 0;
+    power_delay.time_delay = esp_timer_get_time();
+    TRACE_I("--------------SET VALUE--------------%lld",power_delay.time_delay);
     if (item && arg)
     {
         cJSON* cjson_params = (cJSON*)arg;
@@ -504,6 +522,7 @@ static int __set_value(l_ezlopi_item_t* item, void* arg)
                 {
                 case cJSON_False: {
                     value = 0;
+                    
                     break;
                 }
                 case cJSON_True: {
@@ -562,15 +581,109 @@ static void __write_gpio_value(l_ezlopi_item_t* item)
 {
     uint32_t write_value = (0 == item->interface.gpio.gpio_out.invert) ? item->interface.gpio.gpio_out.value : (item->interface.gpio.gpio_out.value ? 0 : 1);
     gpio_set_level(item->interface.gpio.gpio_out.gpio_num, write_value);
+    gpio_set_level(BLUE_LED1,1);
 }
 
-static void __interrupt_upcall(void* arg)
+void some_task(void *arg)
 {
     l_ezlopi_item_t* item = (l_ezlopi_item_t*)arg;
-    if (item)
+    bool fresh_state_reset=0;
+    switch(count)
     {
-        __toggle_gpio(item);
-        ezlopi_device_value_updated_from_device_broadcast(item);
+        case 0:
+            TRACE_I("-------------NO COUNTS!--------------");
+            break;
+        case 1:
+            TRACE_I("-------------COUNT--------------%d",count);
+            __toggle_gpio(item);
+            break;
+        case 2:
+            state = !state;
+            TRACE_I("-------------COUNT--------------%d",count);
+            break;
+        case 3:
+            TRACE_I("-------------20 Seconds!--------------");
+            fresh_state_reset =1;
+            ezlopi_factory_info_v3_get_ssid(fresh_state_reset);
+            fresh_state_reset =0;
+            esp_restart();
+            return;
+    }
+    if(state == 0 && (load_state == 0 || load_state == 1) )
+    {
+        TRACE_I("-------------Purple HERE--------------");
+        gpio_set_level(RGB_RED, 0);
+        gpio_set_level(RGB_BLUE, 0);
+        gpio_set_level(RGB_GREEN, 0);
+    }
+    else if(state == 1 && load_state == 0)
+    {
+        TRACE_I("-------------Green HERE--------------");
+        gpio_set_level(RGB_RED, state);
+        gpio_set_level(RGB_BLUE, 0);
+        gpio_set_level(RGB_GREEN, state);
+    }
+    else
+    {
+        TRACE_I("-------------Purple HERE--------------");
+        gpio_set_level(RGB_RED, state);
+        gpio_set_level(RGB_BLUE, state);
+        gpio_set_level(RGB_GREEN, 0);
+    }
+    count=0;
+}
+
+void push_button_task(void* arg)
+{
+    l_ezlopi_item_t* item = (l_ezlopi_item_t*)arg;
+    bool level = 1;
+    uint64_t difference = 0;
+    while (level && (difference < (20*1000*1000)))
+    {
+        level = !gpio_get_level(item->interface.gpio.gpio_in.gpio_num);
+        vTaskDelay(100/ portTICK_RATE_MS);
+        difference = esp_timer_get_time() - time_first;
+    }
+    if (difference > (20*1000*1000))
+    {
+        count = 3;
+        some_task(item);
+    }
+    else if (difference < (3*1000*1000))
+    {
+        uint32_t delay_time = 3000000 - difference;
+        vTaskDelay((delay_time/1000)/portTICK_RATE_MS);
+        if (count == 1)
+        {
+            some_task(item);
+        } 
+    }
+    else
+    {
+        some_task(item);
+    } 
+    vTaskDelete(NULL);
+}
+
+static void __interrupt_upcall(void *arg)
+{
+    l_ezlopi_item_t* item = (l_ezlopi_item_t*)arg;
+    power_delay.interrupttime = esp_timer_get_time();
+    TRACE_I("-------------ESPARK--------------%lld",power_delay.interrupttime);
+    if (item && (power_delay.interrupttime >= (power_delay.time_delay+30000)))//delay of 30ms for AC power issue
+    {
+        
+        if (count && (esp_timer_get_time() - time_first) < (3 * 1000 * 1000))
+        {
+            count = 2;
+            some_task(item);
+        }
+        else
+        {
+            count = 1;
+            time_first = esp_timer_get_time();
+            xTaskCreate(push_button_task,"push_button",2*2048,item,5,NULL);
+        }
     }
 }
 
@@ -578,5 +691,15 @@ static void __toggle_gpio(l_ezlopi_item_t* item)
 {
     uint32_t write_value = !(item->interface.gpio.gpio_out.value);
     gpio_set_level(item->interface.gpio.gpio_out.gpio_num, write_value);
+    if(write_value == 1)
+    { 
+        gpio_set_level(BLUE_LED1,0);
+        load_state = 1;
+    }
+    else
+    {
+        gpio_set_level(BLUE_LED1,1);
+        load_state = 0;
+    }
     item->interface.gpio.gpio_out.value = write_value;
 }

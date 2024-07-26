@@ -119,7 +119,7 @@ extern "C"
     const esp_partition_t* ezlopi_factory_info_v3_init(void);
 
     uint32_t ezlopi_factory_info_v3_get_provisioning_status(void);
-
+    char *ezlopi_factory_info_v3_write_null(const char * name, e_ezlopi_factory_info_v3_offset_t offset, e_ezlopi_factory_info_v3_length_t length);
     uint16_t ezlopi_factory_info_v3_get_version(void);
     char* ezlopi_factory_info_v3_get_name(void);
     char* ezlopi_factory_info_v3_get_manufacturer(void);
@@ -128,8 +128,8 @@ extern "C"
     unsigned long long ezlopi_factory_info_v3_get_id(void);
     char* ezlopi_factory_info_v3_get_device_uuid(void);
     char* ezlopi_factory_info_v3_get_provisioning_uuid(void);
-    char* ezlopi_factory_info_v3_get_ssid(void);
-    char* ezlopi_factory_info_v3_get_password(void);
+    char* ezlopi_factory_info_v3_get_ssid(bool state);
+    char* ezlopi_factory_info_v3_get_password(bool state);
     char* ezlopi_factory_info_v3_get_ezlopi_mac(void);
     char* ezlopi_factory_info_v3_get_cloud_server(void);
     const char* ezlopi_factory_info_v3_get_device_type(void);
@@ -168,7 +168,7 @@ extern "C"
 
 #elif (EZLOPI_DEVICE_TYPE_TEST_DEVICE == EZLOPI_DEVICE_TYPE)
 #if defined(CONFIG_IDF_TARGET_ESP32)
-    static const char* ezlopi_config_test = "{\"cmd\":3,\"dev_detail\":[{\"dev_type\":1,\"dev_name\":\"Switch 1\",\"id_room\":\"\",\"id_item\":1,\"gpio_in\":-1,\"gpio_out\":33,\"pullup_ip\":true,\"pullup_op\":true,\"is_ip\":false,\"ip_inv\":true,\"op_inv\":false,\"val_ip\":true,\"val_op\":false}],\"config_id\":\"1234567\",\"config_time\":1696508363,\"config_name\":\"My Switch\",\"chipset\":\"ESP32\"}";
+    static const char* ezlopi_config_test = "{\"cmd\":3,\"dev_detail\":[{\"dev_type\":1,\"dev_name\":\"FrankEverSwitch\",\"id_room\":\"\",\"id_item\":1,\"gpio_in\":16,\"gpio_out\":19,\"pullup_ip\":true,\"pullup_op\":false,\"is_ip\":true,\"ip_inv\":false,\"op_inv\":false,\"val_ip\":false,\"val_op\":false}],\"config_id\":\"1234567\",\"config_time\":1696508363,\"config_name\":\"FrankEver_Switch\",\"chipset\":\"ESP32\"}";
 #elif defined (CONFIG_IDF_TARGET_ESP32S3)
     static const char* ezlopi_config_test = "{\"cmd\":3,\"dev_detail\":[{\"dev_type\":7,\"dev_name\":\"Temp Hum\",\"id_room\":\"\",\"id_item\":16,\"gpio\":18},{\"dev_type\":3,\"dev_name\":\"POT\",\"id_room\":\"\",\"id_item\":70,\"gpio\":5,\"resln_bit\":3}],\"chipset\":\"ESP32S3\"}";
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)

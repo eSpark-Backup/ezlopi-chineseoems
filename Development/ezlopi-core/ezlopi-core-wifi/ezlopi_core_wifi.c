@@ -35,7 +35,8 @@
 #include "EZLOPI_USER_CONFIG.h"
 
 #define EXAMPLE_ESP_MAXIMUM_RETRY 5
-
+#define GREEN_LED GPIO_NUM_27
+static bool state =0;
 static esp_netif_ip_info_t sg_my_ip;
 static esp_netif_t* sg_wifi_sta_netif = NULL;
 
@@ -211,6 +212,8 @@ static void __event_handler(void* arg, esp_event_base_t event_base, int32_t even
         default:
         {
             TRACE_W("un-known wifi-event received: %d", event_id);
+            gpio_set_direction(GREEN_LED,GPIO_MODE_OUTPUT);
+            gpio_set_level(GREEN_LED,0);
             break;
         }
         }
@@ -265,20 +268,36 @@ void ezlopi_wifi_initialize(void)
         IP_EVENT, IP_EVENT_STA_GOT_IP, &__event_handler, NULL, &instance_got_ip));
 }
 
+void green_led_task()
+{
+    gpio_set_direction(GREEN_LED,GPIO_MODE_OUTPUT);
+    while(1)
+    {
+        gpio_set_level(GREEN_LED,!state);
+        state = !state; 
+        vTaskDelay(500 / portTICK_PERIOD_MS);
+    }
+}
+
 void ezlopi_wifi_connect_from_id_bin(void)
 {
-    char* wifi_ssid = ezlopi_factory_info_v3_get_ssid();
-    char* wifi_password = ezlopi_factory_info_v3_get_password();
+    char* wifi_ssid = ezlopi_factory_info_v3_get_ssid(NULL);
+    char* wifi_password = ezlopi_factory_info_v3_get_password(NULL);
 
     if ((NULL != wifi_ssid) && ('\0' != wifi_ssid[0]) &&
         (NULL != wifi_password) && ('\0' != wifi_password[0]))
     {
         esp_err_t wifi_error = ezlopi_wifi_connect(wifi_ssid, wifi_password);
         TRACE_W("wifi_error: %u", wifi_error);
+        if(wifi_error == 0)
+        {
+            
+            xTaskCreate(green_led_task, "green_led_srv", 1024, NULL, 5, NULL);
+        }
     }
 
-    if (wifi_ssid) ezlopi_free(__FUNCTION__, wifi_ssid);
-    if (wifi_password) ezlopi_free(__FUNCTION__, wifi_password);
+    // if (wifi_ssid) ezlopi_free(__FUNCTION__, wifi_ssid); rafay_light
+    // if (wifi_password) ezlopi_free(__FUNCTION__, wifi_password); //rafay_light
 }
 
 esp_err_t ezlopi_wifi_connect(const char* ssid, const char* pass)
@@ -436,6 +455,8 @@ static void __event_wifi_disconnected(void* event_data)
     {
         // event_data; //
         wifi_event_sta_disconnected_t* disconnected = (wifi_event_sta_disconnected_t*)event_data;
+        gpio_set_direction(GREEN_LED,GPIO_MODE_OUTPUT);
+        gpio_set_level(GREEN_LED,0);
         TRACE_E("Disconnect reason[%d]: %s", disconnected->reason, ezlopi_wifi_err_reason_str(disconnected->reason));
         sg_last_disconnect_reason = ezlopi_wifi_err_reason_str(disconnected->reason);
 
