@@ -265,5 +265,13 @@ EZLOPI_DEVICE_LIST("sensor-ze08-ch02-gas-sensor         ", 69, sensor_0069_ze08_
 EZLOPI_DEVICE_LIST("sensor-dummy-potentiometer-ADC      ", 70, sensor_0070_ADC_dummy_potentiometer)
 #endif // SENSOR_0070_ADC_DUMMY_POTENTIOMETER
 
+#if (1 == DEVICE_00100_FRANKEVER_SWITCH)
+EZLOPI_DEVICE_LIST("sensor-frankever-switch            ", 100, device_00100_FrankEver_Switch)
+#endif // DEVICE_00100_FRANKEVER_SWITCH
+
+#if (1 == DEVICE_00103_GRACE_PIR)
+EZLOPI_DEVICE_LIST("sensor-grace-digital-PIR            ", 103, device_00103_GRACE_PIR)
+#endif // DEVICE_00103_GRACE_PIR
+
 //////// End of sensor/device list
 EZLOPI_DEVICE_LIST(NULL, 0, NULL)

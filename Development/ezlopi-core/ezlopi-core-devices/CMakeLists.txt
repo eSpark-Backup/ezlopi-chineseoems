@@ -45,7 +45,7 @@ set(EZLOPI_SENSOR_DEVICE_COMPONENTS
         sensor-0025-digitalIn-LDR
         sensor-0026-ADC-LDR
         sensor-0027-ADC-waterLeak                                
-
+        
         sensor-0028-other-GY61
         sensor-0029-I2C-GXHTC3
         sensor-0030-oneWire-DS18B20
@@ -57,14 +57,14 @@ set(EZLOPI_SENSOR_DEVICE_COMPONENTS
         device-0036-PWM-servo-MG996R
         sensor-0037-pms5003-sensor
         device-0038-other-RGB
-                
+        
         sensor-0040-other-TCS230          
         sensor-0041-ADC-FC28-soilMoisture  
         sensor-0042-ADC-shunt-voltmeter                                
         sensor-0043-ADC-GYML8511-UV-intensity
         sensor-0044-I2C-TSL256-luminosity
         sensor-0046-ADC-ACS712-05B-currentmeter
-
+        
         sensor-0047-other-HX711-loadcell
         sensor-0048-other-MQ4-CH4-detector
         sensor-0049-other-MQ2-LPG-detector
@@ -86,8 +86,11 @@ set(EZLOPI_SENSOR_DEVICE_COMPONENTS
         sensor-0067-UART-hilink-presence-sensor
         sensor-0068-I2C-ENS160-gas-sensor
         sensor-0069-UART-ze08-ch02-gas-sensor
-
+        
         sensor-0070-ADC-dummy-potentiometer
+        
+        device-00100-FrankEver-Switch
+        device-00103-GRACE-PIR
 )
 
 

@@ -1,7 +1,0 @@
-#ifndef _EZLOPI_CORE_CONFIG_H_
-#define _EZLOPI_CORE_CONFIG_H_
-
-#define EZLOPI_DEVICE_TYPE_ID "ezlopi"
-
-
-#endif // _EZLOPI_CORE_CONFIG_H_

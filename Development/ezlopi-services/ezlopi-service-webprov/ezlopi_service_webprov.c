@@ -157,8 +157,8 @@ static void __fetch_wss_endpoint(void* pv)
 
         vTaskDelay(2000 / portTICK_RATE_MS);
     }
-
-    // ezlopi_factory_info_v3_free(cloud_server);rafay
+//rafay
+    // ezlopi_factory_info_v3_free(cloud_server);
     // ezlopi_factory_info_v3_free(ca_certificate); // allocated once for all, do not free
     // ezlopi_factory_info_v3_free(ssl_shared_key); // allocated once for all, do not free
     // ezlopi_factory_info_v3_free(ssl_private_key); // allocated once for all, do not free
@@ -360,10 +360,10 @@ static void __provision_check(void* pv)
 
         vTaskDelay(5000 / portTICK_RATE_MS);
     }
-
+//rafay
     // ezlopi_factory_info_v3_free(ca_certificate); // allocated once for all, do not free
 #if (0 == TEST_PROV)
-    // ezlopi_factory_info_v3_free(provision_token);
+    // ezlopi_factory_info_v3_free(provision_token);//rafay
 #endif
     ezlopi_core_process_set_is_deleted(ENUM_EZLOPI_SERVICE_WEB_PROV_CONFIG_CHECK_TASK);
 

@@ -7,6 +7,6 @@ set(EZLOPI_CORE_COMPONENTS
         ezlopi-user-config
 )
 
-idf_component_register(SRCS "ezlopi_core_device_config.c" "ezlopi_core_factory_info.c" "${config_src}"
+idf_component_register(SRCS "ezlopi_core_factory_info.c" "${config_src}"
     INCLUDE_DIRS "."
     REQUIRES ${EZLOPI_CORE_COMPONENTS})

@@ -72,4 +72,7 @@
 #include "sensor_0069_ze08_ch02_gas_sensor.h"
 
 #include "sensor_0070_ADC_dummy_potentiometer.h"
+
+#include "device_00100_frankever_switch.h"
+#include "device_00103_GRACE_PIR.h"
 #endif // _EZLOPI_CORE_DEVICES_LIST_INCLUDES_H_

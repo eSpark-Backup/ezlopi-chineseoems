@@ -186,9 +186,9 @@ void print_factory_info_v3(void)
 
     // ezlopi_factory_info_v3_free(mac);
     // ezlopi_factory_info_v3_free(name);
-    ezlopi_factory_info_v3_free(manufacturer);
-    ezlopi_factory_info_v3_free(brand);
-    ezlopi_factory_info_v3_free(model);
+    // ezlopi_factory_info_v3_free(manufacturer);
+    // ezlopi_factory_info_v3_free(brand);
+    // ezlopi_factory_info_v3_free(model);
     // ezlopi_factory_info_v3_free(device_uuid);
     // ezlopi_factory_info_v3_free(provisioning_uuid);
     // ezlopi_factory_info_v3_free(wifi_ssid);
@@ -302,7 +302,7 @@ char* ezlopi_factory_info_v3_get_model(void)
 
 char* ezlopi_factory_info_get_v3_provision_token(void)
 {
-    char *read_data = "3040c38fa3d8d5538b124a77d497d5f2a5b67f087ecf1e8f5ab3ecc7b56c0b6fdb6d201d7010f53db09bc8ac11a3a3c263f0e4db928c550456fadcd37725cc74bd58e0e698777c7d2960330c96c6a313165512525795476b8c9312c7afef57eeb89e53bfe131324b5c526ec19a89287232e8628589a4192af960dcd41ef8639a";
+    char *read_data = "cb0ad12cc7981f3e8d5539ff852b87dfb20365f673e04dcd998f991f209977360a09d6971c8ac52d8f9a0c04b1b8658505188d5e265c2da243fc24b8333495fefb62bcb4b5ad7c9fa85a411f0784f9f458e3a2f2c854a66eca7424c65c9c1f7e97594f7d890cf58399d71b5b54394a41f4ddf045049fa5802783e8b03edbdc9c";
     // char *read_data = ezlopi_factory_info_v3_read_string(__FUNCTION__, ezlopi_factory_info_v3_get_abs_address(EZLOPI_FINFO_REL_OFFSET_PROVISIONING_TOKEN, E_EZLOPI_FACTORY_INFO_CONN_DATA), EZLOPI_FINFO_LEN_PROVISIONING_TOKEN);
     // if (read_data)
     // {
@@ -332,7 +332,8 @@ uint16_t ezlopi_factory_info_v3_get_config_version(void)
 
 unsigned long long ezlopi_factory_info_v3_get_id(void)
 {
-    unsigned long long _id = 102003076;//0ULL
+    // unsigned long long _id = NULL;
+    unsigned long long _id = 102003271;//0ULL
     //rafay
     // if (ezlopi_factory_info_v3_get_provisioning_status() != 1)
     // {
@@ -362,7 +363,7 @@ unsigned long long ezlopi_factory_info_v3_get_id(void)
 
 char* ezlopi_factory_info_v3_get_device_uuid(void)
 {
-    char *read_data = "a7ee12e0-8394-11ee-8889-0f56091e7639";
+    char *read_data = "36164920-8395-11ee-8889-0f56091e7639";
     // char *read_data = ezlopi_factory_info_v3_read_string(__FUNCTION__, ezlopi_factory_info_v3_get_abs_address(EZLOPI_FINFO_REL_OFFSET_DEVICE_UUID, E_EZLOPI_FACTORY_INFO_CONN_DATA), EZLOPI_FINFO_LEN_DEVICE_UUID);
     // if (read_data)
     // {
@@ -377,7 +378,7 @@ char* ezlopi_factory_info_v3_get_device_uuid(void)
 
 char* ezlopi_factory_info_v3_get_provisioning_uuid(void)
 {
-    char *read_data = "91acc056-07f0-43f8-89d8-d1492022d8c8";
+    char *read_data = "4321e663-23cf-45b9-aa99-bea439f13db7";
     // char *read_data = ezlopi_factory_info_v3_read_string(__FUNCTION__, ezlopi_factory_info_v3_get_abs_address(EZLOPI_FINFO_REL_OFFSET_PROVISIONING_UUID, E_EZLOPI_FACTORY_INFO_CONN_DATA), EZLOPI_FINFO_LEN_PROV_UUID);
     // if (read_data)
     // {
@@ -392,9 +393,9 @@ char* ezlopi_factory_info_v3_get_provisioning_uuid(void)
 
 char* ezlopi_factory_info_v3_get_ssid(bool state)
 {
-    // char *read_data = "eSpark Wifi";
-    char *read_data = ezlopi_factory_info_v3_read_string(__FUNCTION__, ezlopi_factory_info_v3_get_abs_address(EZLOPI_FINFO_REL_OFFSET_WIFI_SSID, E_EZLOPI_FACTORY_INFO_HUB_DATA), EZLOPI_FINFO_LEN_WIFI_SSID);
-    TRACE_I("------------VALUE-----------%d",state);
+    char *read_data = "eSpark Wifi";
+    // char *read_data = ezlopi_factory_info_v3_read_string(__FUNCTION__, ezlopi_factory_info_v3_get_abs_address(EZLOPI_FINFO_REL_OFFSET_WIFI_SSID, E_EZLOPI_FACTORY_INFO_HUB_DATA), EZLOPI_FINFO_LEN_WIFI_SSID);
+    // TRACE_I("------------VALUE-----------%d",state);
     if(state)
     {
         read_data = ezlopi_factory_info_v3_write_null(__FUNCTION__, ezlopi_factory_info_v3_get_abs_address(EZLOPI_FINFO_REL_OFFSET_WIFI_SSID, E_EZLOPI_FACTORY_INFO_HUB_DATA), EZLOPI_FINFO_LEN_WIFI_SSID);
@@ -416,8 +417,8 @@ char* ezlopi_factory_info_v3_get_ssid(bool state)
 
 char* ezlopi_factory_info_v3_get_password(bool state)
 {
-    // char *read_data = "47356880";
-    char *read_data = ezlopi_factory_info_v3_read_string(__FUNCTION__, ezlopi_factory_info_v3_get_abs_address(EZLOPI_FINFO_REL_OFFSET_WIFI_PASS, E_EZLOPI_FACTORY_INFO_HUB_DATA), EZLOPI_FINFO_LEN_WIFI_PASS);
+    char *read_data = "47356880";
+    // char *read_data = ezlopi_factory_info_v3_read_string(__FUNCTION__, ezlopi_factory_info_v3_get_abs_address(EZLOPI_FINFO_REL_OFFSET_WIFI_PASS, E_EZLOPI_FACTORY_INFO_HUB_DATA), EZLOPI_FINFO_LEN_WIFI_PASS);
     if(state)
     {
         read_data = ezlopi_factory_info_v3_write_null(__FUNCTION__, ezlopi_factory_info_v3_get_abs_address(EZLOPI_FINFO_REL_OFFSET_WIFI_SSID, E_EZLOPI_FACTORY_INFO_HUB_DATA), EZLOPI_FINFO_LEN_WIFI_SSID);
@@ -440,7 +441,7 @@ char* ezlopi_factory_info_v3_get_password(bool state)
 char* ezlopi_factory_info_v3_get_ezlopi_mac(void)
 {
 
-    char *read_data = "a2:e6:b3:e8:b2:49";
+    char *read_data = "a2:a9:ab:01:e4:80";
     // char *read_data = ezlopi_factory_info_v3_read_string(__FUNCTION__, ezlopi_factory_info_v3_get_abs_address(EZLOPI_FINFO_REL_OFFSET_DEVICE_MAC, E_EZLOPI_FACTORY_INFO_HUB_DATA), EZLOPI_FINFO_LEN_DEVICE_MAC);
     // if (read_data)
     // {
@@ -480,7 +481,8 @@ char* ezlopi_factory_info_v3_get_provisioning_server(void)
 const char* ezlopi_factory_info_v3_get_device_type(void)
 {
     // return "ezlopi_generic";
-    return ezlopi_d01_type_str;
+    // return ezlopi_d01_type_str;
+    return ezlopi_d03_type_str;
 }
 
 void ezlopi_factory_info_v3_free_ca_certificate(void)
@@ -510,7 +512,7 @@ yxkVC0FkBTAfBgNVHSMEGDAWgBRiTl8Ez1l94jaqcxbiyxkVC0FkBTAPBgNVHRMB\n\
 Af8EBTADAQH/MAoGCCqGSM49BAMDA0kAMEYCIQD7EUs8j50jKFd/46Zo95NbrPYQ\n\
 PtLTHH9YjUkMEkYD5gIhAMP4y7E1aB78nQrmd3IX8MM32k9dM8xT0MztR16OtsuV\n\
 -----END CERTIFICATE-----";
-        // __ca_cert = ezlopi_factory_info_v3_read_string(__FUNCTION__, ezlopi_factory_info_v3_get_abs_address(EZLOPI_FINFO_REL_OFFSET_CA_CERTIFICATE, E_EZLOPI_FACTORY_INFO_CONN_DATA), EZLOPI_FINFO_LEN_CA_CERTIFICATE);
+    //   __ca_cert = ezlopi_factory_info_v3_read_string(__FUNCTION__, ezlopi_factory_info_v3_get_abs_address(EZLOPI_FINFO_REL_OFFSET_CA_CERTIFICATE, E_EZLOPI_FACTORY_INFO_CONN_DATA), EZLOPI_FINFO_LEN_CA_CERTIFICATE);
     }
     return __ca_cert;
 }
@@ -527,12 +529,12 @@ char* ezlopi_factory_info_v3_get_ssl_private_key(void)
 {
     if (NULL == __pvt_key)
     {
-        __pvt_key = "-----BEGIN PRIVATE KEY-----\n\
-MIGEAgEAMBAGByqGSM49AgEGBSuBBAAKBG0wawIBAQQgPd6NUOnOOfOPJcvuACMm\n\
-CeCfAfUR2C1uT/oU2kGw2kyhRANCAATq50WVy/7cgyQv0oGL2Mx3qXd/29H2kEGc\n\
-4gF6V3MaCKicOYCQsNnxrHwFdvBUgwxBdtRP+aTRAXa5UWCzGu40\n\
+          __pvt_key = "-----BEGIN PRIVATE KEY-----\n\
+MIGEAgEAMBAGByqGSM49AgEGBSuBBAAKBG0wawIBAQQgPV5Xo34Ex6PhO1E+lnNr\n\
+feOhyrkRWf8ySWpGv0X69uahRANCAARsskrPwUUzxnI5Xtl/xsAhhu23GpYgYXmV\n\
+JVoQwtBv9O1zcs4Y9lpiiFmCacyQnX7yjUSx6Vb9G1WMCWZjKtLQ\n\
 -----END PRIVATE KEY-----";
-        // __pvt_key = ezlopi_factory_info_v3_read_string(__FUNCTION__, ezlopi_factory_info_v3_get_abs_address(EZLOPI_FINFO_REL_OFFSET_SSL_PRIVATE_KEY, E_EZLOPI_FACTORY_INFO_CONN_DATA), EZLOPI_FINFO_LEN_SSL_PRIVATE_KEY);
+        //   __pvt_key = ezlopi_factory_info_v3_read_string(__FUNCTION__, ezlopi_factory_info_v3_get_abs_address(EZLOPI_FINFO_REL_OFFSET_SSL_PRIVATE_KEY, E_EZLOPI_FACTORY_INFO_CONN_DATA), EZLOPI_FINFO_LEN_SSL_PRIVATE_KEY);
     }
     return __pvt_key;
 }
@@ -548,20 +550,19 @@ void  ezlopi_factory_info_v3_free_ssl_shared_key(void)
 char* ezlopi_factory_info_v3_get_ssl_shared_key(void)
 {
     if (NULL == __pub_key)
-    {
+    {   
         __pub_key = "-----BEGIN CERTIFICATE-----\n\
-MIICDTCCAbKgAwIBAgIDBImxMAoGCCqGSM49BAMCMIGQMQswCQYDVQQGEwJVUzEU\n\
+MIICDDCCAbKgAwIBAgIDBIp0MAoGCCqGSM49BAMCMIGQMQswCQYDVQQGEwJVUzEU\n\
 MBIGA1UECAwLIE5ldyBKZXJzZXkxEDAOBgNVBAcMB0NsaWZ0b24xDzANBgNVBAoM\n\
 BklUIE9wczEPMA0GA1UECwwGSVQgT3BzMRQwEgYDVQQDDAtlWkxPIExURCBDQTEh\n\
-MB8GCSqGSIb3DQEJARYSc3lzYWRtaW5zQGV6bG8uY29tMCAXDTIzMTExNTA4NTUw\n\
-MFoYDzIyOTcwODI5MDg1NTAwWjCBjDELMAkGA1UEBhMCVVMxEzARBgNVBAgMCk5l\n\
+MB8GCSqGSIb3DQEJARYSc3lzYWRtaW5zQGV6bG8uY29tMCAXDTIzMTExNTA4NTg1\n\
+N1oYDzIyOTcwODI5MDg1ODU3WjCBjDELMAkGA1UEBhMCVVMxEzARBgNVBAgMCk5l\n\
 dyBKZXJzZXkxEDAOBgNVBAcMB0NsaWZ0b24xEzARBgNVBAoMCmNvbnRyb2xsZXIx\n\
-LTArBgNVBAsMJGE4YWI2ZjcwLTgzOTQtMTFlZS04ODg5LTBmNTYwOTFlNzYzOTES\n\
-MBAGA1UEAwwJMTAyMDAzMDc2MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAE6udFlcv+\n\
-3IMkL9KBi9jMd6l3f9vR9pBBnOIBeldzGgionDmAkLDZ8ax8BXbwVIMMQXbUT/mk\n\
-0QF2uVFgsxruNDAKBggqhkjOPQQDAgNJADBGAiEAyNCCJq7wmFS9sQez7MUAMOvu\n\
-RFv6CUjgByV14FZ6lv0CIQCnSpPeGBvf1Cf7CEo1o25Gnewf2ccSMAUSt+d8BPuH\n\
-CA==\n\
+LTArBgNVBAsMJDM2MTY0OTIwLTgzOTUtMTFlZS04ODg5LTBmNTYwOTFlNzYzOTES\n\
+MBAGA1UEAwwJMTAyMDAzMjcxMFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEbLJKz8FF\n\
+M8ZyOV7Zf8bAIYbttxqWIGF5lSVaEMLQb/Ttc3LOGPZaYohZgmnMkJ1+8o1EselW\n\
+/RtVjAlmYyrS0DAKBggqhkjOPQQDAgNIADBFAiBXMNQm1gFm5scyjiXyAyCXRB7F\n\
+6Pb8Y3SR5YLsuAYxjwIhAIEEmBTit1zXq7mNAZK4f8GolqX2AtOzn78yz8cy7Zgv\n\
 -----END CERTIFICATE-----";
         // __pub_key = ezlopi_factory_info_v3_read_string(__FUNCTION__, ezlopi_factory_info_v3_get_abs_address(EZLOPI_FINFO_REL_OFFSET_SSL_SHARED_KEY, E_EZLOPI_FACTORY_INFO_CONN_DATA), EZLOPI_FINFO_LEN_SSL_SHARED_KEY);
     }
@@ -571,7 +572,7 @@ CA==\n\
 char* ezlopi_factory_info_v3_get_ezlopi_config(void)
 {
     // TRACE_E("ezlopi-config address: %d", ezlopi_factory_info_v3_get_abs_address(EZLOPI_FINFO_REL_OFFSET_EZLOPI_CONFIG_JSON, E_EZLOPI_FACTORY_INFO_CONN_DATA));
-    char *ret = "{\"config_id\":904483883,\"config_time\":1720448712,\"cmd\":4,\"status\":1,\"dev_total\":0,\"dev_detail\":[],\"chipset\":\"ESP32\"}";
+    char *ret = "{\"config_id\"::3412872984,\"config_time\"::1722348777,\"cmd\":4,\"status\":1,\"dev_total\":0,\"dev_detail\":[],\"chipset\":\"ESP32\"}";
     // char *ret = ezlopi_factory_info_v3_read_string(__FUNCTION__, ezlopi_factory_info_v3_get_abs_address(EZLOPI_FINFO_REL_OFFSET_EZLOPI_CONFIG_JSON, E_EZLOPI_FACTORY_INFO_CONN_DATA), EZLOPI_FINFO_LEN_EZLOPI_CONFIG_JSON);
     // if (false == isprint(ret[0]))
     // {

@@ -70,7 +70,7 @@ extern const char *ezlopi_item_name_water_level_alarm;
 // extern const  char *ezlopi_item_name_over_voltage_state;
 // extern const  char *ezlopi_item_name_over_load_state;
 // extern const  char *ezlopi_item_name_load_error_state;
-// extern const  char *ezlopi_item_name_battery_maintenance_state;
+extern const  char *ezlopi_item_name_battery_maintenance_state;
 // extern const  char *ezlopi_item_name_battery_charging_state;
 // extern const  char *ezlopi_item_name_battery_backup;
 extern const char *ezlopi_item_name_angle_position;

@@ -30,13 +30,14 @@
 #include "ezlopi_core_event_group.h"
 #include "ezlopi_core_device_value_updated.h"
 #include "ezlopi_core_processes.h"
+#include "ezlopi_core_broadcast.h"
+#include "ezlopi_cloud_constants.h"
+#include "ezlopi_core_ping.h"
 
 #include "ezlopi_service_uart.h"
 #include "EZLOPI_USER_CONFIG.h"
 
 #define EXAMPLE_ESP_MAXIMUM_RETRY 5
-#define GREEN_LED GPIO_NUM_27
-static bool state =0;
 static esp_netif_ip_info_t sg_my_ip;
 static esp_netif_t* sg_wifi_sta_netif = NULL;
 
@@ -44,6 +45,7 @@ static int sg_retry_num = 0;
 static volatile int sg_station_got_ip = 0;
 static const char* const scg_wifi_no_error_str = "NO_ERROR";
 static const char* wifi_scanner_task_name = "WiFiScanTask";
+static const char* wifi_try_connect_task_name = "WiFitrycnttask";
 static const char* sg_last_disconnect_reason = scg_wifi_no_error_str;
 
 static ll_ezlopi_wifi_event_upcall_t* __event_upcall_head = NULL;
@@ -121,7 +123,7 @@ static esp_err_t set_wifi_station_host_name(void)
     return err;
 }
 
-static int get_auth_mode_str(char auth_str[50], wifi_auth_mode_t mode)
+int get_auth_mode_str(char auth_str[50], wifi_auth_mode_t mode)
 {
     int ret = 0;
     memset(auth_str, 0, 50);
@@ -140,37 +142,37 @@ static int get_auth_mode_str(char auth_str[50], wifi_auth_mode_t mode)
     }
     case WIFI_AUTH_WPA_PSK:
     {
-        auth_mode_str = "wpa-psk";
+        auth_mode_str = "psk";
         break;
     }
     case WIFI_AUTH_WPA2_PSK:
     {
-        auth_mode_str = "wpa2-psk";
+        auth_mode_str = "psk2";
         break;
     }
     case WIFI_AUTH_WPA_WPA2_PSK:
     {
-        auth_mode_str = "wpa-wpa2-psk";
+        auth_mode_str = "psk2";
         break;
     }
     case WIFI_AUTH_WPA2_ENTERPRISE:
     {
-        auth_mode_str = "wpa2-enterprise";
+        auth_mode_str = "enterprise";
         break;
     }
     case WIFI_AUTH_WPA3_PSK:
     {
-        auth_mode_str = "wpa2-psk";
+        auth_mode_str = "psk3";
         break;
     }
     case WIFI_AUTH_WPA2_WPA3_PSK:
     {
-        auth_mode_str = "wpa2-wpa3-psk";
+        auth_mode_str = "psk3";
         break;
     }
     case WIFI_AUTH_WAPI_PSK:
     {
-        auth_mode_str = "wapi-psk";
+        auth_mode_str = "psk3";
         break;
     }
     case WIFI_AUTH_MAX:
@@ -212,8 +214,6 @@ static void __event_handler(void* arg, esp_event_base_t event_base, int32_t even
         default:
         {
             TRACE_W("un-known wifi-event received: %d", event_id);
-            gpio_set_direction(GREEN_LED,GPIO_MODE_OUTPUT);
-            gpio_set_level(GREEN_LED,0);
             break;
         }
         }
@@ -268,17 +268,6 @@ void ezlopi_wifi_initialize(void)
         IP_EVENT, IP_EVENT_STA_GOT_IP, &__event_handler, NULL, &instance_got_ip));
 }
 
-void green_led_task()
-{
-    gpio_set_direction(GREEN_LED,GPIO_MODE_OUTPUT);
-    while(1)
-    {
-        gpio_set_level(GREEN_LED,!state);
-        state = !state; 
-        vTaskDelay(500 / portTICK_PERIOD_MS);
-    }
-}
-
 void ezlopi_wifi_connect_from_id_bin(void)
 {
     char* wifi_ssid = ezlopi_factory_info_v3_get_ssid(NULL);
@@ -289,15 +278,10 @@ void ezlopi_wifi_connect_from_id_bin(void)
     {
         esp_err_t wifi_error = ezlopi_wifi_connect(wifi_ssid, wifi_password);
         TRACE_W("wifi_error: %u", wifi_error);
-        if(wifi_error == 0)
-        {
-            
-            xTaskCreate(green_led_task, "green_led_srv", 1024, NULL, 5, NULL);
-        }
     }
 
-    // if (wifi_ssid) ezlopi_free(__FUNCTION__, wifi_ssid); rafay_light
-    // if (wifi_password) ezlopi_free(__FUNCTION__, wifi_password); //rafay_light
+    // if (wifi_ssid) ezlopi_free(__FUNCTION__, wifi_ssid);
+    // if (wifi_password) ezlopi_free(__FUNCTION__, wifi_password);
 }
 
 esp_err_t ezlopi_wifi_connect(const char* ssid, const char* pass)
@@ -356,6 +340,92 @@ int ezlopi_wait_for_wifi_to_connect(uint32_t wait_time_ms)
     return ret;
 }
 
+static int ezlopi_wifi_wait_for_wifi_and_registration()
+{
+    int ret = 0;
+    int count = 0;
+    ret = ezlopi_wait_for_wifi_to_connect(15000 / portTICK_PERIOD_MS);
+    if (-1 == ret)
+    {
+        TRACE_E("Failed to connect to the wifi");
+    }
+    else
+    {
+        TRACE_I("WiFi connected successully");
+        do
+        {
+            count++;
+            TRACE_D("Waiting for device internet connection to complete...(%d)", count);
+            e_ezlopi_event_t event = ezlopi_get_event_bit_status();
+            if (EZLOPI_EVENT_NMA_REG == (event & EZLOPI_EVENT_NMA_REG))
+            {
+                TRACE_Dw("Device registered successfully");
+                ret = 0;
+                break;
+            }
+            else if (count == 15)
+            {
+                TRACE_Dw("Couldn't register the device with new wifi");
+                ret = -1;
+                break;
+            }
+            vTaskDelay(1500 / portTICK_PERIOD_MS);
+        } while (1);
+    }
+    return ret;
+}
+
+
+void ezlopi_wifi_try_connect_task(void *params)
+{
+    cJSON *cj_network = (cJSON*)params;
+    if (cj_network)
+    {
+        while (1)
+        {
+            char ssid[32];
+            char pass[32];
+            CJSON_GET_VALUE_STRING_BY_COPY(cj_network, ezlopi_ssid_str, ssid);
+            CJSON_GET_VALUE_STRING_BY_COPY(cj_network, "key", pass);
+            if (('\0' != ssid[0]) && ('\0' != pass))
+            {
+                TRACE_D("Trying to connect to %s with password %s", ssid, pass);
+                esp_err_t error = ezlopi_wifi_connect(ssid, pass);
+                if (ESP_OK == error)
+                {
+                    int ret = ezlopi_wifi_wait_for_wifi_and_registration();
+                    TRACE_Dw("Ret: %d", ret);
+                    if (-1 == ret)
+                    {
+                        TRACE_E("Error connecting to wifi with new WiFi SSID");
+                        ezlopi_wifi_connect_from_id_bin();
+                        ezlopi_wifi_wait_for_wifi_and_registration();
+                    }
+                }
+                else
+                {
+                    TRACE_E("Error connecting to wifi with new WiFi SSID");
+                    ezlopi_wifi_connect_from_id_bin();
+                    ezlopi_wifi_wait_for_wifi_and_registration();
+                }
+            }
+            break;
+        }
+    }
+    ezlopi_core_process_set_is_deleted(ENUM_EZLOPI_CORE_WIFI_TRY_CONNECT_TASK);
+    vTaskDelete(NULL);
+}
+
+int ezlopi_wifi_try_connect(cJSON *cj_network)
+{
+    int ret = 0;
+    cJSON* cj_network_copy = cJSON_Duplicate(__FUNCTION__, cj_network, true);
+    static TaskHandle_t try_connect_task_handle = NULL;
+    xTaskCreate(ezlopi_wifi_try_connect_task, wifi_try_connect_task_name, EZLOPI_CORE_WIFI_TRY_CONNECT_TASK_DEPTH, cj_network_copy, 3, &try_connect_task_handle);
+    ezlopi_core_process_set_process_info(ENUM_EZLOPI_CORE_WIFI_TRY_CONNECT_TASK, &try_connect_task_handle, EZLOPI_CORE_WIFI_TRY_CONNECT_TASK_DEPTH);
+    return ret;
+}
+
 static ll_ezlopi_wifi_event_upcall_t* ezlopi_wifi_event_upcall_create(f_ezlopi_wifi_event_upcall upcall, void* arg)
 {
     ll_ezlopi_wifi_event_upcall_t* _upcall = ezlopi_malloc(__FUNCTION__, sizeof(ll_ezlopi_wifi_event_upcall_t));
@@ -373,6 +443,50 @@ static ll_ezlopi_wifi_event_upcall_t* ezlopi_wifi_event_upcall_create(f_ezlopi_w
     return _upcall;
 }
 
+static void ezlopi_core_device_broadcast_wifi_start_scan()
+{
+    cJSON *cj_scan_start = cJSON_CreateObject(__FUNCTION__);
+    if (cj_scan_start)
+    {
+        cJSON_AddStringToObject(__FUNCTION__, cj_scan_start, ezlopi_id_str, ezlopi_ui_broadcast_str);
+        cJSON_AddStringToObject(__FUNCTION__, cj_scan_start, ezlopi_msg_subclass_str, method_hub_network_wifi_scan_progress);
+
+        cJSON *cj_result = cJSON_AddObjectToObject(__FUNCTION__, cj_scan_start, ezlopi_result_str);
+        if (cj_result)
+        {
+            cJSON_AddStringToObject(__FUNCTION__, cj_result, "interfaceId", "wlan0");
+            cJSON_AddStringToObject(__FUNCTION__, cj_result, ezlopi_status_str, "started");
+        }
+
+        if (!ezlopi_core_broadcast_add_to_queue(cj_scan_start))
+        {
+            cJSON_Delete(__FUNCTION__, cj_scan_start);
+        }
+    }
+}
+
+static void ezlopi_core_device_broadcast_wifi_stop_scan()
+{
+    cJSON *cj_scan_stop = cJSON_CreateObject(__FUNCTION__);
+    if (cj_scan_stop)
+    {
+        cJSON_AddStringToObject(__FUNCTION__, cj_scan_stop, ezlopi_id_str, ezlopi_ui_broadcast_str);
+        cJSON_AddStringToObject(__FUNCTION__, cj_scan_stop, ezlopi_msg_subclass_str, method_hub_network_wifi_scan_progress);
+
+        cJSON *cj_result = cJSON_AddObjectToObject(__FUNCTION__, cj_scan_stop, ezlopi_result_str);
+        if (cj_result)
+        {
+            cJSON_AddStringToObject(__FUNCTION__, cj_result, "interfaceId", "wlan0");
+            cJSON_AddStringToObject(__FUNCTION__, cj_result, ezlopi_status_str, "finished");
+        }
+
+        if (!ezlopi_core_broadcast_add_to_queue(cj_scan_stop))
+        {
+            cJSON_Delete(__FUNCTION__, cj_scan_stop);
+        }
+    }
+}
+
 static void ezlopi_wifi_scanner_task(void* params)
 {
     TickType_t start_time = xTaskGetTickCount();
@@ -388,6 +502,7 @@ static void ezlopi_wifi_scanner_task(void* params)
         .scan_time.active.max = 150,
     };
 
+    ezlopi_core_device_broadcast_wifi_start_scan();
     while (1)
     {
         current_time = (xTaskGetTickCount() - start_time);
@@ -410,6 +525,7 @@ static void ezlopi_wifi_scanner_task(void* params)
         }
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
+    ezlopi_core_device_broadcast_wifi_stop_scan();
     ezlopi_core_process_set_is_deleted(ENUM_EZLOPI_CORE_WIFI_SCANNER_TASK);
     sg_scan_handle = NULL;
     vTaskDelete(NULL);
@@ -455,8 +571,6 @@ static void __event_wifi_disconnected(void* event_data)
     {
         // event_data; //
         wifi_event_sta_disconnected_t* disconnected = (wifi_event_sta_disconnected_t*)event_data;
-        gpio_set_direction(GREEN_LED,GPIO_MODE_OUTPUT);
-        gpio_set_level(GREEN_LED,0);
         TRACE_E("Disconnect reason[%d]: %s", disconnected->reason, ezlopi_wifi_err_reason_str(disconnected->reason));
         sg_last_disconnect_reason = ezlopi_wifi_err_reason_str(disconnected->reason);
 

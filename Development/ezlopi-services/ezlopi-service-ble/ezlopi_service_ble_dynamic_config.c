@@ -338,7 +338,7 @@ static char* __dynamic_config_base64(void)
             int ret = mbedtls_base64_encode((unsigned char*)base64_data, base64_data_len, &out_put_len,
                 (const unsigned char*)str_ezlopi_config, strlen(str_ezlopi_config));
 
-            // ezlopi_factory_info_v3_free(str_ezlopi_config);
+            ezlopi_factory_info_v3_free(str_ezlopi_config);
 
             TRACE_D("'mbedtls_base64_encode' returned: %04x", ret);
         }

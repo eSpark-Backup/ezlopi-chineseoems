@@ -539,9 +539,9 @@ static void EZPI_SERVICE_BLE_ezlo_cloud_info(esp_gatt_value_t* value, esp_ble_ga
             cJSON_AddStringToObject(__FUNCTION__, cj_ezlopi, ezlopi_mac_str, device_mac ? device_mac : "");
 
 
-            // ezlopi_factory_info_v3_free(device_mac);
-            // ezlopi_factory_info_v3_free(controller_uuid);
-            // ezlopi_factory_info_v3_free(provisioning_uuid);
+            ezlopi_factory_info_v3_free(device_mac);
+            ezlopi_factory_info_v3_free(controller_uuid);
+            ezlopi_factory_info_v3_free(provisioning_uuid);
 
             ble_device_info_send_data(cj_ezlopi, value, param);
 
@@ -599,7 +599,7 @@ static void EZPI_SERVICE_BLE_net_info(esp_gatt_value_t* value, esp_ble_gatts_cb_
         cJSON* cj_network = cJSON_CreateObject(__FUNCTION__);
         if (cj_network)
         {
-            char* wifi_ssid = ezlopi_factory_info_v3_get_ssid(false);
+            char* wifi_ssid = ezlopi_factory_info_v3_get_ssid(NULL);
             cJSON_AddStringToObject(__FUNCTION__, cj_network, ezlopi_ssid_str, wifi_ssid ? wifi_ssid : "");
             ezlopi_factory_info_v3_free(wifi_ssid);
 
@@ -726,7 +726,7 @@ static char* device_info_jsonify(void)
         __add_factory_info_to_root(root, (char*)ezlopi_manufacturer_str, ezlopi_factory_info_v3_get_manufacturer());
         cJSON_AddNumberToObject(__FUNCTION__, root, ezlopi_serial_str, ezlopi_factory_info_v3_get_id());
 
-        char* ssid = ezlopi_factory_info_v3_get_ssid(false);
+        char* ssid = ezlopi_factory_info_v3_get_ssid(NULL);
         if (ssid)
         {
             cJSON_AddStringToObject(__FUNCTION__, root, ezlopi_wifi_ssid_str, (isprint(ssid[0])) ? ssid : ezlopi__str);

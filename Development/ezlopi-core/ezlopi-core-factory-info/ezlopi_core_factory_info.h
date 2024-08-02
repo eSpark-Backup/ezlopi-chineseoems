@@ -168,7 +168,7 @@ extern "C"
 
 #elif (EZLOPI_DEVICE_TYPE_TEST_DEVICE == EZLOPI_DEVICE_TYPE)
 #if defined(CONFIG_IDF_TARGET_ESP32)
-    static const char* ezlopi_config_test = "{\"cmd\":3,\"dev_detail\":[{\"dev_type\":1,\"dev_name\":\"FrankEverSwitch\",\"id_room\":\"\",\"id_item\":1,\"gpio_in\":16,\"gpio_out\":19,\"pullup_ip\":true,\"pullup_op\":false,\"is_ip\":true,\"ip_inv\":false,\"op_inv\":false,\"val_ip\":false,\"val_op\":false}],\"config_id\":\"1234567\",\"config_time\":1696508363,\"config_name\":\"FrankEver_Switch\",\"chipset\":\"ESP32\"}";
+    static const char* ezlopi_config_test = "{\"cmd\":3,\"dev_detail\":[{\"dev_type\":103,\"dev_name\":\"GRACE_PIR\",\"id_room\":\"\",\"id_item\":103,\"gpio\":35,\"pull_up\":true,\"logic_inv\":false},{\"dev_type\":103,\"dev_name\":\"GRACE_PIR\",\"id_room\":\"\",\"id_item\":103,\"gpio_adc\":33}],\"config_id\":\"3412872984\",\"config_time\":1722348777,\"config_name\":\"GRACE_PIR\",\"chipset\":\"ESP32\"}";
 #elif defined (CONFIG_IDF_TARGET_ESP32S3)
     static const char* ezlopi_config_test = "{\"cmd\":3,\"dev_detail\":[{\"dev_type\":7,\"dev_name\":\"Temp Hum\",\"id_room\":\"\",\"id_item\":16,\"gpio\":18},{\"dev_type\":3,\"dev_name\":\"POT\",\"id_room\":\"\",\"id_item\":70,\"gpio\":5,\"resln_bit\":3}],\"chipset\":\"ESP32S3\"}";
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
