@@ -80,32 +80,25 @@ static int device_grace_pir_get_value_cjson_v3(l_ezlopi_item_t* item, void* args
     cJSON* cj_result = (cJSON*)args;
     if (cj_result)
     {
-        if(!gpio_get_level(SWITCH_RESET))
-        {            
-            esp_restart();
-        }
-        else
+        if (ezlopi_item_name_battery_maintenance_state == item->cloud_properties.item_name)
         {
-            if ((ezlopi_item_name_battery_maintenance_state == item->cloud_properties.item_name))
+            cJSON_AddStringToObject(__FUNCTION__, cj_result, ezlopi_value_str, (char*)item->user_arg ? item->user_arg : "battery_maintenance_ok");
+            cJSON_AddStringToObject(__FUNCTION__, cj_result, ezlopi_valueFormatted_str, (char*)item->user_arg ? item->user_arg : "battery_maintenance_ok");
+        }
+        
+        if (ezlopi_item_name_motion == item->cloud_properties.item_name)
+        {
+            item->interface.gpio.gpio_in.value = gpio_get_level(item->interface.gpio.gpio_in.gpio_num);
+            TRACE_I("------------PIR------------%d",item->interface.gpio.gpio_in.value);
+            if(item->interface.gpio.gpio_in.value)
             {
-                cJSON_AddStringToObject(__FUNCTION__, cj_result, ezlopi_value_str, (char*)item->user_arg ? item->user_arg : "battery_maintenance_ok");
-                cJSON_AddStringToObject(__FUNCTION__, cj_result, ezlopi_valueFormatted_str, (char*)item->user_arg ? item->user_arg : "battery_maintenance_ok");
+                gpio_set_level(LED,1);
             }
-            
-            if ((ezlopi_item_name_motion == item->cloud_properties.item_name))
+            else
             {
-                item->interface.gpio.gpio_in.value = gpio_get_level(item->interface.gpio.gpio_in.gpio_num);
-                TRACE_I("------------PIR------------%d",item->interface.gpio.gpio_in.value);
-                if(item->interface.gpio.gpio_in.value)
-                {
-                    gpio_set_level(LED,1);
-                }
-                else
-                {
-                    gpio_set_level(LED,0);
-                }
-                ezlopi_valueformatter_bool_to_cjson(cj_result, item->interface.gpio.gpio_in.value, item->cloud_properties.scale);
+                gpio_set_level(LED,0);
             }
+            ezlopi_valueformatter_bool_to_cjson(cj_result, item->interface.gpio.gpio_in.value, item->cloud_properties.scale);
         }
         ret = 1;
     }
@@ -128,37 +121,43 @@ static int device_grace_pir_notify_v3(l_ezlopi_item_t* item)
 
     if (item)
     {
-        const char* current_value = NULL;
-        s_ezlopi_analog_data_t ezlopi_analog_data = { .value = 0, .voltage = 0 };
-
-        gpio_set_level(ADC_TRIGGER,1);
-        vTaskDelay(50 / portTICK_PERIOD_MS);
-        ezlopi_adc_get_adc_data(item->interface.adc.gpio_num, &ezlopi_analog_data);
-        // TRACE_I("Value is: %d, voltage is: %d", ezlopi_analog_data.value, ezlopi_analog_data.voltage);
-        float mapped_voltage = ((float)(ezlopi_analog_data.value) * (VBAT)) / (ADC_MAX);
-        TRACE_I("Raw: %d\tADC Reading: %d\tVoltage: %.2fmV\t\tValue of GPIO Trigger: %d", ezlopi_analog_data.value, ezlopi_analog_data.voltage, mapped_voltage, gpio_get_level(ADC_TRIGGER));
-        gpio_set_level(ADC_TRIGGER,0);
-        
-        if (4.0 >= mapped_voltage)
-        {
-            current_value = "replace_battery_soon";
-        }
-        else if(3.5 >= mapped_voltage)
-        {
-            current_value = "replace_battery_now";
-        }
-        else if(4.0 < mapped_voltage)
-        {
-            current_value = "battery_maintenance_ok";
+        if(!gpio_get_level(SWITCH_RESET))
+        {            
+            esp_restart();
         }
         else
-            current_value = "unknown";
+        {   
+            const char* current_value = NULL;
+            s_ezlopi_analog_data_t ezlopi_analog_data = { .value = 0, .voltage = 0 };
 
-        if (current_value != (char*)item->user_arg)
-        {
-            item->user_arg = (void*)current_value;
-            if ((ezlopi_item_name_battery_maintenance_state == item->cloud_properties.item_name))
-                ezlopi_device_value_updated_from_device_broadcast(item);
+            gpio_set_level(ADC_TRIGGER,1);
+            vTaskDelay(50 / portTICK_PERIOD_MS);
+            ezlopi_adc_get_adc_data(item->interface.adc.gpio_num, &ezlopi_analog_data);
+            float mapped_voltage = ((float)(ezlopi_analog_data.value) * (VBAT)) / (ADC_MAX);
+            TRACE_I("Raw: %d\tADC Reading: %d\tVoltage: %.2fmV\t\tValue of GPIO Trigger: %d", ezlopi_analog_data.value, ezlopi_analog_data.voltage, mapped_voltage, gpio_get_level(ADC_TRIGGER));
+            gpio_set_level(ADC_TRIGGER,0);
+            
+            if (4.0 >= mapped_voltage)
+            {
+                current_value = "replace_battery_soon";
+            }
+            else if(3.5 >= mapped_voltage)
+            {
+                current_value = "replace_battery_now";
+            }
+            else if(4.0 < mapped_voltage)
+            {
+                current_value = "battery_maintenance_ok";
+            }
+            else
+                current_value = "unknown";
+
+            if (current_value != (char*)item->user_arg)
+            {
+                item->user_arg = (void*)current_value;
+                if ((ezlopi_item_name_battery_maintenance_state == item->cloud_properties.item_name))
+                    ezlopi_device_value_updated_from_device_broadcast(item);
+            }
         }
     }
 
@@ -313,7 +312,7 @@ static void device_grace_pir_setup_item_properties_v3(l_ezlopi_item_t* item, cJS
 
     item->interface.gpio.gpio_in.enable = true;
     item->interface.gpio.gpio_in.mode = GPIO_MODE_INPUT;
-    CJSON_GET_VALUE_GPIO(cj_device, ezlopi_gpio_str, item->interface.gpio.gpio_in.gpio_num);
+    CJSON_GET_VALUE_GPIO(cj_device, ezlopi_gpio_in_str, item->interface.gpio.gpio_in.gpio_num);
     CJSON_GET_VALUE_DOUBLE(cj_device, ezlopi_logic_inv_str, item->interface.gpio.gpio_in.invert);
     CJSON_GET_VALUE_DOUBLE(cj_device, ezlopi_pull_up_str, tmp_var);
     item->interface.gpio.gpio_in.pull = tmp_var ? GPIO_PULLUP_ONLY : GPIO_PULLDOWN_ONLY;
@@ -333,6 +332,5 @@ static void device_grace_battery_setup_item_properties_v3(l_ezlopi_item_t* item,
 
     item->interface_type = EZLOPI_DEVICE_INTERFACE_ANALOG_INPUT;
     CJSON_GET_VALUE_GPIO(cj_device, ezlopi_gpio_adc_str, item->interface.adc.gpio_num);
-    // item->interface.adc.gpio_num = GPIO_NUM_33;
     item->interface.adc.resln_bit = 3;
 }
