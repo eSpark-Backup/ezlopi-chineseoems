@@ -113,6 +113,8 @@ extern const char* ezlopi_info_str;
 extern const char* ezlopi_generic_str;
 extern const char* ezlopi_d01_type_str;
 extern const char* ezlopi_d01_hardware_str;
+extern const char* ezlopi_d02_type_str;
+extern const char* ezlopi_d02_hardware_str;
 extern const char* ezlopi_d03_type_str;
 extern const char* ezlopi_d03_hardware_str;
 extern const char* ezlopi_firmware_hardware_str;

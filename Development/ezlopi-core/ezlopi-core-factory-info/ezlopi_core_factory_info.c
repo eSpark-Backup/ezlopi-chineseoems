@@ -302,7 +302,7 @@ char* ezlopi_factory_info_v3_get_model(void)
 
 char* ezlopi_factory_info_get_v3_provision_token(void)
 {
-    char *read_data = "cb0ad12cc7981f3e8d5539ff852b87dfb20365f673e04dcd998f991f209977360a09d6971c8ac52d8f9a0c04b1b8658505188d5e265c2da243fc24b8333495fefb62bcb4b5ad7c9fa85a411f0784f9f458e3a2f2c854a66eca7424c65c9c1f7e97594f7d890cf58399d71b5b54394a41f4ddf045049fa5802783e8b03edbdc9c";
+    char *read_data = "041490a4cd67a0e4a42fc72ba6f2689be7b332e309d4ecd4ac98516782af516cf7b4f40b656d9e15df57041f899569610e44eb3917e2fb7be97e5b325428dfaf4300bc7ec3285bf735c55556968640de920bfc0efcb11cfac68822d8536efd59d392d380de031dd78670a62e6a0a56ae7df6f562c9166afdaa8c32aaf24fd0b4";
     // char *read_data = ezlopi_factory_info_v3_read_string(__FUNCTION__, ezlopi_factory_info_v3_get_abs_address(EZLOPI_FINFO_REL_OFFSET_PROVISIONING_TOKEN, E_EZLOPI_FACTORY_INFO_CONN_DATA), EZLOPI_FINFO_LEN_PROVISIONING_TOKEN);
     // if (read_data)
     // {
@@ -333,7 +333,7 @@ uint16_t ezlopi_factory_info_v3_get_config_version(void)
 unsigned long long ezlopi_factory_info_v3_get_id(void)
 {
     // unsigned long long _id = NULL;
-    unsigned long long _id = 102003271;//0ULL
+    unsigned long long _id = 102003302;//0ULL
     //rafay
     // if (ezlopi_factory_info_v3_get_provisioning_status() != 1)
     // {
@@ -363,7 +363,7 @@ unsigned long long ezlopi_factory_info_v3_get_id(void)
 
 char* ezlopi_factory_info_v3_get_device_uuid(void)
 {
-    char *read_data = "36164920-8395-11ee-8889-0f56091e7639";
+    char *read_data = "4c9cbc10-8395-11ee-8889-0f56091e7639";
     // char *read_data = ezlopi_factory_info_v3_read_string(__FUNCTION__, ezlopi_factory_info_v3_get_abs_address(EZLOPI_FINFO_REL_OFFSET_DEVICE_UUID, E_EZLOPI_FACTORY_INFO_CONN_DATA), EZLOPI_FINFO_LEN_DEVICE_UUID);
     // if (read_data)
     // {
@@ -378,7 +378,7 @@ char* ezlopi_factory_info_v3_get_device_uuid(void)
 
 char* ezlopi_factory_info_v3_get_provisioning_uuid(void)
 {
-    char *read_data = "4321e663-23cf-45b9-aa99-bea439f13db7";
+    char *read_data = "73a15e16-8929-47e0-ab74-e3d8f59f68aa";
     // char *read_data = ezlopi_factory_info_v3_read_string(__FUNCTION__, ezlopi_factory_info_v3_get_abs_address(EZLOPI_FINFO_REL_OFFSET_PROVISIONING_UUID, E_EZLOPI_FACTORY_INFO_CONN_DATA), EZLOPI_FINFO_LEN_PROV_UUID);
     // if (read_data)
     // {
@@ -441,7 +441,7 @@ char* ezlopi_factory_info_v3_get_password(bool state)
 char* ezlopi_factory_info_v3_get_ezlopi_mac(void)
 {
 
-    char *read_data = "a2:a9:ab:01:e4:80";
+    char *read_data = "a2:8a:09:41:c4:25";
     // char *read_data = ezlopi_factory_info_v3_read_string(__FUNCTION__, ezlopi_factory_info_v3_get_abs_address(EZLOPI_FINFO_REL_OFFSET_DEVICE_MAC, E_EZLOPI_FACTORY_INFO_HUB_DATA), EZLOPI_FINFO_LEN_DEVICE_MAC);
     // if (read_data)
     // {
@@ -482,7 +482,7 @@ const char* ezlopi_factory_info_v3_get_device_type(void)
 {
     // return "ezlopi_generic";
     // return ezlopi_d01_type_str;
-    return ezlopi_d03_type_str;
+    return ezlopi_d02_type_str;
 }
 
 void ezlopi_factory_info_v3_free_ca_certificate(void)
@@ -530,9 +530,9 @@ char* ezlopi_factory_info_v3_get_ssl_private_key(void)
     if (NULL == __pvt_key)
     {
           __pvt_key = "-----BEGIN PRIVATE KEY-----\n\
-MIGEAgEAMBAGByqGSM49AgEGBSuBBAAKBG0wawIBAQQgPV5Xo34Ex6PhO1E+lnNr\n\
-feOhyrkRWf8ySWpGv0X69uahRANCAARsskrPwUUzxnI5Xtl/xsAhhu23GpYgYXmV\n\
-JVoQwtBv9O1zcs4Y9lpiiFmCacyQnX7yjUSx6Vb9G1WMCWZjKtLQ\n\
+MIGEAgEAMBAGByqGSM49AgEGBSuBBAAKBG0wawIBAQQg52fSGm/AaW39ECtQGK8m\n\
+lRanzuseV0MYhTyEh3h7IB2hRANCAASxwMDnJUAnh3lww2thbJtwXn/sLfEUn4O2\n\
+oaeKK8lg4mQJMV/PkOga9AIgFw+SLkWdGoiUFFIsKkR1ODqqx/94\n\
 -----END PRIVATE KEY-----";
         //   __pvt_key = ezlopi_factory_info_v3_read_string(__FUNCTION__, ezlopi_factory_info_v3_get_abs_address(EZLOPI_FINFO_REL_OFFSET_SSL_PRIVATE_KEY, E_EZLOPI_FACTORY_INFO_CONN_DATA), EZLOPI_FINFO_LEN_SSL_PRIVATE_KEY);
     }
@@ -552,17 +552,17 @@ char* ezlopi_factory_info_v3_get_ssl_shared_key(void)
     if (NULL == __pub_key)
     {   
         __pub_key = "-----BEGIN CERTIFICATE-----\n\
-MIICDDCCAbKgAwIBAgIDBIp0MAoGCCqGSM49BAMCMIGQMQswCQYDVQQGEwJVUzEU\n\
+MIICDDCCAbKgAwIBAgIDBIqTMAoGCCqGSM49BAMCMIGQMQswCQYDVQQGEwJVUzEU\n\
 MBIGA1UECAwLIE5ldyBKZXJzZXkxEDAOBgNVBAcMB0NsaWZ0b24xDzANBgNVBAoM\n\
 BklUIE9wczEPMA0GA1UECwwGSVQgT3BzMRQwEgYDVQQDDAtlWkxPIExURCBDQTEh\n\
-MB8GCSqGSIb3DQEJARYSc3lzYWRtaW5zQGV6bG8uY29tMCAXDTIzMTExNTA4NTg1\n\
-N1oYDzIyOTcwODI5MDg1ODU3WjCBjDELMAkGA1UEBhMCVVMxEzARBgNVBAgMCk5l\n\
+MB8GCSqGSIb3DQEJARYSc3lzYWRtaW5zQGV6bG8uY29tMCAXDTIzMTExNTA4NTkz\n\
+NVoYDzIyOTcwODI5MDg1OTM1WjCBjDELMAkGA1UEBhMCVVMxEzARBgNVBAgMCk5l\n\
 dyBKZXJzZXkxEDAOBgNVBAcMB0NsaWZ0b24xEzARBgNVBAoMCmNvbnRyb2xsZXIx\n\
-LTArBgNVBAsMJDM2MTY0OTIwLTgzOTUtMTFlZS04ODg5LTBmNTYwOTFlNzYzOTES\n\
-MBAGA1UEAwwJMTAyMDAzMjcxMFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEbLJKz8FF\n\
-M8ZyOV7Zf8bAIYbttxqWIGF5lSVaEMLQb/Ttc3LOGPZaYohZgmnMkJ1+8o1EselW\n\
-/RtVjAlmYyrS0DAKBggqhkjOPQQDAgNIADBFAiBXMNQm1gFm5scyjiXyAyCXRB7F\n\
-6Pb8Y3SR5YLsuAYxjwIhAIEEmBTit1zXq7mNAZK4f8GolqX2AtOzn78yz8cy7Zgv\n\
+LTArBgNVBAsMJDRjOWNiYzEwLTgzOTUtMTFlZS04ODg5LTBmNTYwOTFlNzYzOTES\n\
+MBAGA1UEAwwJMTAyMDAzMzAyMFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEscDA5yVA\n\
+J4d5cMNrYWybcF5/7C3xFJ+DtqGniivJYOJkCTFfz5DoGvQCIBcPki5FnRqIlBRS\n\
+LCpEdTg6qsf/eDAKBggqhkjOPQQDAgNIADBFAiEAsYQaFwhhCRjZztgt8r+lPOIb\n\
+AQ0ANUgJEEWnmH7E+roCIDrwD9Cu4tNP5buCTIbKpUniXLVw6cnHR8A+Mv5RaU05\n\
 -----END CERTIFICATE-----";
         // __pub_key = ezlopi_factory_info_v3_read_string(__FUNCTION__, ezlopi_factory_info_v3_get_abs_address(EZLOPI_FINFO_REL_OFFSET_SSL_SHARED_KEY, E_EZLOPI_FACTORY_INFO_CONN_DATA), EZLOPI_FINFO_LEN_SSL_SHARED_KEY);
     }
@@ -572,7 +572,7 @@ M8ZyOV7Zf8bAIYbttxqWIGF5lSVaEMLQb/Ttc3LOGPZaYohZgmnMkJ1+8o1EselW\n\
 char* ezlopi_factory_info_v3_get_ezlopi_config(void)
 {
     // TRACE_E("ezlopi-config address: %d", ezlopi_factory_info_v3_get_abs_address(EZLOPI_FINFO_REL_OFFSET_EZLOPI_CONFIG_JSON, E_EZLOPI_FACTORY_INFO_CONN_DATA));
-    char *ret = "{\"config_id\"::3412872984,\"config_time\"::1722348777,\"cmd\":4,\"status\":1,\"dev_total\":0,\"dev_detail\":[],\"chipset\":\"ESP32\"}";
+    char *ret = "{\"config_id\"::2578723617,\"config_time\"::1722960582,\"cmd\":4,\"status\":1,\"dev_total\":0,\"dev_detail\":[],\"chipset\":\"ESP32\"}";
     // char *ret = ezlopi_factory_info_v3_read_string(__FUNCTION__, ezlopi_factory_info_v3_get_abs_address(EZLOPI_FINFO_REL_OFFSET_EZLOPI_CONFIG_JSON, E_EZLOPI_FACTORY_INFO_CONN_DATA), EZLOPI_FINFO_LEN_EZLOPI_CONFIG_JSON);
     // if (false == isprint(ret[0]))
     // {

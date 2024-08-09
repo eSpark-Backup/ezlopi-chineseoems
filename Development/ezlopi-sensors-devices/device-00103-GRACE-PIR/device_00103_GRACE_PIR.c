@@ -244,7 +244,7 @@ static int device_grace_pir_prepare_v3(void* arg)
         cJSON* cj_device = prep_arg->cjson_device;
         if (cj_device)
         {
-            l_ezlopi_device_t* device = ezlopi_device_add_device(prep_arg->cjson_device, NULL);
+            l_ezlopi_device_t* device = ezlopi_device_add_device(cj_device, NULL);
             if (device)
             {
                 ret = 1;
@@ -321,6 +321,8 @@ static void device_grace_pir_setup_item_properties_v3(l_ezlopi_item_t* item, cJS
 
 static void device_grace_battery_setup_item_properties_v3(l_ezlopi_item_t* item, cJSON* cj_device)
 {
+
+    TRACE_I("---------%s----------",cJSON_Print(__FUNCTION__,cj_device));
     item->cloud_properties.show = true;
     item->cloud_properties.has_getter = true;
     item->cloud_properties.has_setter = false;
@@ -332,5 +334,7 @@ static void device_grace_battery_setup_item_properties_v3(l_ezlopi_item_t* item,
 
     item->interface_type = EZLOPI_DEVICE_INTERFACE_ANALOG_INPUT;
     CJSON_GET_VALUE_GPIO(cj_device, ezlopi_gpio_adc_str, item->interface.adc.gpio_num);
+    TRACE_I("----asdad-----%d----------", item->interface.adc.gpio_num);
+    // item->interface.adc.gpio_num = GPIO_NUM_33;
     item->interface.adc.resln_bit = 3;
 }

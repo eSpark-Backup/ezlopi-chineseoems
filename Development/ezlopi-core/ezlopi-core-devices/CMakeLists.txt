@@ -88,8 +88,10 @@ set(EZLOPI_SENSOR_DEVICE_COMPONENTS
         sensor-0069-UART-ze08-ch02-gas-sensor
         
         sensor-0070-ADC-dummy-potentiometer
-        
+        sensor-0099-SHTC3-temp-humidity
+                
         device-00100-FrankEver-Switch
+        device-00101-Cubic-Detector
         device-00103-GRACE-PIR
 )
 
