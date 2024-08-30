@@ -30,7 +30,4 @@ esp_err_t shtc3_read_out(s_ezlopi_i2c_master_t *i2c_master_conf, float *temp, fl
 esp_err_t shtc3_sleep_sensor(s_ezlopi_i2c_master_t *i2c_master_conf);
 esp_err_t get_ID_sensor(uint8_t addr);
 
-
-
-
-#endif
+#endif//__SHTC3_H__

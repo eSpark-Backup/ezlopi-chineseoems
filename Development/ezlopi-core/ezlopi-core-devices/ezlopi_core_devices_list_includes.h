@@ -76,5 +76,6 @@
 
 #include "device_00100_frankever_switch.h"
 #include "device_00101_Cubic_Detector.h"
+#include "device_00102_BECA_BHT003_GCLW.h"
 #include "device_00103_GRACE_PIR.h"
 #endif // _EZLOPI_CORE_DEVICES_LIST_INCLUDES_H_

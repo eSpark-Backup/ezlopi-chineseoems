@@ -92,6 +92,7 @@ set(EZLOPI_SENSOR_DEVICE_COMPONENTS
                 
         device-00100-FrankEver-Switch
         device-00101-Cubic-Detector
+        device-00102-Beca-BHT003-GCLW
         device-00103-GRACE-PIR
 )
 

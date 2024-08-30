@@ -277,6 +277,10 @@ EZLOPI_DEVICE_LIST("device-frankever-switch            ", 100, device_00100_Fran
 EZLOPI_DEVICE_LIST("device-cubic-detector              ", 101, device_00101_Cubic_Detector)
 #endif // DEVICE_00101_CUBIC_DETECTOR
 
+#if (1 == DEVICE_00102_BECA_BHT003_GCLW)
+EZLOPI_DEVICE_LIST("device-beca-bht003                 ", 102, device_00102_BECA_BHT003_GCLW)
+#endif // DEVICE_00102_BECA_BHT003_GCLW
+
 #if (1 == DEVICE_00103_GRACE_PIR)
 EZLOPI_DEVICE_LIST("device-grace-digital-PIR            ", 103, device_00103_GRACE_PIR)
 #endif // DEVICE_00103_GRACE_PIR
