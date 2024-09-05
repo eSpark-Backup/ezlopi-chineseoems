@@ -168,7 +168,7 @@ extern "C"
 
 #elif (EZLOPI_DEVICE_TYPE_TEST_DEVICE == EZLOPI_DEVICE_TYPE)
 #if defined(CONFIG_IDF_TARGET_ESP32)
-    static const char* ezlopi_config_test = "{\"cmd\":3,\"dev_detail\":[{\"dev_type\":101,\"dev_name\":\"Neo Water\",\"id_room\":\"\",\"id_item\":101,\"gpio_in\":27,\"logic_inv\":false,\"pull_up\":true},{\"dev_type\":99,\"dev_name\":\"Neo Water\",\"id_room\":\"\",\"id_item\":99,\"gpio_scl\":32,\"gpio_sda\":33}],\"config_id\":\"2578723617\",\"config_time\":1722960582,\"config_name\":\"Neo_Water\",\"chipset\":\"ESP32\"}";//
+    static const char* ezlopi_config_test = "{\"cmd\":3,\"dev_detail\":[{\"dev_type\":102,\"dev_name\":\"Beca Thermostat\",\"id_room\":\"\",\"id_item\":102,\"gpio_tx\":17,\"gpio_rx\":16,\"baud\":9600}],\"config_id\":\"2578723617\",\"config_time\":1722960582,\"config_name\":\"BHT003\",\"chipset\":\"ESP32\"}";//
 #elif defined (CONFIG_IDF_TARGET_ESP32S3)
     static const char* ezlopi_config_test = "{\"cmd\":3,\"dev_detail\":[{\"dev_type\":7,\"dev_name\":\"Temp Hum\",\"id_room\":\"\",\"id_item\":16,\"gpio\":18},{\"dev_type\":3,\"dev_name\":\"POT\",\"id_room\":\"\",\"id_item\":70,\"gpio\":5,\"resln_bit\":3}],\"chipset\":\"ESP32S3\"}";
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)

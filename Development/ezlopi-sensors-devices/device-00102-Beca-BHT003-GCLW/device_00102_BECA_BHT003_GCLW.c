@@ -9,6 +9,7 @@
 
 #include "ezlopi_cloud_items.h"
 #include "ezlopi_cloud_constants.h"
+
 #include "bht003.h"
 #include "device_00102_BECA_BHT003_GCLW.h"
 
@@ -35,6 +36,7 @@ static const char* mode_select_token[] = {
 static int device_beca_bht003_prepare_v3(void* arg);
 static int device_beca_bht003_init_v3(l_ezlopi_item_t* item);
 static int device_beca_bht003_notify_v3(l_ezlopi_item_t* item);
+static int device_beca_bht003_set_value(l_ezlopi_item_t* item, void* arg);
 static int device_beca_bht003_get_item(l_ezlopi_item_t* item, void* arg);
 static int device_beca_bht003_get_value_cjson_v3(l_ezlopi_item_t* item, void* arg);
 
@@ -58,6 +60,11 @@ int device_00102_BECA_BHT003_GCLW(e_ezlopi_actions_t action, l_ezlopi_item_t* it
         case EZLOPI_ACTION_INITIALIZE:
         {
             ret = device_beca_bht003_init_v3(item);
+            break;
+        }
+        case EZLOPI_ACTION_SET_VALUE:
+        {
+            ret = device_beca_bht003_set_value(item, args);
             break;
         }
         case EZLOPI_ACTION_HUB_GET_ITEM:
@@ -105,6 +112,67 @@ static void __add_enums_to_json(cJSON* cj_result, const char** enums, uint8_t si
     }
 }
 
+static int device_beca_bht003_set_value(l_ezlopi_item_t* item, void* arg)
+{
+    int ret = 0;
+    if(item && arg)
+    {
+        cJSON* cjson_params = (cJSON*)arg;
+        if (NULL != cjson_params)
+        {
+            cJSON* cj_value = cJSON_GetObjectItem(__FUNCTION__, cjson_params, ezlopi_value_str);
+            ret = 1;
+            if (ezlopi_item_name_thermostat_setpoint == item->cloud_properties.item_name)
+            {
+                send_temp_sp(cj_value->valuedouble,CMD_TEMP);
+            }
+            else if (ezlopi_item_name_power_mode == item->cloud_properties.item_name)
+            {
+                if(!strcmp(cj_value->valuestring, power_state_token[0]))
+                {
+                    send_command(CMD_TURN_ON);
+                }
+                else if(!strcmp(cj_value->valuestring, power_state_token[1]))
+                {
+                    send_command(CMD_TURN_OFF);
+                }
+                else if(!strcmp(cj_value->valuestring, power_state_token[2]))
+                {
+                    send_command(CMD_ENERGY_SAVING_ON);
+                }
+                else if(!strcmp(cj_value->valuestring, power_state_token[3]))
+                {
+                    send_command(CMD_ENERGY_SAVING_OFF);
+                }
+            }
+            else if(ezlopi_item_name_child_lock == item->cloud_properties.item_name)
+            {
+                if(!strcmp(cj_value->valuestring, child_lock_token[0]))
+                {
+                    send_command(CMD_LOCK_ENABLE);
+                }
+                else if(!strcmp(cj_value->valuestring, child_lock_token[1]))
+                {
+                    send_command(CMD_LOCK_DISABLE);
+                }
+            }
+            else if (ezlopi_item_name_program_mode_selection == item->cloud_properties.item_name)
+            {
+                if(!strcmp(cj_value->valuestring, mode_select_token[0]))
+                {
+                    send_command(CMD_MANUAL_MODE);
+                }
+                else if(!strcmp(cj_value->valuestring, mode_select_token[1]))
+                {
+                    send_command(CMD_PROGRAM_MODE);
+                }
+            }
+            ezlopi_device_value_updated_from_device_broadcast(item);
+        }
+    }
+    return ret;
+}
+
 static int device_beca_bht003_get_item(l_ezlopi_item_t* item, void* arg)
 {
     int ret = 0;
@@ -143,28 +211,79 @@ static int device_beca_bht003_get_value_cjson_v3(l_ezlopi_item_t* item, void* ar
 
     ret = 1;
 
-    // if (ezlopi_item_name_boiler_water_temperature == item->cloud_properties.item_name)
-    // {
-    //     ezlopi_valueformatter_float_to_cjson(cj_params, ze08_ch2o_sensor->ppm, item->cloud_properties.scale);
-    // }
-    // else if (ezlopi_item_name_power_mode == item->cloud_properties.item_name)
-    // {
-    //     bool detected = ze08_ch2o_sensor->ppm > 150.0;
-    //     cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_valueFormatted_str, power_state_token[detected]);
-    //     cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_value_str, power_state_token[detected]);
-    // }
-    // else if (ezlopi_item_name_child_lock == item->cloud_properties.item_name)
-    // {
-    //     bool detected = 0;
-    //     cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_valueFormatted_str, child_lock_token[detected]);
-    //     cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_value_str, child_lock_token[detected]);
-    // }
-    // else if (ezlopi_item_name_program_mode_selection == item->cloud_properties.item_name)
-    // {
-    //     bool detected = 0;
-    //     cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_valueFormatted_str, mode_select_token[detected]);
-    //     cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_value_str, mode_select_token[detected]);
-    // }
+    if (ezlopi_item_name_temp == item->cloud_properties.item_name)
+    {
+        ezlopi_valueformatter_float_to_cjson(cj_params, bht003_amb_temp_value(), item->cloud_properties.scale);
+    }
+    else if (ezlopi_item_name_thermostat_setpoint == item->cloud_properties.item_name)
+    {
+        ezlopi_valueformatter_float_to_cjson(cj_params, bht003_temp_sp_value(), item->cloud_properties.scale);
+    }
+    else if (ezlopi_item_name_power_mode == item->cloud_properties.item_name)
+    {   
+        if(bht003_power_value() == true)
+        {
+            cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_valueFormatted_str, power_state_token[0]);
+            cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_value_str, power_state_token[0]);
+            
+            if(bht003_energy_saving_value() == true)
+            {
+                cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_valueFormatted_str, power_state_token[2]);
+                cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_value_str, power_state_token[2]);    
+            }
+            else
+            {
+                cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_valueFormatted_str, power_state_token[2]);
+                cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_value_str, power_state_token[2]);    
+            }
+        }
+        else if(bht003_power_value() == false)
+        {
+            cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_valueFormatted_str, power_state_token[1]);
+            cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_value_str, power_state_token[1]);
+        }
+        else
+        {
+            cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_valueFormatted_str, power_state_token[4]);
+            cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_value_str, power_state_token[4]);
+        }
+    }
+    else if(ezlopi_item_name_child_lock == item->cloud_properties.item_name)
+    {
+        if(bht003_child_lock_value() == true)
+        {    
+            cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_valueFormatted_str, child_lock_token[0]);
+            cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_value_str, child_lock_token[0]);
+        }
+        else if(bht003_child_lock_value() == false)
+        {
+            cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_valueFormatted_str, child_lock_token[1]);
+            cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_value_str, child_lock_token[1]);
+        }
+        else
+        {
+            cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_valueFormatted_str, child_lock_token[2]);
+            cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_value_str, child_lock_token[2]);
+        }
+    }
+    else if (ezlopi_item_name_program_mode_selection == item->cloud_properties.item_name)
+    {
+        if(bht003_mode_selection_value() == true)
+        {    
+            cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_valueFormatted_str, mode_select_token[0]);
+            cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_value_str, mode_select_token[0]);
+        }
+        else if(bht003_mode_selection_value() == false)
+        {
+            cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_valueFormatted_str, mode_select_token[1]);
+            cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_value_str, mode_select_token[1]);
+        }
+        else
+        {
+            cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_valueFormatted_str, mode_select_token[2]);
+            cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_value_str, mode_select_token[2]);
+        }
+    }
     
     return ret;
 }
@@ -172,6 +291,8 @@ static int device_beca_bht003_get_value_cjson_v3(l_ezlopi_item_t* item, void* ar
 static int device_beca_bht003_notify_v3(l_ezlopi_item_t* item)
 {
     int ret = 0;
+    if(item)
+        ezlopi_device_value_updated_from_device_broadcast(item);
     return ret;
 }
 
@@ -209,8 +330,8 @@ static int device_beca_bht003_init_v3(l_ezlopi_item_t* item)
 
 static void __prepare_ambient_temp_device_cloud_properties(l_ezlopi_device_t* device)
 {
-    device->cloud_properties.category = category_hvac;
-    device->cloud_properties.subcategory = subcategory_hvac;
+    device->cloud_properties.category = category_temperature;
+    device->cloud_properties.subcategory = subcategory_not_defined;
     device->cloud_properties.device_type = dev_type_sensor;
     device->cloud_properties.device_type_id = NULL;
     device->cloud_properties.info = NULL;
@@ -223,7 +344,7 @@ static void __prepare_ambient_temp_item_cloud_properties(l_ezlopi_item_t* item, 
     item->cloud_properties.has_setter = false;
     item->cloud_properties.has_getter = true;
     item->cloud_properties.item_id = ezlopi_cloud_generate_item_id();
-    item->cloud_properties.item_name = ezlopi_item_name_boiler_water_temperature;
+    item->cloud_properties.item_name = ezlopi_item_name_temp;
     item->cloud_properties.value_type = value_type_temperature;
     item->cloud_properties.scale = NULL;
 
@@ -237,7 +358,7 @@ static void __prepare_temp_sp_device_cloud_properties(l_ezlopi_device_t* device)
 {
     device->cloud_properties.category = category_hvac;
     device->cloud_properties.subcategory = subcategory_hvac;
-    device->cloud_properties.device_type = dev_type_sensor;
+    device->cloud_properties.device_type = dev_type_thermostat;
     device->cloud_properties.device_type_id = NULL;
     device->cloud_properties.info = NULL;
 }

@@ -138,6 +138,12 @@ static void ezlopi_uart_channel_task(void* args)
             }
             }
         }
+
+        // for (size_t i = 0; i < data_len; i++)
+        // {
+        //     TRACE_I("-------BUFFER------------: %d", buffer[i]);
+        // }
+        
         ezlopi_uart_object->upcall(buffer, data_len, ezlopi_uart_object);
         if (buffer)
         {
