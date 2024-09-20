@@ -113,6 +113,8 @@ extern "C"
         uint16_t config_version;
     } s_basic_factory_info_t;
 
+    static const esp_partition_t* partition_ctx_v3 = NULL;
+    
     uint32_t ezlopi_factory_info_v3_get_abs_address(uint32_t relative_offset, e_factory_info_v3_partition_type_t partition_type);
 
     void print_factory_info_v3(void);

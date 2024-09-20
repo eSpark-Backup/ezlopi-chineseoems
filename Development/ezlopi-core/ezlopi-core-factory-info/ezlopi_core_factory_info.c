@@ -16,7 +16,7 @@
     }
 
 static uint32_t g_provisioning_status = 0;
-static const esp_partition_t* partition_ctx_v3 = NULL;
+// static const esp_partition_t* partition_ctx_v3 = NULL; //rafay
 
 /* Should not free, Since these informations are used by web-socket-client and are used to reconnect. */
 /* will help decrease heap-fragmentation */
