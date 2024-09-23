@@ -38,6 +38,7 @@
 #include "EZLOPI_USER_CONFIG.h"
 
 #define EXAMPLE_ESP_MAXIMUM_RETRY 5
+
 static esp_netif_ip_info_t sg_my_ip;
 static esp_netif_t* sg_wifi_sta_netif = NULL;
 
@@ -211,6 +212,11 @@ static void __event_handler(void* arg, esp_event_base_t event_base, int32_t even
             TRACE_D("wifi-stopped!");
             break;
         }
+        case WIFI_EVENT_STA_CONNECTED:
+        {
+            TRACE_D("wifi-connected!");
+            break;
+        }
         default:
         {
             TRACE_W("un-known wifi-event received: %d", event_id);
@@ -270,8 +276,8 @@ void ezlopi_wifi_initialize(void)
 
 void ezlopi_wifi_connect_from_id_bin(void)
 {
-    char* wifi_ssid = ezlopi_factory_info_v3_get_ssid(NULL);
-    char* wifi_password = ezlopi_factory_info_v3_get_password(NULL);
+    char* wifi_ssid = ezlopi_factory_info_v3_get_ssid();
+    char* wifi_password = ezlopi_factory_info_v3_get_password();
 
     if ((NULL != wifi_ssid) && ('\0' != wifi_ssid[0]) &&
         (NULL != wifi_password) && ('\0' != wifi_password[0]))
@@ -280,8 +286,8 @@ void ezlopi_wifi_connect_from_id_bin(void)
         TRACE_W("wifi_error: %u", wifi_error);
     }
 
-    // if (wifi_ssid) ezlopi_free(__FUNCTION__, wifi_ssid);
-    // if (wifi_password) ezlopi_free(__FUNCTION__, wifi_password);
+    if (wifi_ssid) ezlopi_free(__FUNCTION__, wifi_ssid);
+    if (wifi_password) ezlopi_free(__FUNCTION__, wifi_password);
 }
 
 esp_err_t ezlopi_wifi_connect(const char* ssid, const char* pass)
@@ -638,7 +644,7 @@ static void __event_wifi_scan_done(void* event_data)
 
 static void __event_ip_got_ip(void* event_data)
 {
-    ezlopi_event_group_set_event(EZLOPI_EVENT_WIFI_CONNECTED);
+
 
     if (event_data)
     {
@@ -653,6 +659,8 @@ static void __event_ip_got_ip(void* event_data)
 
         memcpy(&sg_my_ip, &event->ip_info, sizeof(esp_netif_ip_info_t));
     }
+    vTaskDelay(1);
+    ezlopi_event_group_set_event(EZLOPI_EVENT_WIFI_CONNECTED);
 }
 
 int ezlopi_wifi_get_wifi_mac(uint8_t mac[6])

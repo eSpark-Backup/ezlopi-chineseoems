@@ -21,5 +21,6 @@ idf_component_register(SRCS "device_0009_other_RMT_SK6812.c"
                         ezlopi-cloud-constants 
 
                         ezlopi-service-gpioisr
+                        device-airbnb
                         )
 

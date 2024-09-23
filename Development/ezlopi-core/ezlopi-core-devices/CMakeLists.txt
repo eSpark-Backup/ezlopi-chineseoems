@@ -45,7 +45,7 @@ set(EZLOPI_SENSOR_DEVICE_COMPONENTS
         sensor-0025-digitalIn-LDR
         sensor-0026-ADC-LDR
         sensor-0027-ADC-waterLeak                                
-        
+
         sensor-0028-other-GY61
         sensor-0029-I2C-GXHTC3
         sensor-0030-oneWire-DS18B20
@@ -88,8 +88,10 @@ set(EZLOPI_SENSOR_DEVICE_COMPONENTS
         sensor-0069-UART-ze08-ch02-gas-sensor
         
         sensor-0070-ADC-dummy-potentiometer
+        sensor-0096-sound-detector
+        sensor-0098-I2C-tamper-switch
         sensor-0099-SHTC3-temp-humidity
-                
+
         device-00100-FrankEver-Switch
         device-00101-Cubic-Detector
         device-00102-Beca-BHT003-GCLW
@@ -97,12 +99,12 @@ set(EZLOPI_SENSOR_DEVICE_COMPONENTS
 )
 
 
-idf_component_register(SRCS "ezlopi_core_devices_list.c" "ezlopi_core_devices.c" "ezlopi_core_device_value_updated.c" "${config_src}"
+idf_component_register(SRCS "ezlopi_core_devices.c" "ezlopi_core_device_group.c" "${config_src}"
                         INCLUDE_DIRS "."
                         REQUIRES        ${EZLOPI_CORE_COMPONENTS}
                                         ${EZLOPI_HAL_COMPONENTS}
                                         ${EZLOPI_CLOUD_COMPONENTS}
-                                        ${EZLOPI_SENSOR_DEVICE_COMPONENTS}                
+                                        ${EZLOPI_SENSOR_DEVICE_COMPONENTS} 
                         )
 
 

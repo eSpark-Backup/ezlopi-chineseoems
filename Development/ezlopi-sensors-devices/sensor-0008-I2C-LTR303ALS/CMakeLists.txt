@@ -16,4 +16,5 @@ idf_component_register(SRCS "sensor_0008_I2C_LTR303ALS.c" "LTR303.c" "ALS_LTR303
                 ezlopi-cloud-constants    
                 
                 ezlopi-service-gpioisr 
+                device-airbnb
                 )

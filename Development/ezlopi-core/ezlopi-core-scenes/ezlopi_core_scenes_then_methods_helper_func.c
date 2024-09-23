@@ -3,10 +3,19 @@
 #ifdef CONFIG_EZPI_SERV_ENABLE_MESHBOTS
 
 #include <string.h>
+#include "cjext.h"
 #include "ezlopi_util_trace.h"
+#include "ezlopi_core_nvs.h"
 #include "ezlopi_core_http.h"
+#include "ezlopi_core_devices.h"
+#include "ezlopi_core_device_group.h"
+#include "ezlopi_core_cjson_macros.h"
 #include "ezlopi_core_scenes_v2.h"
+#include "ezlopi_core_scenes_value.h"
+#include "ezlopi_core_scenes_expressions.h"
 #include "ezlopi_core_scenes_then_methods_helper_func.h"
+
+#include "ezlopi_cloud_constants.h"
 #include "EZLOPI_USER_CONFIG.h"
 
 #define STR_SIZE(str) ((NULL != str) ? (strlen(str)) : 0)
@@ -419,6 +428,243 @@ void free_http_mbedtls_struct(s_ezlopi_core_http_mbedtls_t* config)
     FREE_PTR_IF_NOT_NULL(config->username);
     FREE_PTR_IF_NOT_NULL(config->password);
     FREE_PTR_IF_NOT_NULL(config->response);
+}
+
+
+//------------------------------ SetExpression / SetVariable -------------------------------------------------------
+int ezlopi_core_scene_then_helper_setexpression_setvariable(char * expression_name, const char * code_str, const char * value_type, cJSON * cj_metadata, cJSON * cj_params, l_fields_v2_t * var_value)
+{
+    int ret = 0;
+    s_ezlopi_expressions_t* curr_expr = ezlopi_scenes_get_expression_node_by_name(expression_name);
+    if (curr_expr)
+    {
+        // 1. set new code
+        if (code_str)
+        {
+            if (NULL != curr_expr->code)
+            {
+                ezlopi_free(__FUNCTION__, curr_expr->code);
+                curr_expr->code = NULL;
+            }
+            curr_expr->code = ezlopi_malloc(__FUNCTION__, strlen(code_str) + 1);
+            if (curr_expr->code)
+            {
+                snprintf(curr_expr->code, strlen(code_str) + 1, "%.*s", strlen(code_str), code_str);
+            }
+        }
+
+        // 2. set new valueType
+        if (value_type)
+        {
+            curr_expr->value_type = ezlopi_scene_get_scene_value_type_enum(value_type);
+        }
+
+        // 3. replace metadata CJSON
+        if (cj_metadata)
+        {
+            if (NULL != curr_expr->meta_data)
+            {
+                cJSON_Delete(__FUNCTION__, curr_expr->meta_data);
+                curr_expr->meta_data = NULL;
+            }
+
+            curr_expr->meta_data = cJSON_Duplicate(__FUNCTION__, cj_metadata, 1);
+        }
+
+        // 4. replace Params CJSON
+        if (cj_params)
+        {
+            cJSON* cj_new_items = NULL;
+            if ((NULL != curr_expr->items) && (NULL != (cj_new_items = cJSON_GetObjectItem(__FUNCTION__, cj_params, "items"))))
+            {
+                if (curr_expr->items)
+                {
+                    ezlopi_scenes_expressions_delete_exp_item(curr_expr->items);
+                    curr_expr->items->next = NULL;
+                    curr_expr->items = NULL;
+                }
+
+                __get_expressions_items(curr_expr, cj_new_items);
+            }
+            cJSON* cj_new_device_item_names = NULL;
+            if ((NULL != curr_expr->device_item_names) && (NULL != (cj_new_device_item_names = cJSON_GetObjectItem(__FUNCTION__, cj_params, "device_item_names"))))
+            {
+                if (curr_expr->device_item_names)
+                {
+                    ezlopi_scenes_expressions_delete_exp_device_item_names(curr_expr->device_item_names);
+                    curr_expr->device_item_names->next = NULL;
+                    curr_expr->device_item_names = NULL;
+                }
+                __get_expressions_device_item_names(curr_expr, cj_new_device_item_names);
+            }
+        }
+
+        // 4. replace the variable value ( if its variable_expression )
+        if (NULL != var_value)
+        {
+            switch (var_value->field_value.e_type)
+            {
+            case VALUE_TYPE_NUMBER:
+            {
+                if (EXPRESSION_VALUE_TYPE_NUMBER == curr_expr->exp_value.type)
+                {
+                    curr_expr->exp_value.u_value.number_value = var_value->field_value.u_value.value_double;
+                }
+
+                break;
+            }
+            case VALUE_TYPE_STRING:
+            {
+                if (EXPRESSION_VALUE_TYPE_STRING == curr_expr->exp_value.type)
+                {
+                    if (NULL != curr_expr->exp_value.u_value.str_value)
+                    {
+                        ezlopi_free(__FUNCTION__, curr_expr->exp_value.u_value.str_value);
+                        curr_expr->exp_value.u_value.str_value = NULL;
+                    }
+
+                    const char * variable_str = var_value->field_value.u_value.value_string;
+
+                    curr_expr->exp_value.u_value.str_value = ezlopi_malloc(__FUNCTION__, strlen(variable_str) + 1);
+                    if (curr_expr->exp_value.u_value.str_value)
+                    {
+                        snprintf(curr_expr->exp_value.u_value.str_value, strlen(variable_str) + 1, "%.*s", strlen(variable_str), variable_str);
+                    }
+                }
+                break;
+            }
+            case VALUE_TYPE_BOOL:
+            {
+                if (EXPRESSION_VALUE_TYPE_BOOL == curr_expr->exp_value.type)
+                {
+                    curr_expr->exp_value.u_value.boolean_value = var_value->field_value.u_value.value_bool;
+                }
+                break;
+            }
+            case VALUE_TYPE_CJSON:
+            {
+                if (EXPRESSION_VALUE_TYPE_CJ == curr_expr->exp_value.type)
+                {
+                    if (NULL != curr_expr->exp_value.u_value.cj_value)
+                    {
+                        cJSON_Delete(__FUNCTION__, curr_expr->exp_value.u_value.cj_value);
+                    }
+
+                    curr_expr->exp_value.u_value.cj_value = cJSON_Duplicate(__FUNCTION__, var_value->field_value.u_value.cj_value, 1);
+                }
+                break;
+            }
+            default:
+                break;
+            }
+        }
+
+        // TRACE_S("-------------- Updated_exp_name : %s  ------------", expression_name);
+        // ezlopi_scenes_expressions_print(ezlopi_scenes_get_expression_node_by_name(expression_name));
+        // TRACE_S("----------------- ll --------------------");
+
+        // 5. Now to edit in nvs
+        // A. read from  nvs
+        char* exp_id_list_str = ezlopi_nvs_read_scenes_expressions();
+        if (exp_id_list_str)
+        {
+            TRACE_D("exp_id_list_str: %s", exp_id_list_str);
+            cJSON* cj_exp_id_list = cJSON_Parse(__FUNCTION__, exp_id_list_str);
+            if (cj_exp_id_list)
+            {
+                uint32_t exp_idx = 0;
+                cJSON* cj_exp_id = NULL;
+                while (NULL != (cj_exp_id = cJSON_GetArrayItem(cj_exp_id_list, exp_idx++)))
+                {
+                    if (cj_exp_id && cj_exp_id->valuestring)
+                    {
+                        uint32_t exp_id = strtoul(cj_exp_id->valuestring, NULL, 16);
+                        if (exp_id == curr_expr->exp_id)
+                        {
+                            TRACE_S("Found [%#x] in nvs ; req[%#x]", exp_id, curr_expr->exp_id);
+                            ret = ezlopi_scenes_expressions_update_nvs(cj_exp_id->valuestring, generate_expression_node_in_cjson(curr_expr));
+                            break;
+                        }
+                    }
+                }
+                cJSON_Delete(__FUNCTION__, cj_exp_id_list);
+            }
+            ezlopi_free(__FUNCTION__, exp_id_list_str);
+        }
+    }
+    return ret;
+}
+
+
+//------------------------------ toggleValue + grouptoggleValue -------------------------------------------------------
+
+int ezlopi_core_scene_then_helper_toggleValue(uint32_t item_id, const char * item_id_str)
+{
+    int ret = 0;
+    if (item_id && item_id_str)
+    {
+        l_ezlopi_item_t* curr_item = ezlopi_device_get_item_by_id(item_id);
+        if ((curr_item) && (EZLOPI_DEVICE_INTERFACE_DIGITAL_OUTPUT == curr_item->interface_type))
+        {
+            cJSON* cj_tmp_value = cJSON_CreateObject(__FUNCTION__);
+            if (cj_tmp_value)
+            {
+                if (curr_item->func(EZLOPI_ACTION_GET_EZLOPI_VALUE, curr_item, (void*)cj_tmp_value, NULL))
+                {
+                    CJSON_TRACE("present_bool_gpio_value", cj_tmp_value);/*value formatted & value only*/
+
+                    cJSON* cj_val = cJSON_GetObjectItem(__FUNCTION__, cj_tmp_value, ezlopi_value_str);
+                    if (cj_val)
+                    {
+                        cJSON* cj_result_value = cJSON_CreateObject(__FUNCTION__);
+                        if (cj_result_value)
+                        {
+                            cJSON_AddStringToObject(__FUNCTION__, cj_result_value, ezlopi__id_str, item_id_str);
+
+                            if ((EZPI_STRNCMP_IF_EQUAL(curr_item->cloud_properties.value_type, value_type_bool, strlen(curr_item->cloud_properties.value_type), 5)) && cJSON_IsBool(cj_val))
+                            {
+                                // TRACE_S("1. getting 'item_id[%d]' ; bool_value = %s ", item_id, (cj_val->type == cJSON_True) ? "true" : "false"); // "false" or "true"
+                                if (cj_val->type == cJSON_True)
+                                {
+                                    cJSON_AddBoolToObject(__FUNCTION__, cj_result_value, ezlopi_value_str, false);
+                                }
+                                else if (cj_val->type == cJSON_False)
+                                {
+                                    cJSON_AddBoolToObject(__FUNCTION__, cj_result_value, ezlopi_value_str, true);
+                                }
+                                ret = 1;
+                                curr_item->func(EZLOPI_ACTION_SET_VALUE, curr_item, cj_result_value, curr_item->user_arg);
+                            }
+                            else if ((EZPI_STRNCMP_IF_EQUAL(curr_item->cloud_properties.value_type, value_type_int, strlen(curr_item->cloud_properties.value_type), 4)) && cJSON_IsNumber(cj_val))
+                            {
+                                // TRACE_S("2. getting 'item_id[%d]' ; int_value = %d ", item_id, (int)cj_val->valuedouble);
+                                if (cj_val->valuedouble == 0) // either  '0' or '1'.
+                                {
+                                    cJSON_AddNumberToObject(__FUNCTION__, cj_result_value, ezlopi_value_str, 1);
+                                }
+                                else if (cj_val->valuedouble == 1)
+                                {
+                                    cJSON_AddNumberToObject(__FUNCTION__, cj_result_value, ezlopi_value_str, 0);
+                                }
+                                ret = 1;
+                                curr_item->func(EZLOPI_ACTION_SET_VALUE, curr_item, cj_result_value, curr_item->user_arg);
+                            }
+                            else
+                            {
+                                ret = 0;
+                                TRACE_E(" 'item_id[%d]' neither 'boolean' nor 'int' ;  Value-type mis-matched!  ", item_id);
+                            }
+
+                            cJSON_Delete(__FUNCTION__, cj_result_value);
+                        }
+                    }
+                }
+
+                cJSON_Delete(__FUNCTION__, cj_tmp_value);
+            }
+        }
+    }
+    return ret;
 }
 
 #endif  // CONFIG_EZPI_SERV_ENABLE_MESHBOTS

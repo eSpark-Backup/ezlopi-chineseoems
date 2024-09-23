@@ -43,6 +43,7 @@ extern const char *scales_milli_gram_per_liter;
 
 /// @brief angle
 extern const char *scales_north_pole_degress;
+extern const char *scales_elevation_degrees;
 
 /// @brief volume_flow
 extern const char *scales_cubic_meter_per_hour;
@@ -81,5 +82,14 @@ extern const char *scales_beats_per_minute;
 extern const char *scales_guass;
 extern const char *scales_tesla;
 extern const char *scales_weber_per_square_meter;
+
+/// @brief velocity
+extern const char *scales_meter_per_second;
+
+/// @brief air quality index
+extern const char *scales_aqi;
+
+/// @brief loudness
+extern const char *scales_decibel;
 
 #endif // __EZLOPI_SCALES_STR_H__

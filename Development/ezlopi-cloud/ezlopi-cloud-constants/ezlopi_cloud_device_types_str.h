@@ -8,7 +8,7 @@ extern const char *dev_type_sensor_motion;
 // extern const  char *dev_type_sensor_multisensor;
 // extern const  char *dev_type_light_bulb;
 // extern const  char *dev_type_light_strip;
-// extern const  char *dev_type_light_controller;
+extern const char *dev_type_light_controller;
 extern const  char *dev_type_thermostat;
 extern const char *dev_type_switch_outlet;
 extern const char *dev_type_dimmer_outlet;

@@ -163,8 +163,7 @@ static int __prepare(void* arg, void* user_arg)
     s_ezlopi_prep_arg_t* prep_arg = (s_ezlopi_prep_arg_t*)arg;
     if (prep_arg)
     {
-        uint32_t parent_id = 0;
-        pms5003_sensor_preapre_devices_and_items(prep_arg->cjson_device, &parent_id);
+        pms5003_sensor_preapre_devices_and_items(prep_arg->cjson_device);
     }
 
     return ret;

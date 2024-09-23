@@ -321,7 +321,6 @@ static void device_grace_pir_setup_item_properties_v3(l_ezlopi_item_t* item, cJS
 
 static void device_grace_battery_setup_item_properties_v3(l_ezlopi_item_t* item, cJSON* cj_device)
 {
-
     TRACE_I("---------%s----------",cJSON_Print(__FUNCTION__,cj_device));
     item->cloud_properties.show = true;
     item->cloud_properties.has_getter = true;

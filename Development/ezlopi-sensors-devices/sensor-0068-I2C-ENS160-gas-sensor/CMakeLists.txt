@@ -12,4 +12,5 @@ idf_component_register(SRCS "ens160.c" "sensor_0068_ENS160_gas_sensor.c" "${conf
                                 ezlopi-cloud-constants
                                 
                                 ezlopi-hal-i2c
+                                device-airbnb
                     )

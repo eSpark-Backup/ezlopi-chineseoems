@@ -267,7 +267,7 @@ static int sensor_00100_FrankEver_Switch_init(l_ezlopi_item_t* item)
 
             if (0 == gpio_config(&io_conf))
             {
-                ezlopi_service_gpioisr_register_v3(item, sensor_00100_FrankEver_Switch_interrupt_upcall, 1000);
+                ezlopi_service_gpioisr_register_v3(item, sensor_00100_FrankEver_Switch_interrupt_upcall, 350);
                 ret = 1;
             }
             else
@@ -393,7 +393,6 @@ static void sensor_00100_FrankEver_Switch_write_gpio_value(l_ezlopi_item_t* item
 void some_task(void *arg)
 {
     l_ezlopi_item_t* item = (l_ezlopi_item_t*)arg;
-    bool fresh_state_reset=0;
     switch(count)
     {
         case 0:
@@ -409,10 +408,15 @@ void some_task(void *arg)
             break;
         case 3:
             TRACE_I("-------------20 Seconds!--------------");
-            fresh_state_reset =1;
-            ezlopi_factory_info_v3_get_ssid(fresh_state_reset);
-            ezlopi_factory_info_v3_get_password(fresh_state_reset);
-            fresh_state_reset =0;
+            if (ESP_OK == esp_partition_erase_range(partition_ctx_v3, EZLOPI_FINFO_OFFSET_HUB_DATA, EZLOPI_FINFO_READ_LEN_4KB))
+            {
+                TRACE_I("-------------DEVICE INFO ERASED FROM NVS--------------");
+            }
+            if(ESP_OK == esp_partition_erase_range(partition_ctx_v3, EZLOPI_FINFO_OFFSET_CONN_DATA, EZLOPI_FINFO_READ_LEN_4KB))
+            {
+                if(ESP_OK == esp_partition_erase_range(partition_ctx_v3, EZLOPI_FINFO_REL_OFFSET_CA_CERTIFICATE, EZLOPI_FINFO_REL_OFFSET_SSL_SHARED_KEY))
+                TRACE_I("-------------CLOUD INFO ERASED FROM NVS--------------");
+            }
             esp_restart();
             return;
     }
@@ -479,7 +483,6 @@ static void sensor_00100_FrankEver_Switch_interrupt_upcall(void *arg)
     TRACE_I("-------------ESPARK--------------%lld",power_delay.interrupttime);
     if (item && (power_delay.interrupttime >= (power_delay.time_delay+30000)))//delay of 30ms for AC power issue
     {
-        
         if (count && (esp_timer_get_time() - time_first) < (3 * 1000 * 1000))
         {
             count = 2;

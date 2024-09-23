@@ -1,6 +1,6 @@
 file(GLOB_RECURSE config_src "*.c")
 
-idf_component_register(SRCS "bme680_bsec.c" "sensor_0010_I2C_BME680.c" "${config_src}"
+idf_component_register(SRCS "bme680_sensor_device_items_prep.c" "bme680_bsec.c" "sensor_0010_I2C_BME680.c" "${config_src}"
     INCLUDE_DIRS "."
     REQUIRES    ezlopi-util-trace  
                 Bosch_BSEC2
@@ -14,5 +14,6 @@ idf_component_register(SRCS "bme680_bsec.c" "sensor_0010_I2C_BME680.c" "${config
                 ezlopi-hal-i2c
                 
                 ezlopi-cloud-items 
-                ezlopi-cloud-constants    
+                ezlopi-cloud-constants  
+                device-airbnb  
 )

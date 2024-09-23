@@ -6,11 +6,142 @@
 #include "ezlopi_util_trace.h"
 #include "ezlopi_core_nvs.h"
 #include "ezlopi_core_http.h"
+#include "ezlopi_core_devices.h"
+#include "ezlopi_core_device_group.h"
 #include "ezlopi_core_scenes_v2.h"
 #include "ezlopi_core_scenes_edit.h"
 #include "ezlopi_core_scenes_when_methods_helper_functions.h"
+
+#include "ezlopi_cloud_constants.h"
 #include "EZLOPI_USER_CONFIG.h"
 
+//------------------------------- ezlopi_scene_when_is_itemState ------------------------------------------
+static int __compare_item_values(l_ezlopi_item_t* curr_item, l_fields_v2_t* value_field)
+{
+    int ret = 0;
+    cJSON* cj_tmp_value = cJSON_CreateObject(__FUNCTION__);
+    if (cj_tmp_value)
+    {
+        curr_item->func(EZLOPI_ACTION_GET_EZLOPI_VALUE, curr_item, (void*)cj_tmp_value, NULL);
+        cJSON* cj_value = cJSON_GetObjectItem(__FUNCTION__, cj_tmp_value, ezlopi_value_str);
+        if (cj_value)
+        {
+            switch (cj_value->type)
+            {
+            case cJSON_True:
+            {
+                if (true == value_field->field_value.u_value.value_bool)
+                {
+                    ret = 1;
+                }
+                break;
+            }
+            case cJSON_False:
+            {
+                if (false == value_field->field_value.u_value.value_bool)
+                {
+                    ret = 1;
+                }
+                break;
+            }
+            case cJSON_Number:
+            {
+                if (cj_value->valuedouble == value_field->field_value.u_value.value_double)
+                {
+                    ret = 1;
+                }
+                break;
+            }
+            case cJSON_String:
+            {
+                if (EZPI_STRNCMP_IF_EQUAL(cj_value->valuestring, value_field->field_value.u_value.value_string, strlen(cj_value->valuestring), strlen(value_field->field_value.u_value.value_string)))
+                {
+                    ret = 1;
+                }
+                break;
+            }
+            #warning "";
+            default:
+            {
+                TRACE_E("Value type mis-matched!");
+            }
+            }
+        }
+
+        cJSON_Delete(__FUNCTION__, cj_tmp_value);
+    }
+
+    return ret;
+}
+
+int is_item_state_single_condition(uint32_t item_id, l_fields_v2_t* value_field)
+{
+    int ret = 0;
+    l_ezlopi_device_t* curr_device = ezlopi_device_get_head();
+    while (curr_device)
+    {
+        l_ezlopi_item_t* curr_item = curr_device->items;
+        while (curr_item)
+        {
+            if (item_id == curr_item->cloud_properties.item_id)
+            {
+                ret = __compare_item_values(curr_item, value_field);
+                break;
+            }
+            curr_item = curr_item->next;
+        }
+        curr_device = curr_device->next;
+    }
+
+    return ret;
+}
+
+int is_item_state_with_grp_condition(uint32_t device_group_id, uint32_t item_group_id, l_fields_v2_t* value_field)
+{
+    int ret = 0;
+
+    l_ezlopi_device_grp_t * curr_devgrp = ezlopi_core_device_group_get_by_id(device_group_id);
+    if (curr_devgrp)
+    {
+        int idx = 0;
+        cJSON * cj_get_devarr = NULL;
+        while (NULL != (cj_get_devarr = cJSON_GetArrayItem(curr_devgrp->devices, idx)))   // ["102ec000" , "102ec001" ,..]
+        {
+            uint32_t curr_devce_id = strtoul(cj_get_devarr->valuestring, NULL, 16);
+            l_ezlopi_device_t * curr_device = ezlopi_device_get_by_id(curr_devce_id);   // immediately goto "102ec000" ...
+            if (curr_device)
+            {
+                l_ezlopi_item_t* curr_item_node = curr_device->items;   // perform operation on items of above device --> "102ec000"
+                while (curr_item_node)
+                {
+                    // compare with items_list stored in item_group_id
+                    l_ezlopi_item_grp_t * curr_item_grp = ezlopi_core_item_group_get_by_id(item_group_id);  // get  "ll_itemgrp_node"
+                    if (curr_item_grp)
+                    {
+                        int count = 0;
+                        cJSON * cj_item_names = NULL;
+                        while (NULL != (cj_item_names = cJSON_GetArrayItem(curr_item_grp->item_names, count)))  // ["202ec000" , "202ec001" ,..]
+                        {
+                            uint32_t req_item_id_from_itemgrp = strtoul(cj_item_names->valuestring, NULL, 16);
+                            // if the item_ids match ; Then compare the "item_values" with that of the "scene's" requirement
+                            if (req_item_id_from_itemgrp == curr_item_node->cloud_properties.item_id)
+                            {
+                                // compare the values of "when-condition"  & the "ll_item_node"
+                                ret = __compare_item_values(curr_item_node, value_field);
+                                break;
+                            }
+                            count++;
+                        }
+                    }
+                    curr_item_node = curr_item_node->next;
+                }
+            }
+            idx++;
+        }
+    }
+
+    return ret;
+}
 
 
 //------------------------------- ezlopi_scene_when_is_date ---------------------------------------------
@@ -625,9 +756,6 @@ uint8_t issunstate_get_suntime(l_scenes_list_v2_t* scene_node, l_fields_v2_t* cu
         {
             TRACE_S("curr_day = [%d] ; [%dth]", info->tm_mday, user_data->curr_tm_day);
 
-
-
-
             user_data->sunstate_mode = curr_sunstate_mode;          // this sets target sunstate for curr meshbot
             issunsate_update_sunstate_tm(info->tm_mday, user_data); // assign 'curr_day' & 'suntime' only
             user_data->tmoffs_type = (0 == strncmp(curr_field->field_value.u_value.value_string, "intime", 7)) ? ISSUNSTATE_INTIME_MODE
@@ -662,7 +790,7 @@ uint8_t issunstate_get_offs_tmval(l_scenes_list_v2_t* scene_node, l_fields_v2_t*
             {
                 TRACE_D(".... Adding offset:  +/- (hh:mm:ss) ....");
                 issunstate_add_offs(user_data->tmoffs_type, &(user_data->choosen_suntime), &(user_data->defined_moment), curr_field->field_value.u_value.value_string);
-                TRACE_S("\nSunMode[%d]{sunrise=1,sunset=2,0=NULL},\nChoosen_suntime(hh:mm:ss = %d:%d:%d),\ndefined_moment(hh:mm:ss = %d:%d:%d),\nOffset(%s)\n",
+                TRACE_S("\r\nSunMode[%d]{sunrise=1,sunset=2,0=NULL},\r\nChoosen_suntime(hh:mm:ss = %d:%d:%d),\r\ndefined_moment(hh:mm:ss = %d:%d:%d),\r\nOffset(%s)\r\n",
                     user_data->sunstate_mode,
                     user_data->choosen_suntime.tm_hour,
                     user_data->choosen_suntime.tm_min,
@@ -1305,6 +1433,179 @@ int when_function_for_latch(l_scenes_list_v2_t* scene_node, l_when_block_v2_t* w
 
     return ret;
 }
+
+//------------------------------- ezlopi_scene_when_isDeviceItemGroup_method -----------------------------------
+int isdeviceitem_group_value_check(l_scenes_list_v2_t* scene_node, uint32_t device_group_id, uint32_t item_group_id)
+{
+    int ret = 0;
+    if (scene_node && (0 < device_group_id) && (0 < item_group_id))
+    {
+        cJSON * cj_device_items_data = NULL;
+        bool save_flag = false;
+        if (NULL == scene_node->when_block->fields->user_arg)
+        {
+            cJSON * cj_device_items_data = cJSON_CreateObject(__FUNCTION__);
+            if (cj_device_items_data)
+            {
+                save_flag = true;
+            }
+        }
+        else
+        {   // extract the previous cjson_data, if exists;
+            save_flag = false;
+            cj_device_items_data = (cJSON*)scene_node->when_block->fields->user_arg;
+        }
+
+        // 1.
+        l_ezlopi_device_grp_t * curr_devgrp = ezlopi_core_device_group_get_by_id(device_group_id);
+        if (curr_devgrp)
+        {
+            int idx = 0;
+            cJSON * cj_get_devarr = NULL;
+            while (NULL != (cj_get_devarr = cJSON_GetArrayItem(curr_devgrp->devices, idx)))   // ["102ec000" , "102ec001" ,..]
+            {
+                uint32_t curr_devce_id = strtoul(cj_get_devarr->valuestring, NULL, 16);
+                l_ezlopi_device_t * curr_device = ezlopi_device_get_by_id(curr_devce_id);   // immediately goto "102ec000" ...
+                if (curr_device)
+                {
+                    l_ezlopi_item_t* curr_item_node = curr_device->items;   // perform operation on items of above device --> "102ec000"
+                    while (curr_item_node)
+                    {
+                        // 2.
+                        l_ezlopi_item_grp_t * curr_item_grp = ezlopi_core_item_group_get_by_id(item_group_id);  // get  "ll_itemgrp_node"
+                        if (curr_item_grp)
+                        {
+                            int count = 0;
+                            cJSON * cj_item_names = NULL;
+                            while (NULL != (cj_item_names = cJSON_GetArrayItem(curr_item_grp->item_names, count)))  // ["202ec000" , "202ec001" ,..]
+                            {
+                                uint32_t req_item_id_from_itemgrp = strtoul(cj_item_names->valuestring, NULL, 16);
+                                // if the item_ids match ; Then compare the "item_values" with that of the "scene's" requirement
+                                if (req_item_id_from_itemgrp == curr_item_node->cloud_properties.item_id) // 202ec000 == 202ec000 , ...
+                                {
+                                    if (cj_device_items_data) // if destination arr
+                                    {
+                                        cJSON* cj_tmp_value = cJSON_CreateObject(__FUNCTION__);
+                                        if (cj_tmp_value)
+                                        {
+                                            curr_item_node->func(EZLOPI_ACTION_GET_EZLOPI_VALUE, curr_item_node, (void*)cj_tmp_value, NULL);
+                                            cJSON* cj_value_new = cJSON_GetObjectItem(__FUNCTION__, cj_tmp_value, ezlopi_value_str);    // this 'cj_value_new' contains latest 'item_value'.
+                                            if (cj_value_new)
+                                            {
+                                                // save or compare?
+                                                if (true == save_flag)  /*save*/
+                                                {
+                                                    // since 'save_flag' is true we will add the latest 'item_values' into user_arg.
+                                                    switch (cj_value_new->type)
+                                                    {
+                                                    case cJSON_True:
+                                                    {
+                                                        cJSON_AddBoolToObject(__FUNCTION__, cj_device_items_data, cj_item_names->valuestring, true); // store as {"202ec000" : true , ...}
+                                                        break;
+                                                    }
+                                                    case cJSON_False:
+                                                    {
+                                                        cJSON_AddBoolToObject(__FUNCTION__, cj_device_items_data, cj_item_names->valuestring, false);// store as {"202ec000" : false , ...}
+                                                        break;
+                                                    }
+                                                    case cJSON_Number:
+                                                    {
+                                                        cJSON_AddNumberToObject(__FUNCTION__, cj_device_items_data, cj_item_names->valuestring, cj_value_new->valuedouble);// store as {"202ec000" : 20 , ...}
+                                                        break;
+                                                    }
+                                                    case cJSON_String:
+                                                    {
+                                                        cJSON_AddStringToObject(__FUNCTION__, cj_device_items_data, cj_item_names->valuestring, cj_value_new->valuestring); // store as {"202ec000" : "text" , ...}
+                                                        break;
+                                                    }
+                                                    case cJSON_Array:
+                                                    case cJSON_Object:
+                                                    {
+                                                        cJSON_AddItemToObject(__FUNCTION__, cj_device_items_data, cj_item_names->valuestring, cJSON_Duplicate(__FUNCTION__, cj_value_new, cJSON_True)); // store as {"202ec000" : [{...},{...} ] , ...}
+                                                        break;
+                                                    }
+                                                    default:
+                                                        TRACE_E("cjson Value type mis-matched!");
+                                                        break;
+                                                    }
+                                                }
+                                                else   /*compare*/
+                                                {
+                                                    cJSON * cj_prev_item_val = cJSON_GetObjectItem(__FUNCTION__, cj_device_items_data, cj_item_names->valuestring); // grab the specific {"202ec000" :"..."}
+                                                    if (cj_prev_item_val)
+                                                    {
+                                                        if (cj_prev_item_val->type == cj_value_new->type)    // making sure both prev & new values, are of same type.
+                                                        {
+                                                            // since 'save_flag' is true we will add the latest 'item_values' into user_arg.
+                                                            switch (cj_value_new->type)
+                                                            {
+                                                            case cJSON_True:
+                                                            case cJSON_False:
+                                                            {
+                                                                ret = (cj_prev_item_val->type != cj_value_new->type) ? 1 : 0;
+                                                                break;
+                                                            }
+                                                            case cJSON_Number:
+                                                            {
+                                                                ret = (cj_prev_item_val->valuedouble != cj_value_new->valuedouble) ? 1 : 0;
+                                                                break;
+                                                            }
+                                                            case cJSON_String:
+                                                            {
+                                                                ret = EZPI_STRNCMP_IF_EQUAL(cj_prev_item_val->valuestring, cj_value_new->valuestring, cj_prev_item_val->str_value_len, cj_value_new->str_value_len);
+                                                                break;
+                                                            }
+                                                            case cJSON_Array:
+                                                            case cJSON_Object:
+                                                            {
+                                                                ret = cJSON_Compare(cj_prev_item_val, cj_value_new, false);
+                                                                break;
+                                                            }
+                                                            default:
+                                                                TRACE_E("cj_value_new --> type mis-matched!");
+                                                                break;
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            TRACE_E("The old-value-type and new-value-type doesnot match");
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        // CJSON_TRACE("cj_device_items_data", cj_device_items_data);
+                                                        TRACE_E(" [%s] doesnot exist", cj_item_names->valuestring);
+                                                    }
+
+                                                }
+                                            }
+                                            cJSON_Delete(__FUNCTION__, cj_tmp_value);
+                                        }
+                                    }
+
+                                    break;
+                                }
+                                count++;
+                            }
+                        }
+                        curr_item_node = curr_item_node->next;
+                    }
+                }
+                idx++;
+            }
+        }
+
+        // store into user_arg 'save_flag == 1'
+        if ((NULL == scene_node->when_block->fields->user_arg) && cj_device_items_data && (true == save_flag))
+        {
+            CJSON_TRACE("first_device_item_data", cj_device_items_data);
+            scene_node->when_block->fields->user_arg = (void*)cj_device_items_data;
+            ret = 1;
+        }
+    }
+    return ret;
+}
+
 
 #endif  // CONFIG_EZPI_SERV_ENABLE_MESHBOTS
 //-----------------------------------------------------------------------------------------------------

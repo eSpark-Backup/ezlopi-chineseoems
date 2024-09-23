@@ -265,8 +265,16 @@ EZLOPI_DEVICE_LIST("sensor-ze08-ch02-gas-sensor         ", 69, sensor_0069_ze08_
 EZLOPI_DEVICE_LIST("sensor-dummy-potentiometer-ADC      ", 70, sensor_0070_ADC_dummy_potentiometer)
 #endif // SENSOR_0070_ADC_DUMMY_POTENTIOMETER
 
+#if (1 == SENSOR_0096_SOUND_DETECTOR)
+EZLOPI_DEVICE_LIST("sensor_0096_sound_detector                   ", 96, sensor_0096_sound_detector)
+#endif // SENSOR_0096_SOUND_DETECTOR
+
+#if (1 == SENSOR_0098_I2C_TAMPER_SWITCH)
+EZLOPI_DEVICE_LIST("sensor_0098_I2C_tamper_switch      ", 98, sensor_0098_I2C_tamper_switch)
+#endif // SENSOR_0098_I2C_TAMPER_SWITCH
+
 #if (1 == SENSOR_0099_SHTC3_TEMP_HUMIDITY)
-EZLOPI_DEVICE_LIST("sensor-shtc3-temp-humidity          ", 99, sensor_0099_SHTC3_temp_humidity)
+EZLOPI_DEVICE_LIST("sensor_0099_SHTC3_temp_humidity      ", 99, sensor_0099_SHTC3_temp_humidity)
 #endif // SENSOR_0099_SHTC3_TEMP_HUMIDITY
 
 #if (1 == DEVICE_00100_FRANKEVER_SWITCH)
@@ -286,4 +294,5 @@ EZLOPI_DEVICE_LIST("device-grace-digital-PIR            ", 103, device_00103_GRA
 #endif // DEVICE_00103_GRACE_PIR
 
 //////// End of sensor/device list
+
 EZLOPI_DEVICE_LIST(NULL, 0, NULL)

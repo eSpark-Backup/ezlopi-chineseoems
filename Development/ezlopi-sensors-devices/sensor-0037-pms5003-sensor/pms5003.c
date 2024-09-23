@@ -189,6 +189,11 @@ static void ezlopi_pms5003_upcall(uint8_t *buffer, uint32_t output_len, s_ezlopi
 
 esp_err_t pms_read_upcall(uint8_t *buffer, PM25_AQI_Data *data)
 {
+  if (buffer == NULL)
+  {
+    return ESP_FAIL;
+  }
+  
   uint16_t sum = 0;
   memset(data, 0, sizeof(PM25_AQI_Data));
   /* Check that start byte is correct! */

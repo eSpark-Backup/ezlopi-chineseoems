@@ -48,7 +48,7 @@ s_ezlopi_uart_object_handle_t ezlopi_uart_init(uint32_t baudrate, uint32_t tx, u
             ESP_ERROR_CHECK(uart_driver_install(channel, 256, 256, 32, &ezlo_uart_channel_queue, 0));
             uart_object_handle->ezlopi_uart_queue_handle = ezlo_uart_channel_queue;
         }
-#ifdef EZLOPI_UART_CHANNEL_2
+#if UART_NUM_MAX > 2
         else if (EZLOPI_UART_CHANNEL_2 == channel)
         {
             ESP_ERROR_CHECK(uart_driver_install(channel, 256, 256, 32, &ezlo_uart_channel_queue, 0));
@@ -138,12 +138,6 @@ static void ezlopi_uart_channel_task(void* args)
             }
             }
         }
-
-        // for (size_t i = 0; i < data_len; i++)
-        // {
-        //     TRACE_I("-------BUFFER------------: %d", buffer[i]);
-        // }
-        
         ezlopi_uart_object->upcall(buffer, data_len, ezlopi_uart_object);
         if (buffer)
         {
@@ -226,7 +220,7 @@ void EZPI_HAL_uart_init(void)
     // uart_driver_delete(EZPI_SERV_UART_NUM_DEFAULT);
     // vTaskDelay(10);
     // We won't use a buffer for sending data.
-    uart_driver_install(EZPI_SERV_UART_NUM_DEFAULT, EZPI_SERV_UART_RX_BUFFER_SIZE * 2, 0, 0, NULL, 0);
+    uart_driver_install(EZPI_SERV_UART_NUM_DEFAULT, EZPI_SERV_UART_RX_BUFFER_SIZE, EZPI_SERV_UART_RX_BUFFER_SIZE, 0, NULL, 0);
     vTaskDelay(10);
     uart_param_config(EZPI_SERV_UART_NUM_DEFAULT, &uart_config);
     uart_set_pin(EZPI_SERV_UART_NUM_DEFAULT, EZPI_SERV_UART_TXD_PIN, EZPI_SERV_UART_RXD_PIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);

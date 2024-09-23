@@ -21,7 +21,7 @@ extern const char *value_type_pressure;
 extern const char *value_type_substance_amount;
 // extern const  char *value_type_power;
 extern const char *value_type_humidity;
-// extern const  char *value_type_velocity;
+extern const char *value_type_velocity;
 extern const char *value_type_acceleration;
 // extern const  char *value_type_direction;
 extern const char *value_type_general_purpose;
@@ -42,7 +42,7 @@ extern const char *value_type_frequency;
 extern const char *value_type_ultraviolet;
 extern const char *value_type_electrical_resistance;
 // extern const  char *value_type_electrical_conductivity;
-// extern const  char *value_type_loudness;
+extern const char *value_type_loudness;
 extern const char *value_type_moisture;
 // extern const  char *value_type_time;
 // extern const  char *value_type_radon_concentration;
@@ -69,5 +69,6 @@ extern const char *value_type_temperature;
 // extern const  char *value_manual_not_fully_locked_operation;
 extern const char *value_type_fingerprint_action;
 extern const char *value_type_presence_operation_mode;
+extern const char *value_type_air_quality;
 
 #endif // __EZLOPI_VLAUES_STR_H__

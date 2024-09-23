@@ -16,6 +16,7 @@
 
 #include "ALS_LTR303.h"
 #include "sensor_0008_I2C_LTR303ALS.h"
+#include "device_airbnb.h"
 #include "EZLOPI_USER_CONFIG.h"
 
 static int __prepare(void* arg);
@@ -79,7 +80,7 @@ static int __notify(l_ezlopi_item_t* item)
     if (item)
     {
         ltr303_data_t* als_ltr303_data = (ltr303_data_t*)item->user_arg;
-        if (als_ltr303_data)
+        if (als_ltr303_data && !ezlopi_airbnb_get_rgb_led_status())
         {
             ltr303_data_t temp_data;
             if (ESP_OK == ltr303_get_val(&temp_data))
@@ -133,6 +134,7 @@ static void __prepare_device_cloud_properties(l_ezlopi_device_t* device, cJSON* 
     device->cloud_properties.device_type = dev_type_sensor;
     device->cloud_properties.info = NULL;
     device->cloud_properties.device_type_id = NULL;
+    device->cloud_properties.parent_device_id = ezlopi_airbnb_get_parent_device_id(device->cloud_properties.device_id);
 }
 
 static void __prepare_item_properties(l_ezlopi_item_t* item, cJSON* cj_param)

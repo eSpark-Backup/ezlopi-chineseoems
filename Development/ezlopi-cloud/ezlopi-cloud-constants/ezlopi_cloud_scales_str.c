@@ -43,6 +43,7 @@ const char *scales_milli_gram_per_liter = "milli_gram_per_liter";
 
 /// @brief angle
 const char *scales_north_pole_degress = "north_pole_degress";
+const char *scales_elevation_degrees = "elevation_degrees";
 
 /// @brief volume_flow
 const char *scales_cubic_meter_per_hour = "cubic_meter_per_hour";
@@ -81,5 +82,14 @@ const char *scales_beats_per_minute = "beats_per_minute";
 const char *scales_guass = "guass";
 const char *scales_tesla = "tesla";
 const char *scales_weber_per_square_meter = "weber_per_square_meter";
+
+/// @brief velocity
+const char *scales_meter_per_second = "meter_per_second";
+
+/// @brief air quality index
+const char *scales_aqi = "aqi";
+
+/// @brief loudness
+const char *scales_decibel = "decibel";
 
 #endif // __EZLOPI_SCALES_STR_H__

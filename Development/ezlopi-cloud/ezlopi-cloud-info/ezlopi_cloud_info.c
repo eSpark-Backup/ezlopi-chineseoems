@@ -100,6 +100,6 @@ void info_get(cJSON* cj_request, cJSON* cj_response)
         }
 
 #endif
-        // ezlopi_factory_info_v3_free(device_uuid);//rafay
+        ezlopi_factory_info_v3_free(device_uuid);
     }
 }

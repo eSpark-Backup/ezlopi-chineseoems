@@ -33,14 +33,13 @@
 
 #include "EZLOPI_USER_CONFIG.h"
 
-static void __blinky(void* pv);
+static void __blinky(void *pv);
 
 static void __print_mac_address(void)
 {
-    uint8_t __base_mac[6] = { 0, 0, 0, 0, 0, 0 };
+    uint8_t __base_mac[6] = {0, 0, 0, 0, 0, 0};
 
     esp_read_mac(__base_mac, ESP_MAC_WIFI_STA);
-    dump("base-mac", __base_mac, 0, 6);
 }
 
 void app_main(void)
@@ -48,7 +47,7 @@ void app_main(void)
 
 #ifdef CONFIG_EZPI_UTIL_TRACE_EN
     ezlopi_core_set_log_upcalls();
-#endif  // CONFIG_EZPI_UTIL_TRACE_EN
+#endif // CONFIG_EZPI_UTIL_TRACE_EN
 
     __print_mac_address();
 
@@ -77,7 +76,7 @@ void app_main(void)
 
 #if defined(CONFIG_EZPI_LOCAL_WEBSOCKET_SERVER)
     ezlopi_service_ws_server_start();
-#else // CONFIG_EZPI_LOCAL_WEBSOCKET_SERVER
+#else  // CONFIG_EZPI_LOCAL_WEBSOCKET_SERVER
     ezlpi_service_ws_server_dummy();
 #endif // CONFIG_EZPI_LOCAL_WEBSOCKET_SERVER
 
@@ -89,14 +88,13 @@ void app_main(void)
     ezlopi_service_ota_init();
 #endif // CONFIG_EZPI_ENABLE_OTA
 
-#if defined (CONFIG_EZPI_SERV_ENABLE_MODES)
+#if defined(CONFIG_EZPI_SERV_ENABLE_MODES)
     ezlopi_service_modes_init();
 #endif
 
-#if defined (CONFIG_EZPI_SERV_ENABLE_MESHBOTS)
-    // ezlopi_scenes_meshbot_init();
+#if defined(CONFIG_EZPI_SERV_ENABLE_MESHBOTS)
+    ezlopi_scenes_meshbot_init();
 #endif
-
 
     TaskHandle_t ezlopi_main_blinky_task_handle = NULL;
 
@@ -104,13 +102,12 @@ void app_main(void)
     xTaskCreate(__blinky, "blinky", 3 * EZLOPI_MAIN_BLINKY_TASK_DEPTH, NULL, 1, &ezlopi_main_blinky_task_handle);
     ezlopi_core_process_set_process_info(ENUM_EZLOPI_MAIN_BLINKY_TASK, &ezlopi_main_blinky_task_handle, 3 * EZLOPI_MAIN_BLINKY_TASK_DEPTH);
 #else
-    xTaskCreate(__blinky, "blinky", EZLOPI_MAIN_BLINKY_TASK_DEPTH, NULL, 1, &ezlopi_main_blinky_task_handle);
+    xTaskCreate(__blinky, "blinky", EZLOPI_MAIN_BLINKY_TASK_DEPTH, NULL, tskIDLE_PRIORITY + 2, &ezlopi_main_blinky_task_handle);
     ezlopi_core_process_set_process_info(ENUM_EZLOPI_MAIN_BLINKY_TASK, &ezlopi_main_blinky_task_handle, EZLOPI_MAIN_BLINKY_TASK_DEPTH);
 #endif
-
 }
 
-static void __blinky(void* pv)
+static void __blinky(void *pv)
 {
     uint32_t low_heap_start_time = xTaskGetTickCount();
 
@@ -121,11 +118,15 @@ static void __blinky(void* pv)
         uint32_t free_heap = esp_get_free_heap_size();
         uint32_t watermark_heap = esp_get_minimum_free_heap_size();
         TRACE_W("Free Heap Size: %d B     %.4f KB", free_heap, free_heap / 1024.0);
+        TRACE_W("Free Internal Heap Size: %d B     %.4f KB", esp_get_free_internal_heap_size(), esp_get_free_internal_heap_size() / 1024.0);
         TRACE_W("Heap Watermark: %d B     %.4f KB", watermark_heap, watermark_heap / 1024.0);
-        TRACE_I("----------------------------------------------");
-        printf("{\"cmd\":99,\"free_heap\":%d,\"heap_watermark\":%d}\n", free_heap, watermark_heap);
+        TRACE_I("----------------------------------------------");        
+        
+        char cmd99_str[100] = {0};
+        snprintf(cmd99_str, 100, "{\"cmd\":99,\"free_heap\":%d,\"heap_watermark\":%d}", free_heap, watermark_heap);
+        EZPI_SERV_uart_tx_data(strlen(cmd99_str), (uint8_t *)cmd99_str);
 
-        if (free_heap <= (10 * 1024))
+        if (free_heap <= (2 * 1024))
         {
             TRACE_W("CRITICAL-WARNING: low heap detected..");
 

@@ -56,6 +56,10 @@ typedef struct s_function_opr
     int(*opr_method)(l_scenes_list_v2_t* scene_node, l_when_block_v2_t* when_block, cJSON* cj_func_opr);
 } s_function_opr_t;
 
+//------------------------------- ezlopi_scene_when_is_itemState ------------------------------------------
+int is_item_state_single_condition(uint32_t item_id, l_fields_v2_t* value_field);
+int is_item_state_with_grp_condition(uint32_t device_group_id, uint32_t item_group_id, l_fields_v2_t* value_field);
+
 //------------------------------- ezlopi_scene_when_is_date -----------------------------------------------
 uint8_t isdate_type_check(e_isdate_modes_t* mode_type, struct tm* info, l_fields_v2_t* curr_field);
 uint8_t isdate_tm_check(e_isdate_modes_t* mode_type, struct tm* info, l_fields_v2_t* curr_field);
@@ -100,6 +104,9 @@ int when_function_for_repeat(l_scenes_list_v2_t* scene_node, l_when_block_v2_t* 
 int when_function_for_follow(l_scenes_list_v2_t* scene_node, l_when_block_v2_t* when_block, cJSON* cj_func_opr);
 int when_function_for_pulse(l_scenes_list_v2_t* scene_node, l_when_block_v2_t* when_block, cJSON* cj_func_opr);
 int when_function_for_latch(l_scenes_list_v2_t* scene_node, l_when_block_v2_t* when_block, cJSON* cj_func_opr);
+
+//------------------------------- ezlopi_scene_when_isDeviceItemGroup_method -----------------------------------
+int isdeviceitem_group_value_check(l_scenes_list_v2_t* scene_node, uint32_t device_group_id, uint32_t item_group_id);
 
 #endif  // CONFIG_EZPI_SERV_ENABLE_MESHBOTS
 

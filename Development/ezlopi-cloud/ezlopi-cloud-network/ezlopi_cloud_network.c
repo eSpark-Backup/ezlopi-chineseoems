@@ -94,8 +94,8 @@ void network_get(cJSON* cj_request, cJSON* cj_response)
                             get_auth_mode_str(tmp_string, ap_info.authmode);
                             cJSON_AddStringToObject(__FUNCTION__, cj_network, "encryption", tmp_string);
 
-                            char* wifi_ssid = ezlopi_factory_info_v3_get_ssid(NULL);
-                            char* wifi_password = ezlopi_factory_info_v3_get_password(NULL);
+                            char* wifi_ssid = ezlopi_factory_info_v3_get_ssid();
+                            char* wifi_password = ezlopi_factory_info_v3_get_password();
 
                             if ((NULL != wifi_ssid) && ('\0' != wifi_ssid[0]) &&
                                 (NULL != wifi_password) && ('\0' != wifi_password[0]))
@@ -104,8 +104,8 @@ void network_get(cJSON* cj_request, cJSON* cj_response)
                                 cJSON_AddStringToObject(__FUNCTION__, cj_network, "ssid", wifi_ssid);
                             }
 
-                            // if (wifi_ssid) ezlopi_free(__FUNCTION__, wifi_ssid);
-                            // if (wifi_password) ezlopi_free(__FUNCTION__, wifi_password);
+                            if (wifi_ssid) ezlopi_free(__FUNCTION__, wifi_ssid);
+                            if (wifi_password) ezlopi_free(__FUNCTION__, wifi_password);
                         }
                         cJSON_AddStringToObject(__FUNCTION__, cj_wifi, "region", "00");
                     }

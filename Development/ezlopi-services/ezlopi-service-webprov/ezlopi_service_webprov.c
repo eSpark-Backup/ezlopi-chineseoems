@@ -1,5 +1,6 @@
 
 #include "../../build/config/sdkconfig.h"
+#include "EZLOPI_USER_CONFIG.h"
 
 #include <esp_mac.h>
 #include <esp_wifi_types.h>
@@ -7,11 +8,13 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <freertos/semphr.h>
+#include <freertos/queue.h>
 
 #include "ezlopi_util_trace.h"
 #include "ezlopi_cloud_constants.h"
 
 #include "ezlopi_core_api.h"
+
 #include "ezlopi_core_http.h"
 #include "ezlopi_core_wifi.h"
 #include "ezlopi_core_reset.h"
@@ -25,7 +28,10 @@
 #include "ezlopi_core_websocket_client.h"
 
 #include "ezlopi_service_webprov.h"
-#include "EZLOPI_USER_CONFIG.h"
+
+#if (1 == EZPI_CORE_WSS_USE_WSC_LIB)
+#include "ezlopi_core_wsc.h"
+#endif // EZPI_CORE_WSS_USE_WSC_LIB
 
 #define TEST_PROV 0
 
@@ -33,23 +39,29 @@
 #include "ezlopi_test_prov.h"
 #endif
 
-
 #if defined(CONFIG_EZPI_WEBSOCKET_CLIENT)
 
 static uint32_t message_counter = 0;
 static xTaskHandle _task_handle = NULL;
+
+#if (1 == EZPI_CORE_WSS_USE_WSC_LIB)
+static s_ssl_websocket_t *__wsc_ssl = NULL;
+#endif // EZPI_CORE_WSS_USE_WSC_LIB
+
+static QueueHandle_t _wss_message_queue = NULL;
 static TaskHandle_t __web_socket_initialize_handler = NULL;
 
-static int __provision_update(char* arg);
+static int __provision_update(char *arg);
 
-static void __provision_check(void* pv);
-static void __fetch_wss_endpoint(void* pv);
+static void __provision_check(void *pv);
+static void __fetch_wss_endpoint(void *pv);
 
 static void __connection_upcall(bool connected);
-static void __message_upcall(const char* payload, uint32_t len);
+static void __message_upcall(const char *payload, uint32_t len);
+static void __message_process(const char *payload, uint32_t len);
 
-static int __send_str_data_to_nma_websocket(char* str_data);
-static int __send_cjson_data_to_nma_websocket(cJSON* cj_data);
+static int __send_str_data_to_nma_websocket(char *str_data);
+static int __send_cjson_data_to_nma_websocket(cJSON *cj_data);
 
 uint32_t ezlopi_service_web_provisioning_get_message_count(void)
 {
@@ -59,9 +71,12 @@ uint32_t ezlopi_service_web_provisioning_get_message_count(void)
 void ezlopi_service_web_provisioning_init(void)
 {
     TaskHandle_t ezlopi_service_web_prov_config_check_task_handle = NULL;
-    xTaskCreate(__provision_check, "WebProvCfgChk", EZLOPI_SERVICE_WEB_PROV_CONFIG_CHECK_TASK_DEPTH, NULL, 5, &ezlopi_service_web_prov_config_check_task_handle);
+    xTaskCreate(__provision_check, "WebProvCfgChk", EZLOPI_SERVICE_WEB_PROV_CONFIG_CHECK_TASK_DEPTH, NULL, 4, &ezlopi_service_web_prov_config_check_task_handle);
     ezlopi_core_process_set_process_info(ENUM_EZLOPI_SERVICE_WEB_PROV_CONFIG_CHECK_TASK, &ezlopi_service_web_prov_config_check_task_handle, EZLOPI_SERVICE_WEB_PROV_CONFIG_CHECK_TASK_DEPTH);
-    xTaskCreate(__fetch_wss_endpoint, "WebProvFetchWSS", EZLOPI_SERVICE_WEB_PROV_FETCH_WSS_TASK_DEPTH, NULL, 5, &__web_socket_initialize_handler);
+
+    _wss_message_queue = xQueueCreate(10, sizeof(char *));
+
+    xTaskCreate(__fetch_wss_endpoint, "WebProvFetchWSS", EZLOPI_SERVICE_WEB_PROV_FETCH_WSS_TASK_DEPTH, NULL, 4, &__web_socket_initialize_handler);
     ezlopi_core_process_set_process_info(ENUM_EZLOPI_SERVICE_WEB_PROV_FETCH_WSS_TASK, &__web_socket_initialize_handler, EZLOPI_SERVICE_WEB_PROV_FETCH_WSS_TASK_DEPTH);
 }
 
@@ -72,12 +87,15 @@ void ezlopi_service_web_provisioning_deinit(void)
         vTaskDelete(_task_handle);
     }
 
+#if (1 == EZPI_CORE_WSS_USE_WSC_LIB)
+    ezlopi_core_wsc_kill(__wsc_ssl);
+#else
     ezlopi_websocket_client_kill();
+#endif
 }
 
 static void __connection_upcall(bool connected)
 {
-    TRACE_D("wss-connection: %s", connected ? "connected." : "disconnected!");
     static int prev_status; // 0: never connected, 1: Not-connected, 2: connected
     if (connected)
     {
@@ -101,105 +119,156 @@ static void __connection_upcall(bool connected)
     }
 }
 
-static void __fetch_wss_endpoint(void* pv)
+static void __fetch_wss_endpoint(void *pv)
 {
 
-    char* cloud_server = ezlopi_factory_info_v3_get_cloud_server();
-    char* ca_certificate = ezlopi_factory_info_v3_get_ca_certificate();
-    char* ssl_shared_key = ezlopi_factory_info_v3_get_ssl_shared_key();
-    char* ssl_private_key = ezlopi_factory_info_v3_get_ssl_private_key();
+    char *ca_certificate = ezlopi_factory_info_v3_get_ca_certificate();
+    char *ssl_shared_key = ezlopi_factory_info_v3_get_ssl_shared_key();
+    char *ssl_private_key = ezlopi_factory_info_v3_get_ssl_private_key();
+    char *cloud_server = ezlopi_factory_info_v3_get_cloud_server();
 
     ezlopi_wait_for_wifi_to_connect(portMAX_DELAY);
+    vTaskDelay(2);
 
     while (1)
     {
         uint32_t task_complete = 0;
-        ulTaskNotifyTake(pdFALSE, portMAX_DELAY);
-        vTaskDelay(100 / portTICK_RATE_MS);
+        // ulTaskNotifyTake(pdFALSE, portMAX_DELAY);
+        // vTaskDelay(100 / portTICK_RATE_MS);
 
-        char http_request[128];
-        snprintf(http_request, sizeof(http_request), "%s?json=true", cloud_server);
-        TRACE_D("http_request: %s", http_request);
-
-        s_ezlopi_http_data_t * ws_endpoint = ezlopi_http_get_request(http_request, ssl_private_key, ssl_shared_key, ca_certificate);
-        // s_ezlopi_http_data_t * ws_endpoint = ezlopi_http_get_request(http_request, NULL, NULL, NULL);
-
-        if (ws_endpoint)
+        if (ca_certificate && ssl_shared_key && ssl_private_key && cloud_server)
         {
-            if (ws_endpoint->response)
+            char http_request[128];
+            snprintf(http_request, sizeof(http_request), "%s?json=true", cloud_server);
+            TRACE_D("http_request: %s", http_request);
+
+            s_ezlopi_http_data_t *ws_endpoint = ezlopi_http_get_request(http_request, ssl_private_key, ssl_shared_key, ca_certificate);
+            // s_ezlopi_http_data_t * ws_endpoint = ezlopi_http_get_request(http_request, NULL, NULL, NULL);
+
+            if (ws_endpoint)
             {
-                TRACE_D("ws_endpoint: %s", ws_endpoint->response); // {"uri": "wss://endpoint:port"}
-                cJSON* root = cJSON_Parse(__FUNCTION__, ws_endpoint->response);
-                if (root)
+                if (ws_endpoint->response)
                 {
-                    cJSON* cjson_uri = cJSON_GetObjectItem(__FUNCTION__, root, "uri");
-                    if (cjson_uri)
+                    TRACE_D("ws_endpoint: %s", ws_endpoint->response); // {"uri": "wss://endpoint:port"}
+                    cJSON *root = cJSON_Parse(__FUNCTION__, ws_endpoint->response);
+                    if (root)
                     {
-                        TRACE_D("uri: %s", cjson_uri->valuestring ? cjson_uri->valuestring : "NULL");
-                        ezlopi_core_broadcast_method_add(__send_str_data_to_nma_websocket, "nma-websocket", 4);
-                        ezlopi_websocket_client_init(cjson_uri, __message_upcall, __connection_upcall);
-                        task_complete = 1;
+                        cJSON *cjson_uri = cJSON_GetObjectItem(__FUNCTION__, root, "uri");
+                        if (cjson_uri)
+                        {
+                            TRACE_D("uri: %s", cjson_uri->valuestring ? cjson_uri->valuestring : "NULL");
+                            ezlopi_core_broadcast_method_add(__send_str_data_to_nma_websocket, "nma-websocket", 4);
+#if (1 == EZPI_CORE_WSS_USE_WSC_LIB)
+                            __wsc_ssl = ezlopi_core_wsc_init(cjson_uri, __message_upcall, __connection_upcall);
+#else  // EZPI_CORE_WSS_USE_WSC_LIB
+                            ezlopi_websocket_client_init(cjson_uri, __message_upcall, __connection_upcall);
+#endif // EZPI_CORE_WSS_USE_WSC_LIB
+                            task_complete = 1;
+                        }
+
+                        cJSON_Delete(__FUNCTION__, root);
                     }
 
-                    cJSON_Delete(__FUNCTION__, root);
+                    ezlopi_free(__FUNCTION__, ws_endpoint->response);
                 }
 
-                ezlopi_free(__FUNCTION__, ws_endpoint->response);
+                ezlopi_free(__FUNCTION__, ws_endpoint);
             }
-
-            ezlopi_free(__FUNCTION__, ws_endpoint);
         }
 
         if (task_complete)
         {
+            while (_wss_message_queue)
+            {
+                char *payload = NULL;
+                xQueueReceive(_wss_message_queue, &payload, 100 / portTICK_RATE_MS);
+
+                if (payload)
+                {
+                    __message_process(payload, strlen(payload));
+                    ezlopi_free(__FUNCTION__, payload);
+                }
+            }
+
             break;
         }
 
         vTaskDelay(2000 / portTICK_RATE_MS);
     }
-//rafay
-    // ezlopi_factory_info_v3_free(cloud_server);
-    // ezlopi_factory_info_v3_free(ca_certificate); // allocated once for all, do not free
-    // ezlopi_factory_info_v3_free(ssl_shared_key); // allocated once for all, do not free
-    // ezlopi_factory_info_v3_free(ssl_private_key); // allocated once for all, do not free
+
+    ezlopi_factory_info_v3_free(cloud_server);
 
     ezlopi_core_process_set_is_deleted(ENUM_EZLOPI_SERVICE_WEB_PROV_FETCH_WSS_TASK);
     vTaskDelete(NULL);
 }
 
-static void __message_upcall(const char* payload, uint32_t len)
+static void __message_process(const char *payload, uint32_t len)
 {
-    static const char * __who = "webprov-message-upcall";
-    cJSON* cj_response = ezlopi_core_api_consume(__who, payload, len);
-    if (cj_response)
+    if (payload && len)
     {
-        cJSON_AddNumberToObject(__FUNCTION__, cj_response, ezlopi_msg_id_str, message_counter);
-        __send_cjson_data_to_nma_websocket(cj_response);
+        cJSON *cj_response = ezlopi_core_api_consume(__FUNCTION__, payload, len);
+        if (cj_response)
+        {
+            cJSON_AddNumberToObject(__FUNCTION__, cj_response, ezlopi_msg_id_str, message_counter);
+            __send_cjson_data_to_nma_websocket(cj_response);
 
-        cJSON_Delete(__FUNCTION__, cj_response);
-    }
-    else
-    {
-        TRACE_W("no response!");
+            cJSON_Delete(__FUNCTION__, cj_response);
+        }
+        else
+        {
+            TRACE_W("no response!");
+        }
     }
 }
 
-static int __send_cjson_data_to_nma_websocket(cJSON* cj_data)
+static void __message_upcall(const char *payload, uint32_t len)
+{
+    if (_wss_message_queue)
+    {
+        char *payload_copy = ezlopi_malloc(__FUNCTION__, len + 1);
+        if (payload_copy)
+        {
+            if (pdTRUE == xQueueIsQueueFullFromISR(_wss_message_queue))
+            {
+                char *stale_data = NULL;
+                int ret = xQueueReceive(_wss_message_queue, &stale_data, 5);
+                if (pdTRUE == ret && stale_data)
+                {
+                    ezlopi_free(__FUNCTION__, stale_data);
+                }
+            }
+
+            memcpy(payload_copy, payload, len);
+            payload_copy[len] = '\0';
+
+            if (pdTRUE != xQueueSend(_wss_message_queue, &payload_copy, 5))
+            {
+                ezlopi_free(__FUNCTION__, payload_copy);
+            }
+        }
+    }
+    else
+    {
+        __message_process(payload, len);
+    }
+}
+
+static int __send_cjson_data_to_nma_websocket(cJSON *cj_data)
 {
     int ret = 0;
 
     if (cj_data)
     {
         uint32_t buffer_len = 0;
-        char* data_buffer = ezlopi_core_buffer_acquire(&buffer_len, 5000);
+        char *data_buffer = ezlopi_core_buffer_acquire(__FUNCTION__, &buffer_len, 5000);
 
         if (data_buffer && buffer_len)
         {
-            // TRACE_I("-----------------------------> buffer acquired!");
             memset(data_buffer, 0, buffer_len);
 
             if (true == cJSON_PrintPreallocated(__FUNCTION__, cj_data, data_buffer, buffer_len, false))
             {
+                // trace_warning("data-buffer: %s", data_buffer);
                 ret = __send_str_data_to_nma_websocket(data_buffer);
             }
             else
@@ -207,27 +276,31 @@ static int __send_cjson_data_to_nma_websocket(cJSON* cj_data)
                 TRACE_E("FAILED!");
             }
 
-            ezlopi_core_buffer_release();
-            // TRACE_I("-----------------------------> buffer released!");
-        }
-        else
-        {
-            TRACE_E("-----------------------------> buffer acquired failed!");
+            ezlopi_core_buffer_release(__FUNCTION__);
         }
     }
 
     return ret;
 }
 
-static int __send_str_data_to_nma_websocket(char* str_data)
+static int __send_str_data_to_nma_websocket(char *str_data)
 {
     int ret = 0;
-    if (str_data)
+
+#if (1 == EZPI_CORE_WSS_USE_WSC_LIB)
+    if (str_data && ezlopi_core_wsc_is_connected(__wsc_ssl))
+#else  // EZPI_CORE_WSS_USE_WSC_LIB
+    if (str_data && ezlopi_websocket_client_is_connected())
+#endif // EZPI_CORE_WSS_USE_WSC_LIB
     {
         int retries = 3;
         while (--retries)
         {
+#if (1 == EZPI_CORE_WSS_USE_WSC_LIB)
+            if (ezlopi_core_wsc_send(__wsc_ssl, str_data, strlen(str_data)) > 0)
+#else  // EZPI_CORE_WSS_USE_WSC_LIB
             if (ezlopi_websocket_client_send(str_data, strlen(str_data)))
+#endif // EZPI_CORE_WSS_USE_WSC_LIB
             {
                 ret = 1;
                 message_counter++;
@@ -239,36 +312,36 @@ static int __send_str_data_to_nma_websocket(char* str_data)
 
         if (ret)
         {
-            TRACE_S("## WSC-SENDING done >>>>>>>>>>>>>>>>>>>\r\n%s", str_data);
+            TRACE_S("## WSC-SENDING done >>>>>>>>>>>>>>>>>>> \n %s", str_data);
         }
         else
         {
-            TRACE_W("## WSC-SENDING failed >>>>>>>>>>>>>>>>>>>\r\n%s", str_data);
+            TRACE_W("## WSC-SENDING failed >>>>>>>>>>>>>>>>>>> \n %s", str_data);
         }
     }
 
     return ret;
 }
 
-static void __provision_check(void* pv)
+static void __provision_check(void *pv)
 {
     uint8_t flag_break_loop = 0;
     static uint8_t retry_count = 0;
     static uint8_t retry_count_failure = 0;
 
 #if (1 == TEST_PROV)
-    char* ca_certificate = test_ca_cert;
+    char *ca_certificate = test_ca_cert;
     char *ssl_private_key = test_ssl_pvt_key;
     char *ssl_shared_key = test_ssl_shared_key;
 
-    char* provision_token = test_prov_token;
+    char *provision_token = test_prov_token;
     // char* provisioning_server = ezlopi_factory_info_v3_get_provisioning_server();
     uint16_t config_version = test_version_num;
 #else
     char *ssl_private_key = ezlopi_factory_info_v3_get_ssl_private_key();
     char *ssl_shared_key = ezlopi_factory_info_v3_get_ssl_shared_key();
-    char* ca_certificate = ezlopi_factory_info_v3_get_ca_certificate();
-    char* provision_token = ezlopi_factory_info_get_v3_provision_token();
+    char *ca_certificate = ezlopi_factory_info_v3_get_ca_certificate();
+    char *provision_token = ezlopi_factory_info_get_v3_provision_token();
     // char* provisioning_server = ezlopi_factory_info_v3_get_provisioning_server();
     uint16_t config_version = ezlopi_factory_info_v3_get_config_version();
 #endif
@@ -284,10 +357,8 @@ static void __provision_check(void* pv)
             snprintf(http_request_location, sizeof(http_request_location), "https://ezlopiesp32.up.mios.com/provision-sync?token=%s&version=%d", provision_token, config_version ? config_version : 1);
 #endif
 
-            TRACE_I("Config sync URL : %s", http_request_location);
-
             ezlopi_wait_for_wifi_to_connect(portMAX_DELAY);
-            s_ezlopi_http_data_t* response = ezlopi_http_get_request(http_request_location, NULL, NULL, NULL);
+            s_ezlopi_http_data_t *response = ezlopi_http_get_request(http_request_location, NULL, NULL, NULL);
             // s_ezlopi_http_data_t* response = ezlopi_http_get_request(http_request_location, ssl_private_key, ssl_shared_key, ca_certificate);
 
             if (NULL != response)
@@ -360,25 +431,26 @@ static void __provision_check(void* pv)
 
         vTaskDelay(5000 / portTICK_RATE_MS);
     }
-//rafay
+
     // ezlopi_factory_info_v3_free(ca_certificate); // allocated once for all, do not free
 #if (0 == TEST_PROV)
-    // ezlopi_factory_info_v3_free(provision_token);//rafay
+    ezlopi_factory_info_v3_free(provision_token);
 #endif
+
     ezlopi_core_process_set_is_deleted(ENUM_EZLOPI_SERVICE_WEB_PROV_CONFIG_CHECK_TASK);
 
     vTaskDelete(NULL);
 }
 
-static int __provision_update(char* arg)
+static int __provision_update(char *arg)
 {
     int ret = 0;
-    cJSON* cj_root_prov_data = cJSON_Parse(__FUNCTION__, arg);
+    cJSON *cj_root_prov_data = cJSON_Parse(__FUNCTION__, arg);
 
     if (NULL != cj_root_prov_data)
     {
-        cJSON * cj_root_data = cJSON_GetObjectItem(__FUNCTION__, cj_root_prov_data, ezlopi_data_str);
-        cJSON * cj_error_code = cJSON_GetObjectItem(__FUNCTION__, cj_root_prov_data, "error_code");
+        cJSON *cj_root_data = cJSON_GetObjectItem(__FUNCTION__, cj_root_prov_data, ezlopi_data_str);
+        cJSON *cj_error_code = cJSON_GetObjectItem(__FUNCTION__, cj_root_prov_data, "error_code");
 
         if (NULL != cj_root_data)
         {
@@ -444,25 +516,25 @@ static int __provision_update(char* arg)
                 TRACE_E("Error updating basic config");
             }
 
-            cJSON * cj_ssl_private_key = cJSON_GetObjectItem(__FUNCTION__, cj_root_data, ezlopi_ssl_private_key_str);
+            cJSON *cj_ssl_private_key = cJSON_GetObjectItem(__FUNCTION__, cj_root_data, ezlopi_ssl_private_key_str);
             if (cj_ssl_private_key && cj_ssl_private_key->valuestring && cj_ssl_private_key->str_value_len)
             {
                 ezlopi_factory_info_v3_set_ssl_private_key(cj_ssl_private_key);
             }
 
-            cJSON * cj_ssl_public_key = cJSON_GetObjectItem(__FUNCTION__, cj_root_data, ezlopi_ssl_public_key_str);
+            cJSON *cj_ssl_public_key = cJSON_GetObjectItem(__FUNCTION__, cj_root_data, ezlopi_ssl_public_key_str);
             if (cj_ssl_public_key && cj_ssl_public_key->valuestring && cj_ssl_public_key->str_value_len)
             {
                 ezlopi_factory_info_v3_set_ssl_public_key(cj_ssl_public_key);
             }
 
-            cJSON * cj_ssl_shared_key = cJSON_GetObjectItem(__FUNCTION__, cj_root_data, ezlopi_ssl_shared_key_str);
+            cJSON *cj_ssl_shared_key = cJSON_GetObjectItem(__FUNCTION__, cj_root_data, ezlopi_ssl_shared_key_str);
             if (cj_ssl_shared_key && cj_ssl_shared_key->valuestring && cj_ssl_shared_key->str_value_len)
             {
                 ezlopi_factory_info_v3_set_ssl_shared_key(cj_ssl_shared_key);
             }
 
-            cJSON * cj_ca_certificate = cJSON_GetObjectItem(__FUNCTION__, cj_root_data, ezlopi_signing_ca_certificate_str);
+            cJSON *cj_ca_certificate = cJSON_GetObjectItem(__FUNCTION__, cj_root_data, ezlopi_signing_ca_certificate_str);
             if (cj_ca_certificate && cj_ca_certificate->valuestring && cj_ca_certificate->str_value_len)
             {
                 ezlopi_factory_info_v3_set_ca_cert(cj_ca_certificate);
@@ -475,7 +547,7 @@ static int __provision_update(char* arg)
         else
         {
             ret = -1;
-            TRACE_E("key \"%s\" not found.\n", cj_root_prov_data);
+            TRACE_E("key \"%s\" not found.", cj_root_prov_data);
         }
 
         cJSON_Delete(__FUNCTION__, cj_root_prov_data);
@@ -483,10 +555,9 @@ static int __provision_update(char* arg)
     else
     {
         ret = -1;
-        TRACE_E("Failed parsing JSON .\n");
+        TRACE_E("Failed parsing JSON!");
     }
 
     return ret;
 }
 #endif // CONFIG_EZPI_WEBSOCKET_CLIENT
-

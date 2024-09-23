@@ -18,7 +18,7 @@ const char *value_type_pressure = "pressure";
 const char *value_type_substance_amount = "substance_amount";
 // const  char *value_type_power = "power";
 const char *value_type_humidity = "humidity";
-// const  char *value_type_velocity = "velocity";
+const  char *value_type_velocity = "velocity";
 const char *value_type_acceleration = "acceleration";
 // const  char *value_type_direction = "direction";
 const char *value_type_general_purpose = "general_purpose";
@@ -39,7 +39,7 @@ const char *value_type_frequency = "frequency";
 const char *value_type_ultraviolet = "ultraviolet";
 const char *value_type_electrical_resistance = "electrical_resistance";
 // const  char *value_type_electrical_conductivity = "electrical_conductivity";
-// const  char *value_type_loudness = "loudness";
+const char *value_type_loudness = "loudness";
 const char *value_type_moisture = "moisture";
 // const  char *value_type_time = "time";
 // const  char *value_type_radon_concentration = "radon_concentration";
@@ -67,4 +67,5 @@ const char *value_type_temperature = "temperature";
 
 const char *value_type_fingerprint_action = "fingerprint_action";
 const char *value_type_presence_operation_mode = "presence_operation_mode";
+const char *value_type_air_quality = "air_quality";
 

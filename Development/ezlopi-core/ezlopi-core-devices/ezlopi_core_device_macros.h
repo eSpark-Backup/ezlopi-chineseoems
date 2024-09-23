@@ -65,10 +65,12 @@
 #define SENSOR_0068_I2C_ENS160_GAS_SENSOR               1
 #define SENSOR_0069_UART_ZE08_CH02_GAS_SENSOR           1
 #define SENSOR_0070_ADC_DUMMY_POTENTIOMETER             1
+#define SENSOR_0096_SOUND_DETECTOR                      1
+#define SENSOR_0098_I2C_TAMPER_SWITCH                   1
 #define SENSOR_0099_SHTC3_TEMP_HUMIDITY                 1
 #define DEVICE_00100_FRANKEVER_SWITCH                   1
 #define DEVICE_00101_CUBIC_DETECTOR                     1
-#define DEVICE_00102_BECA_BHT003_GCLW                     1
+#define DEVICE_00102_BECA_BHT003_GCLW                   1
 #define DEVICE_00103_GRACE_PIR                          1
 
 #endif //  __EZLOPI_CORE_DEVICE_MACROS_H__
