@@ -267,7 +267,7 @@ static int sensor_00100_FrankEver_Switch_init(l_ezlopi_item_t* item)
 
             if (0 == gpio_config(&io_conf))
             {
-                ezlopi_service_gpioisr_register_v3(item, sensor_00100_FrankEver_Switch_interrupt_upcall, 350);
+                ezlopi_service_gpioisr_register_v3(item, sensor_00100_FrankEver_Switch_interrupt_upcall, 1000);
                 ret = 1;
             }
             else
