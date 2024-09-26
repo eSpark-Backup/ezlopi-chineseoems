@@ -146,7 +146,7 @@ static void ezlopi_ble_basic_init(void)
 
     if ((1 == ezlopi_factory_info_v3_get_provisioning_status()) && (NULL != device_type))
     {
-        snprintf(ble_device_name, sizeof(ble_device_name), "%s_%llu", device_type, ezlopi_factory_info_v3_get_id());
+        snprintf(ble_device_name, sizeof(ble_device_name), "%s_%llu", device_type,ezlopi_factory_info_v3_get_id());
     }
     else
     {
@@ -156,7 +156,6 @@ static void ezlopi_ble_basic_init(void)
         snprintf(ble_device_name, sizeof(ble_device_name), "ezlopi_%02x%02x%02x%02x%02x%02x",
             mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
     }
-
     // dump("ble_device_name", ble_device_name, 0, sizeof(ble_device_name));
 
     static esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();

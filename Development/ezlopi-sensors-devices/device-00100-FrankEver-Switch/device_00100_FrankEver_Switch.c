@@ -131,13 +131,12 @@ void wifi_status_task(void *args)
         if(wifi_connection_stat)
         {    
             // TRACE_I("---------------WIFI----------%d",wifi_connection_stat);
-            gpio_set_level(WiFi_LED,wifi_state);
-            wifi_state = !wifi_state;
+            gpio_set_level(WiFi_LED,0);
         }
         else
         {
             // TRACE_I("---------------WIFI-NOT----------%d",wifi_connection_stat);
-            gpio_set_level(WiFi_LED,0);
+            gpio_set_level(WiFi_LED,1);
         }
         vTaskDelay(500 / portTICK_PERIOD_MS);
     }
