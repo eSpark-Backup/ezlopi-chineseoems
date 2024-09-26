@@ -34,9 +34,7 @@ static void sensor_00100_FrankEver_Switch_toggle_gpio(l_ezlopi_item_t* item);
 static void sensor_00100_FrankEver_Switch_write_gpio_value(l_ezlopi_item_t* item);
 static void sensor_00100_FrankEver_Switch_set_gpio_value(l_ezlopi_item_t* item, int value);
 
-TaskHandle_t some_task_Handle = NULL;
 TaskHandle_t Frankever_Wifi_Handle = NULL;
-static bool wifi_state =0;
 static uint8_t count =0;
 static bool load_state = 0;
 static bool state =false;
@@ -131,13 +129,12 @@ void wifi_status_task(void *args)
         if(wifi_connection_stat)
         {    
             // TRACE_I("---------------WIFI----------%d",wifi_connection_stat);
-            gpio_set_level(WiFi_LED,wifi_state);
-            wifi_state = !wifi_state;
+            gpio_set_level(WiFi_LED,0);
         }
         else
         {
             // TRACE_I("---------------WIFI-NOT----------%d",wifi_connection_stat);
-            gpio_set_level(WiFi_LED,0);
+            gpio_set_level(WiFi_LED,1);
         }
         vTaskDelay(500 / portTICK_PERIOD_MS);
     }
