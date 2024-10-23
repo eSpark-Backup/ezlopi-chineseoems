@@ -5,7 +5,7 @@
 extern const char *subcategory_not_defined;
 extern const char *subcategory_dimmable_bulb;
 // extern const  char *subcategory_dimmable_plugged;
-// extern const  char *subcategory_dimmable_in_wall;
+extern const  char *subcategory_dimmable_in_wall;
 extern const char *subcategory_dimmable_colored;
 // extern const  char *subcategory_interior_plugin;
 // extern const  char *subcategory_exterior_plugin;

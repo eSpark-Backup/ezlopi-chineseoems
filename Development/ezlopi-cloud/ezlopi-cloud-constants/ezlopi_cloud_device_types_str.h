@@ -13,7 +13,7 @@ extern const  char *dev_type_thermostat;
 extern const char *dev_type_switch_outlet;
 extern const char *dev_type_dimmer_outlet;
 extern const char *dev_type_switch_inwall;
-// extern const  char *dev_type_dimmer_inwall;
+extern const  char *dev_type_dimmer_inwall;
 // extern const  char *dev_type_multi_outlet;
 extern const char *dev_type_doorlock;
 // extern const  char *dev_type_siren;

@@ -170,8 +170,7 @@ extern "C"
 
 #elif (EZLOPI_DEVICE_TYPE_TEST_DEVICE == EZLOPI_DEVICE_TYPE)
 #if defined(CONFIG_IDF_TARGET_ESP32)
-    // static const char* ezlopi_config_test = "{\"cmd\":3,\"dev_detail\":[{\"dev_type\":101,\"dev_name\":\"Neo Water\",\"id_room\":\"\",\"id_item\":101,\"gpio_in\":27,\"logic_inv\":false,\"pull_up\":true},{\"dev_type\":99,\"dev_name\":\"Neo Water\",\"id_room\":\"\",\"id_item\":99,\"gpio_scl\":32,\"gpio_sda\":33}],\"config_id\":\"2578723617\",\"config_time\":1722960582,\"config_name\":\"Neo_Water\",\"chipset\":\"ESP32\"}";//
-    static const char* ezlopi_config_test = "{\"cmd\":3,\"dev_detail\":[{\"dev_type\":100,\"dev_name\":\"InWallSwitch\",\"id_room\":\"\",\"id_item\":100,\"gpio_in\":16,\"gpio_out\":19,\"pullup_ip\":true,\"pullup_op\":false,\"is_ip\":true,\"ip_inv\":false,\"op_inv\":false,\"val_ip\":false,\"val_op\":false}],\"config_id\":\"1234567\",\"config_time\":1696508363,\"config_name\":\"InWallSwitch\",\"chipset\":\"ESP32\"}";
+    static const char* ezlopi_config_test = "{\"cmd\":3,\"dev_detail\":[{\"dev_type\":104,\"dev_name\":\"Dimmer\",\"id_room\":\"\",\"id_item\":104,\"gpio_tx\":18,\"gpio_rx\":5,\"baud\":9600}],\"config_id\":\"1234567\",\"config_time\":1696508363,\"config_name\":\"Dimmer\",\"chipset\":\"ESP32\"}";
 #elif defined (CONFIG_IDF_TARGET_ESP32S3)
 // Smoke Sensors
 // BME680

@@ -27,6 +27,7 @@ s_ezlopi_uart_object_handle_t ezlopi_uart_init(uint32_t baudrate, uint32_t tx, u
     memset(uart_object_handle, 0, sizeof(struct s_ezlopi_uart_object));
     uart_object_handle->arg = arg;
     ezlo_uart_channel_t channel = get_available_channel();
+    TRACE_I("CHANNEL NUMBER IS %d",channel);
     if (NULL == upcall)
     {
         TRACE_E("NULL upcall found.");

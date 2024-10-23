@@ -5,7 +5,7 @@
 const char *subcategory_not_defined = "";
 const char *subcategory_dimmable_bulb = "dimmable_bulb";
 // const  char *subcategory_dimmable_plugged = "dimmable_plugged";
-// const  char *subcategory_dimmable_in_wall = "dimmable_in_wall";
+const  char *subcategory_dimmable_in_wall = "dimmable_in_wall";
 const char *subcategory_dimmable_colored = "dimmable_colored";
 // const  char *subcategory_interior_plugin = "interior_plugin";
 // const  char *subcategory_exterior_plugin = "exterior_plugin";
