@@ -170,7 +170,7 @@ extern "C"
 
 #elif (EZLOPI_DEVICE_TYPE_TEST_DEVICE == EZLOPI_DEVICE_TYPE)
 #if defined(CONFIG_IDF_TARGET_ESP32)
-    static const char* ezlopi_config_test = "{\"cmd\":3,\"dev_detail\":[{\"dev_type\":104,\"dev_name\":\"Dimmer\",\"id_room\":\"\",\"id_item\":104,\"gpio_tx\":18,\"gpio_rx\":5,\"baud\":9600}],\"config_id\":\"1234567\",\"config_time\":1696508363,\"config_name\":\"Dimmer\",\"chipset\":\"ESP32\"}";
+    static const char* ezlopi_config_test = "{\"cmd\":3,\"dev_detail\":[{\"dev_type\":104,\"dev_name\":\"Dimmer\",\"id_room\":\"\",\"id_item\":104,\"gpio1\":27,\"gpio_tx\":18,\"gpio_rx\":5,\"baud\":9600,\"pullup_ip\":true,\"is_ip\":true,\"ip_inv\":false,\"val_ip\":false}],\"config_id\":\"1234567\",\"config_time\":1696508363,\"config_name\":\"Dimmer\",\"chipset\":\"ESP32\"}";
 #elif defined (CONFIG_IDF_TARGET_ESP32S3)
 // Smoke Sensors
 // BME680

@@ -35,10 +35,10 @@ void dimmer_callback(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_object_
 void send_command_dimmer(int value)
 {
     packet[2] = POWER_ON;
-    packet[3] = value; //100%
+    packet[3] = value;
     packet[4] = packet[1] + packet[2] + packet[3]; // checksum
-    TRACE_I("SENDING COMMANDDDDDDDDDDDDDDDDDDDDDDDDDDDD DIMMER");
-    uart_write_bytes(dimmer_uart_object_handle->ezlopi_uart.channel, (const char *)packet,5);
+    // TRACE_I("SENDING COMMANDDDDDDDDDDDDDDDDDDDDDDDDDDDD DIMMER");
+    uart_write_bytes(dimmer_uart_object_handle->ezlopi_uart.channel, (const char *)packet,sizeof(packet));
     ++packet[1];
 }
 
@@ -47,7 +47,7 @@ void send_command_switch(bool value)
     packet[2] = value ? POWER_ON : POWER_OFF;
     packet[3] = value ? 0x64 : 0x00;
     packet[4] = packet[1] + packet[2] + packet[3]; // checksum
-    TRACE_I("SENDING COMMANDDDDDDDDDDDDDDDDDDDDDDDDDDDD SWITCH %X %X %X %X %X %d",packet[0],packet[1],packet[2],packet[3],packet[4],dimmer_uart_object_handle->ezlopi_uart.channel);
+    // TRACE_I("SENDING COMMANDDDDDDDDDDDDDDDDDDDDDDDDDDDD SWITCH %X %X %X %X %X %d",packet[0],packet[1],packet[2],packet[3],packet[4],dimmer_uart_object_handle->ezlopi_uart.channel);
     uart_write_bytes(dimmer_uart_object_handle->ezlopi_uart.channel, (const char *)packet, sizeof(packet));
     ++packet[1];
 }
