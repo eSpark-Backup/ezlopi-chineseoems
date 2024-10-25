@@ -119,6 +119,7 @@ const char* ezlopi_d02_type_str = "ezlopi_neowater_qcd01";
 const char* ezlopi_d02_hardware_str = "epi_picod4";
 const char* ezlopi_d03_type_str = "ezlopi_grace_IN02E_V3tmp03";
 const char* ezlopi_d03_hardware_str = "epi_d03";
+const char* ezlopi_d05_type_str = "ezlopi_frankever_us_wb01d-01b";
 const char *ezlopi_firmware_hardware_str = "firmware_hardware";
 const char *ezlopi_plugin_id_str = "plugin_id";
 const char *ezlopi_reason_str = "reason";
