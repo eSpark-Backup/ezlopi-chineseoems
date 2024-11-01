@@ -18,7 +18,8 @@ set(EZLOPI_CLOUD_COMPONENTS
         ezlopi-cloud-settings
         ezlopi-cloud-items
 )
-set(EZLOPI_SENSOR_DEVICE_COMPONENTS 
+set(EZLOPI_SENSOR_DEVICE_COMPONENTS
+        sensor-0099-SHTC3-temp-humidity
         device-00101-Cubic-Detector
 )
 
