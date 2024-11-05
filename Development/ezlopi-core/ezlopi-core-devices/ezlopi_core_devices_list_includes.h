@@ -80,5 +80,7 @@
 #include "device_00101_Cubic_Detector.h"
 #include "device_00102_BECA_BHT003_GCLW.h"
 #include "device_00103_GRACE_PIR.h"
+#include "device_00104_Frankever_dimmer.h"
+#include "device_00105_Ariza_Water_Detector_Alarm.h"
 
 #endif // _EZLOPI_CORE_DEVICES_LIST_INCLUDES_H_

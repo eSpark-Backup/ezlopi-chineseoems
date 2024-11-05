@@ -293,6 +293,14 @@ EZLOPI_DEVICE_LIST("device-beca-bht003                 ", 102, device_00102_BECA
 EZLOPI_DEVICE_LIST("device-grace-digital-PIR            ", 103, device_00103_GRACE_PIR)
 #endif // DEVICE_00103_GRACE_PIR
 
+#if (1 == DEVICE_00104_FRANKEVER_DIMMER)
+EZLOPI_DEVICE_LIST("device-frankever-dimmer             ", 104, device_00104_Frankever_dimmer)
+#endif // DEVICE_00104_FRANKEVER_DIMMER
+
+#if (1 == DEVICE_00105_ARIZA_WATER_DETECTOR_ALARM)
+EZLOPI_DEVICE_LIST("device-ariza-water-detector-Alarm   ", 105, device_00105_Ariza_Water_Detector_Alarm)
+#endif // DEVICE_00105_ARIZA_WATER_DETECTOR_ALARM
+
 //////// End of sensor/device list
 
 EZLOPI_DEVICE_LIST(NULL, 0, NULL)

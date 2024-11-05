@@ -72,5 +72,7 @@
 #define DEVICE_00101_CUBIC_DETECTOR                     1
 #define DEVICE_00102_BECA_BHT003_GCLW                   1
 #define DEVICE_00103_GRACE_PIR                          1
+#define DEVICE_00104_FRANKEVER_DIMMER                   1
+#define DEVICE_00105_ARIZA_WATER_DETECTOR_ALARM         1
 
 #endif //  __EZLOPI_CORE_DEVICE_MACROS_H__
