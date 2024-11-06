@@ -53,10 +53,10 @@ void water_alarm_callback(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_ob
 {
     if(uart_object_handle && buffer)
     {
-        if((buffer[0]) == (start_cmd[1].command))
+        if((buffer[0]) == (start_cmd[0].command))
         {
             TRACE_I("----------HEADER----------%X",buffer[0]);
-            start_cmd[1].callback(buffer, output_len, uart_object_handle);
+            start_cmd[0].callback(buffer, output_len, uart_object_handle);
         }
         else{
         }
