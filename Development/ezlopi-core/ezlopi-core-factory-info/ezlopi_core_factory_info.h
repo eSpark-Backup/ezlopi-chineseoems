@@ -170,8 +170,7 @@ extern "C"
 
 #elif (EZLOPI_DEVICE_TYPE_TEST_DEVICE == EZLOPI_DEVICE_TYPE)
 #if defined(CONFIG_IDF_TARGET_ESP32)
-    static const char* ezlopi_config_test = "{\"cmd\":3,\"dev_detail\":[{\"dev_type\":105,\"dev_name\":\"Ariza\",\"id_room\":\"\",\"id_item\":105,\"gpio_tx\":17,\"gpio_rx\":16,\"baud\":9600}],\"config_id\":\"2578723617\",\"config_time\":1722960582,\"config_name\":\"Ariza\",\"chipset\":\"ESP32\"}";//
-    // static const char* ezlopi_config_test = "{\"cmd\":3,\"dev_detail\":[{\"dev_type\":100,\"dev_name\":\"InWallSwitch\",\"id_room\":\"\",\"id_item\":100,\"gpio_in\":16,\"gpio_out\":19,\"pullup_ip\":true,\"pullup_op\":false,\"is_ip\":true,\"ip_inv\":false,\"op_inv\":false,\"val_ip\":false,\"val_op\":false}],\"config_id\":\"1234567\",\"config_time\":1696508363,\"config_name\":\"InWallSwitch\",\"chipset\":\"ESP32\"}";
+    static const char* ezlopi_config_test = "{\"cmd\":3,\"dev_detail\":[{\"dev_type\":105,\"dev_name\":\"Ariza\",\"id_room\":\"\",\"id_item\":105,\"gpio_tx\":17,\"gpio_rx\":16,\"baud\":9600}],\"config_id\":\"2578723617\",\"config_time\":1722960582,\"config_name\":\"Ariza\",\"chipset\":\"ESP32\"}";
 #elif defined (CONFIG_IDF_TARGET_ESP32S3)
 // Smoke Sensors
 // BME680
