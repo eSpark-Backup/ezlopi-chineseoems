@@ -1,20 +1,10 @@
 #include "ariza_water_uart.h"
-// #include "esp_log.h" 
-/*
-#define COPY_AND_SWAP32(dest, src) \
-    (dest) = (((uint32_t)(src)[0] << 24) | \
-              ((uint32_t)(src)[1] << 16) | \
-              ((uint32_t)(src)[2] << 8)  | \
-              ((uint32_t)(src)[3]))
-*/
-#define START           0x00
-#define HEADER          0x55
 
+#define HEADER          0x55
 #define ALARM           0x0C
 #define BATTERY         0x0F
 
-static void start_packet(s_ezlopi_uart_object_handle_t uart_object_handle);
-static void normal_packet(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_object_handle_t uart_object_handle);
+static void normal_packet(uint8_t* buffer, uint32_t output_len);
 
 typedef struct command {
     uint16_t command;
@@ -22,7 +12,6 @@ typedef struct command {
 }command_t;
 
 static command_t start_cmd[] = {
-    {.command = START,  .callback = start_packet},
     {.command = HEADER, .callback = normal_packet},
 };
 
@@ -45,23 +34,18 @@ uint8_t get_battery_value()
     return Values.battery_value;
 }
 
-static void start_packet(s_ezlopi_uart_object_handle_t uart_object_handle)
+static void normal_packet(uint8_t* buffer, uint32_t output_len)
 {
-    uart_write_bytes(uart_object_handle->ezlopi_uart.channel, (const char *)START, sizeof(START));
-}
-
-static void normal_packet(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_object_handle_t uart_object_handle)
-{
-    TRACE_I("----------PACKET VALUEEEEEEE----------%d",buffer[5]);
+    TRACE_I("----------PACKET VALUEEEEEEE----------%X",buffer[5]);
     if(buffer[5] == ALARM)
     {
-        Values.alarm_value = buffer[20];
-        TRACE_I("----------ALARM VALUEEEEEEE----------%d",Values.alarm_value);
+        Values.alarm_value = !buffer[17];
+        TRACE_I("----------ALARM VALUEEEEEEE----------%X",Values.alarm_value);
     }
-    if(buffer[5] == BATTERY)
+    else if(buffer[5] == BATTERY)
     {
         Values.battery_value = buffer[20];
-        TRACE_I("----------BATTERY VALUEEEEEEE----------%d",Values.battery_value);
+        TRACE_I("----------BATTERY VALUEEEEEEE----------%X",Values.battery_value);
     }
 }
 
@@ -69,12 +53,7 @@ void water_alarm_callback(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_ob
 {
     if(uart_object_handle && buffer)
     {
-        if ((buffer[0]) == (start_cmd[0].command))
-        {
-            TRACE_I("----------Start----------");
-            start_cmd[0].callback(uart_object_handle);
-        }
-        else if((buffer[0]) == (start_cmd[1].command))
+        if((buffer[0]) == (start_cmd[1].command))
         {
             TRACE_I("----------HEADER----------%X",buffer[0]);
             start_cmd[1].callback(buffer, output_len, uart_object_handle);
