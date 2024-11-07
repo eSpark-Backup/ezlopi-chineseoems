@@ -1,0 +1,218 @@
+Here are the priorities RF plugins uses:
+return {
+    security_sensor = {
+        priority = 1,
+        subcategory = {
+            door = 1,
+            leak = 2,
+            motion = 3,
+            smoke = 4,
+            co = 5,
+            glass = 6,
+            co2 = 7,
+            gas = 8,
+            heat = 9,
+        },
+    },
+    interface = {
+        priority = 2,
+        subcategory = {}
+    },
+    dimmable_light = {
+        priority = 3,
+        subcategory = {
+            dimmable_bulb = 1,
+            dimmable_plugged = 2,
+            dimmable_in_wall = 3,
+            dimmable_colored = 4,
+        },
+    },
+    switch = {
+        priority = 4,
+        subcategory = {
+            interior_plugin = 1,
+            exterior_plugin = 2,
+            in_wall = 3,
+            refrigerator = 4,
+            valve = 5,
+            relay = 6,
+        },
+    },
+    hvac = {
+        priority = 5,
+        subcategory = {
+            hvac = 1,
+            heater = 2,
+            custom_hvac =3,
+        },
+    },
+    camera = {
+        priority = 6,
+        subcategory = {
+            indoor_cam = 1,
+            outdoor_cam = 2,
+            doorbell_cam = 3,
+        },
+    },
+    door_lock = {
+        priority = 7,
+        subcategory = {}
+    },
+    window_cov = {
+        priority = 8,
+        subcategory = {
+            window_cov = 1,
+            zrtsi = 2,
+        },
+    },
+    remote_control = {
+        priority = 9,
+        subcategory = {}
+    },
+    ir_tx = {
+        priority = 10,
+        subcategory = {
+            irt = 1,
+            usbuirt = 2,
+        },
+    },
+    generic_io = {
+        priority = 11,
+        subcategory = {
+            generic_io = 1,
+            repeater = 2,
+        },
+    },
+    generic_sensor = {
+        priority = 12,
+        subcategory = {}
+    },
+    serial_port = {
+        priority = 13,
+        subcategory = {}
+    },
+    scene_controller = {
+        priority = 14,
+        subcategory = {}
+    },
+    av = {
+        priority = 15,
+        subcategory = {}
+    },
+    temperature = {
+        priority = 16,
+        subcategory = {}
+    },
+    humidity = {
+        priority = 17,
+        subcategory = {}
+    },
+    light_sensor = {
+        priority = 18,
+        subcategory = {}
+    },
+    zwave_int = {
+        priority = 19,
+        subcategory = {}
+    },
+    insteon_int = {
+        priority = 20,
+        subcategory = {}
+    },
+    power_meter = {
+        priority = 21,
+        subcategory = {}
+    },
+    alarm_panel = {
+        priority = 22,
+        subcategory = {}
+    },
+    alarm_partition = {
+        priority = 23,
+        subcategory = {}
+    },
+    siren = {
+        priority = 24,
+        subcategory = {}
+    },
+    weather = {
+        priority = 25,
+        subcategory = {}
+    },
+    philips_controller = {
+        priority = 26,
+        subcategory = {}
+    },
+    appliance = {
+        priority = 27,
+        subcategory = {}
+    },
+    uv_sensor = {
+        priority = 28,
+        subcategory = {}
+    },
+    mouse_trap = {
+        priority = 29,
+        subcategory = {}
+    },
+    doorbell = {
+        priority = 30,
+        subcategory = {}
+    },
+    keypad = {
+        priority = 31,
+        subcategory = {}
+    },
+    garage_door = {
+        priority = 32,
+        subcategory = {}
+    },
+    flow_meter = {
+        priority = 33,
+        subcategory = {}
+    },
+    voltage_sensor = {
+        priority = 34,
+        subcategory = {}
+    },
+    state_sensor = {
+        priority = 35,
+        subcategory = {
+            light = 1,
+            rain = 2,
+            moisture = 3,
+            freeze = 4,
+        },
+    },
+    level_sensor = {
+        priority = 36,
+        subcategory = {
+            co2 = 1,
+            co = 2,
+            current = 3,
+            velocity = 4,
+            capacity = 5,
+            water = 6,
+            particulate_matter = 7,
+            frequency = 8,
+            health = 9,
+            modulation = 10,
+            smoke = 11,
+            soil = 12,
+            moisture = 13,
+            air_pollution = 14,
+            electricity = 15,
+            sound = 16,
+            navigation = 17,
+            seismicity = 18,
+        }
+    },
+    clock = {
+        priority = 37,
+        subcategory = {}
+    },
+    unknown = {
+        priority = 38,
+        subcategory = {}
+    },
+}
