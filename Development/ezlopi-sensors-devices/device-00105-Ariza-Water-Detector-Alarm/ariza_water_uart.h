@@ -6,6 +6,6 @@
 
 bool get_alarm_value();
 uint8_t get_battery_value();
-bool water_alarm_init(s_ezlopi_uart_t *water_alarm_uart_config);
+bool water_alarm_init(l_ezlopi_item_t* item);
 
 #endif//__WATER_DETECTOR_ALARM_H__

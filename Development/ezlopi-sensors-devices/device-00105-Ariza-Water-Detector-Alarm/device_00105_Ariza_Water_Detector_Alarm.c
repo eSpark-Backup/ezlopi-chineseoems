@@ -21,13 +21,11 @@ static const char* neo_water_leak_alarm_states[] = {
 
 static int __prepare(void* arg);
 static int __init(l_ezlopi_item_t* item);
-static int __notify(l_ezlopi_item_t* item);
 static int __set_value(l_ezlopi_item_t* item, void* arg);
 static int __get_item(l_ezlopi_item_t* item, void* arg);
 static int __get_value_cjson(l_ezlopi_item_t* item, void* arg);
 
-static int __prepare_ariza_water_alarm_device_item(uint32_t *parent_id, cJSON* cj_device);// parent device
-static int __prepare_ariza_battery_device_item(uint32_t parent_id, cJSON* cj_device); 
+static int __prepare_ariza_water_alarm_device_item(uint32_t *parent_id, cJSON* cj_device);
 
 int device_00105_Ariza_Water_Detector_Alarm(e_ezlopi_actions_t action, l_ezlopi_item_t* item, void* args, void* user_arg)
 {
@@ -56,11 +54,6 @@ int device_00105_Ariza_Water_Detector_Alarm(e_ezlopi_actions_t action, l_ezlopi_
         case EZLOPI_ACTION_GET_EZLOPI_VALUE:
         {
             ret = __get_value_cjson(item, args);
-            break;
-        }
-        case EZLOPI_ACTION_NOTIFY_1000_MS:
-        {
-            ret = __notify(item);
             break;
         }
 
@@ -127,31 +120,10 @@ static int __get_value_cjson(l_ezlopi_item_t* item, void* args)
     }
     else if(ezlopi_item_name_water_leak_alarm == item->cloud_properties.item_name)
     {
-        if(get_alarm_value() == true)
-        {
-            cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_valueFormatted_str, neo_water_leak_alarm_states[1]);
-            cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_value_str, neo_water_leak_alarm_states[1]);
-        }
-        else if(get_alarm_value() == false)
-        {
-            cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_valueFormatted_str, neo_water_leak_alarm_states[0]);
-            cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_value_str, neo_water_leak_alarm_states[0]);
-        }
-        else
-        {
-            cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_valueFormatted_str, neo_water_leak_alarm_states[2]);
-            cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_value_str, neo_water_leak_alarm_states[2]);
-        }
+        cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_valueFormatted_str, neo_water_leak_alarm_states[get_alarm_value()]);
+        cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_value_str, neo_water_leak_alarm_states[get_alarm_value()]);
     }
     
-    return ret;
-}
-
-static int __notify(l_ezlopi_item_t* item)
-{
-    int ret = 0;
-    if(item)
-        ezlopi_device_value_updated_from_device_broadcast(item);
     return ret;
 }
 
@@ -169,7 +141,7 @@ static int __init(l_ezlopi_item_t* item)
         ret = 1;
         if (item->interface.uart.enable)
         {
-            if (false == water_alarm_init(&item->interface.uart))
+            if (false == water_alarm_init(item))
             {
                 ret = -1;
             }
@@ -205,7 +177,6 @@ static void __prepare_water_alarm_item_cloud_properties(l_ezlopi_item_t* item, c
     item->cloud_properties.item_id = ezlopi_cloud_generate_item_id();
     item->cloud_properties.item_name = ezlopi_item_name_water_leak_alarm;
     item->cloud_properties.value_type = value_type_token;
-    // item->cloud_properties.scale = NULL;
 
     CJSON_GET_VALUE_GPIO(cj_device, ezlopi_gpio_tx_str, item->interface.uart.tx);
     CJSON_GET_VALUE_GPIO(cj_device, ezlopi_gpio_rx_str, item->interface.uart.rx);
@@ -250,10 +221,6 @@ static int __prepare(void* arg)
         {
             TRACE_E("UNABLE TO PREPARE PARENT DEVICE");
         }
-        if (-1 == (ret = __prepare_ariza_battery_device_item(parent_id, prep_arg->cjson_device)))
-        {
-            TRACE_E("UNABLE TO PREPARE BATTERY DEVICE");
-        }
     }
 
     return ret;
@@ -263,7 +230,7 @@ static int __prepare_ariza_water_alarm_device_item(uint32_t *parent_id, cJSON* c
 {
     int ret = 0;
 
-    l_ezlopi_device_t *device= ezlopi_device_add_device(cj_device, "Water Alarm");
+    l_ezlopi_device_t *device= ezlopi_device_add_device(cj_device, " Water Alarm");
     if (device)
     {
         ret = 1;
@@ -279,38 +246,21 @@ static int __prepare_ariza_water_alarm_device_item(uint32_t *parent_id, cJSON* c
             ret = 1;
             ezlopi_device_free_device(device);
         }
-    }
-    else
-    {
-        ret = -1;
-    }
 
-    return ret;
-}
-
-static int __prepare_ariza_battery_device_item(uint32_t parent_id, cJSON* cj_device)
-{
-    int ret = 0;
-
-    l_ezlopi_device_t *device = ezlopi_device_add_device(cj_device, "Battery");
-    if (device)
-    {
-        __prepare_battery_device_cloud_properties(device);
-        device->cloud_properties.device_id = parent_id;
-        l_ezlopi_item_t *item = ezlopi_device_add_item_to_device(device, device_00105_Ariza_Water_Detector_Alarm);
-        if (item)
+        l_ezlopi_item_t *item2 = ezlopi_device_add_item_to_device(device, device_00105_Ariza_Water_Detector_Alarm);
+        if (item2)
         {
-            __prepare_battery_item_cloud_properties(item, cj_device);
-        }
-
-        if (!item)
-        {
-            ezlopi_device_free_device(device);
+            __prepare_battery_item_cloud_properties(item2, cj_device);
         }
         else
         {
             ret = 1;
+            ezlopi_device_free_device(device);
         }
+    }
+    else
+    {
+        ret = -1;
     }
 
     return ret;
