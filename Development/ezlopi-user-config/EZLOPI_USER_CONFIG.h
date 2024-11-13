@@ -132,7 +132,7 @@
 // Web Socket Configurations
 #define EZPI_CORE_WSS_TASK_STACK_SIZE 6144 // 6 * 1024
 #define EZPI_CORE_WSS_DATA_BUFFER_SIZE 6144 // 6 * 1024
-#define EZPI_CORE_WSS_PING_PONG_TIMEOUT_SEC 10
+#define EZPI_CORE_WSS_PING_PONG_TIMEOUT_SEC 2
 #define EZPI_CORE_WSS_PING_INTERVAL_SEC 5
 
 /////////////////////////////////////////////////////////////

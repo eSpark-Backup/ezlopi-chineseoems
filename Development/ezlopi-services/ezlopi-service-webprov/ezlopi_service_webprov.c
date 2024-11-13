@@ -130,56 +130,119 @@ static void __fetch_wss_endpoint(void *pv)
     ezlopi_wait_for_wifi_to_connect(portMAX_DELAY);
     vTaskDelay(2);
 
+    char *read_str = NULL;
     while (1)
     {
+        nvs_handle_t my_handle;
         uint32_t task_complete = 0;
         // ulTaskNotifyTake(pdFALSE, portMAX_DELAY);
         // vTaskDelay(100 / portTICK_RATE_MS);
 
-        if (ca_certificate && ssl_shared_key && ssl_private_key && cloud_server)
+        if(websocket_client_start_check == 3)
         {
-            char http_request[128];
-            snprintf(http_request, sizeof(http_request), "%s?json=true", cloud_server);
-            TRACE_D("http_request: %s", http_request);
+            ezlopi_websocket_client_kill();
+        }
 
-            s_ezlopi_http_data_t *ws_endpoint = ezlopi_http_get_request(http_request, ssl_private_key, ssl_shared_key, ca_certificate);
-            // s_ezlopi_http_data_t * ws_endpoint = ezlopi_http_get_request(http_request, NULL, NULL, NULL);
-
-            if (ws_endpoint)
+        if (nvs_open("ariza-websocket", NVS_READWRITE, &my_handle) == ESP_OK)
+        {
+            size_t required_size;
+            if (nvs_get_str(my_handle, "Websocket-uri", NULL, &required_size) == ESP_OK)
             {
-                if (ws_endpoint->response)
+                read_str = malloc(required_size);
+                if (nvs_get_str(my_handle, "Websocket-uri", read_str, &required_size) == ESP_OK)
                 {
-                    TRACE_D("ws_endpoint: %s", ws_endpoint->response); // {"uri": "wss://endpoint:port"}
-                    cJSON *root = cJSON_Parse(__FUNCTION__, ws_endpoint->response);
-                    if (root)
-                    {
-                        cJSON *cjson_uri = cJSON_GetObjectItem(__FUNCTION__, root, "uri");
-                        if (cjson_uri)
-                        {
-                            TRACE_D("uri: %s", cjson_uri->valuestring ? cjson_uri->valuestring : "NULL");
-                            ezlopi_core_broadcast_method_add(__send_str_data_to_nma_websocket, "nma-websocket", 4);
+                    TRACE_D("uri nvs: %s", read_str ? read_str : "NULL");
+                }
+                else
+                {
+                    TRACE_E("Failed to read websocket uri from NVS!");
+                }
+            }   
+            nvs_close(my_handle);
+        }
+        else
+        {
+            TRACE_E("Failed to open NVS!");
+        }
+        
+        if(!(strcmp(read_str,"NULL") == 0) && websocket_client_start_check == 0)
+        {
+            ezlopi_core_broadcast_method_add(__send_str_data_to_nma_websocket, "nma-websocket", 4);
+
+            cJSON* uri_object = NULL;
+            uri_object = cJSON_CreateObject(__FUNCTION__); 
+            if(uri_object)
+            {
+                cJSON_AddStringToObject(__FUNCTION__, uri_object, "uri", read_str);
+            }
+            cJSON* uri_cjson = cJSON_GetObjectItem(__FUNCTION__, uri_object, "uri");
+            if(uri_cjson)
+            {
 #if (1 == EZPI_CORE_WSS_USE_WSC_LIB)
-                            __wsc_ssl = ezlopi_core_wsc_init(cjson_uri, __message_upcall, __connection_upcall);
+__wsc_ssl = ezlopi_core_wsc_init(cjson_uri, __message_upcall, __connection_upcall);
 #else  // EZPI_CORE_WSS_USE_WSC_LIB
-                            ezlopi_websocket_client_init(cjson_uri, __message_upcall, __connection_upcall);
+                ezlopi_websocket_client_init(uri_cjson, __message_upcall, __connection_upcall);
 #endif // EZPI_CORE_WSS_USE_WSC_LIB
-                            task_complete = 1;
+                task_complete = 1;
+            }
+        }
+        else
+        {
+            if (ca_certificate && ssl_shared_key && ssl_private_key && cloud_server)
+            {
+                
+                char http_request[128];
+                snprintf(http_request, sizeof(http_request), "%s?json=true", cloud_server);
+                TRACE_D("http_request: %s", http_request);
+
+                s_ezlopi_http_data_t *ws_endpoint = ezlopi_http_get_request(http_request, ssl_private_key, ssl_shared_key, ca_certificate);
+                // s_ezlopi_http_data_t * ws_endpoint = ezlopi_http_get_request(http_request, NULL, NULL, NULL);
+
+                if (ws_endpoint)
+                {
+                    if (ws_endpoint->response)
+                    {
+                        TRACE_D("ws_endpoint: %s", ws_endpoint->response); // {"uri": "wss://endpoint:port"}
+                        cJSON *root = cJSON_Parse(__FUNCTION__, ws_endpoint->response);
+                        if (root)
+                        {
+                            cJSON *cjson_uri = cJSON_GetObjectItem(__FUNCTION__, root, "uri");
+                            if (cjson_uri)
+                            {
+                                TRACE_D("uri: %s", cjson_uri->valuestring ? cjson_uri->valuestring : "NULL");
+                                if(nvs_open("ariza-websocket", NVS_READWRITE, &my_handle) == ESP_OK)
+                                {
+                                    const char *str_to_save = cjson_uri->valuestring ? cjson_uri->valuestring : "NULL";
+                                    nvs_set_str(my_handle, "Websocket-uri", str_to_save);//"wss://nma-server20-cloud.ezlo.com:443"
+                                    nvs_commit(my_handle);
+                                    nvs_close(my_handle);
+                                    // TRACE_D("uri saved to nvs: %s", str_to_save);
+                                }
+                                ezlopi_core_broadcast_method_add(__send_str_data_to_nma_websocket, "nma-websocket", 4);
+    #if (1 == EZPI_CORE_WSS_USE_WSC_LIB)
+                                __wsc_ssl = ezlopi_core_wsc_init(cjson_uri, __message_upcall, __connection_upcall);
+    #else  // EZPI_CORE_WSS_USE_WSC_LIB
+                                ezlopi_websocket_client_init(cjson_uri, __message_upcall, __connection_upcall);
+    #endif // EZPI_CORE_WSS_USE_WSC_LIB
+                                task_complete = 1;
+                            }
+
+                            cJSON_Delete(__FUNCTION__, root);
                         }
 
-                        cJSON_Delete(__FUNCTION__, root);
+                        ezlopi_free(__FUNCTION__, ws_endpoint->response);
                     }
 
-                    ezlopi_free(__FUNCTION__, ws_endpoint->response);
+                    ezlopi_free(__FUNCTION__, ws_endpoint);
                 }
-
-                ezlopi_free(__FUNCTION__, ws_endpoint);
             }
         }
 
         if (task_complete)
         {
-            while (_wss_message_queue)
+            while (_wss_message_queue && ezlopi_websocket_client_is_connected())
             {
+                // TRACE_E("IM HEREEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE");
                 char *payload = NULL;
                 xQueueReceive(_wss_message_queue, &payload, 100 / portTICK_RATE_MS);
 
@@ -189,10 +252,8 @@ static void __fetch_wss_endpoint(void *pv)
                     ezlopi_free(__FUNCTION__, payload);
                 }
             }
-
-            break;
+            // break;
         }
-
         vTaskDelay(2000 / portTICK_RATE_MS);
     }
 

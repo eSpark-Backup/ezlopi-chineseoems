@@ -45,7 +45,7 @@ int ezlopi_websocket_client_send(char* data, uint32_t len)
     {
         if (esp_websocket_client_is_connected(client) && (len > 0) && (NULL != data))
         {
-            ret = esp_websocket_client_send_text(client, data, len, 5000 / portTICK_RATE_MS);//10000
+            ret = esp_websocket_client_send_text(client, data, len, 10000 / portTICK_RATE_MS);//rafay 10000
             ret = (ret > 0) ? 1 : 0;
         }
     }
@@ -68,7 +68,7 @@ void ezlopi_websocket_client_kill(void)
 
 esp_websocket_client_handle_t ezlopi_websocket_client_init(cJSON* uri, void (*msg_upcall)(const char*, uint32_t), void (*connection_upcall)(bool connected))
 {
-    if ((NULL == client) && (NULL != uri) && (NULL != uri->valuestring) && (NULL != msg_upcall))
+    if ((NULL == client) && (NULL != uri) && (NULL != uri->valuestring) && (NULL != msg_upcall))// && !ezlopi_websocket_client_is_connected())
     {
         char * ca_cert = ezlopi_factory_info_v3_get_ca_certificate();
         char * ssl_priv = ezlopi_factory_info_v3_get_ssl_private_key();
@@ -103,7 +103,11 @@ esp_websocket_client_handle_t ezlopi_websocket_client_init(cJSON* uri, void (*ms
     }
     else
     {
-        TRACE_I("Client already active!");
+        if(client == NULL)
+        {
+            TRACE_E("Client NULL NULL");
+        }
+            TRACE_I("Client already active!");
     }
 
     return client;
@@ -118,6 +122,7 @@ static void websocket_event_handler(void* handler_args, esp_event_base_t base, i
     case WEBSOCKET_EVENT_CONNECTED:
     {
         TRACE_S("WEBSOCKET_EVENT_CONNECTED");
+        websocket_client_start_check = 0;
         if (event_arg && event_arg->connection_upcall)
         {
             event_arg->connection_upcall(true);
@@ -128,6 +133,7 @@ static void websocket_event_handler(void* handler_args, esp_event_base_t base, i
     {
         TRACE_W("free-heap: %.02f KB", esp_get_free_heap_size() / 1024.0);
         TRACE_E("WEBSOCKET_EVENT_DISCONNECTED");
+        websocket_client_start_check++;
         if (event_arg && event_arg->connection_upcall)
         {
             event_arg->connection_upcall(false);

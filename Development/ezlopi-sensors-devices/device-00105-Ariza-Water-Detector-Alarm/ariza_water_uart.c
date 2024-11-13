@@ -46,9 +46,10 @@ static void normal_packet(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_ob
     if(buffer[5] == ALARM)
     {
         Values.alarm_value = !buffer[17];
-        if(item)
+        if(item && item->next && item->next->next)
         {
             ezlopi_device_value_updated_from_device_broadcast(item);
+            ezlopi_device_value_updated_from_device_broadcast(item->next->next);
         }
         TRACE_I("----------ALARM VALUEEEEEEE----------%X",Values.alarm_value);
     }
