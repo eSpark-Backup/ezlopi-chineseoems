@@ -130,42 +130,54 @@ static void __fetch_wss_endpoint(void *pv)
     ezlopi_wait_for_wifi_to_connect(portMAX_DELAY);
     vTaskDelay(2);
 
-    char *read_str = NULL;
+    char *uri_str = NULL;
+    uint8_t nvs_read_complete = 0;
     while (1)
     {
-        nvs_handle_t my_handle;
+        nvs_handle_t websocket_nvs_handle;
         uint32_t task_complete = 0;
+        // if (nvs_open("ariza-websocket", NVS_READWRITE, &websocket_nvs_handle) == ESP_OK)
+        // {
+        //     nvs_erase_all(websocket_nvs_handle);
+        //     nvs_commit(websocket_nvs_handle);
+        //     nvs_close(websocket_nvs_handle);
+        // }
         // ulTaskNotifyTake(pdFALSE, portMAX_DELAY);
         // vTaskDelay(100 / portTICK_RATE_MS);
 
         if(websocket_client_start_check == 3)
         {
             ezlopi_websocket_client_kill();
+            websocket_client_start_check = 0;
         }
 
-        if (nvs_open("ariza-websocket", NVS_READWRITE, &my_handle) == ESP_OK)
+        if(nvs_read_complete == 0)
         {
-            size_t required_size;
-            if (nvs_get_str(my_handle, "Websocket-uri", NULL, &required_size) == ESP_OK)
+            if (nvs_open("ariza-websocket", NVS_READONLY, &websocket_nvs_handle) == ESP_OK)
             {
-                read_str = malloc(required_size);
-                if (nvs_get_str(my_handle, "Websocket-uri", read_str, &required_size) == ESP_OK)
+                size_t required_size;
+                if (nvs_get_str(websocket_nvs_handle, "Websocket-uri", NULL, &required_size) == ESP_OK)
                 {
-                    TRACE_D("uri nvs: %s", read_str ? read_str : "NULL");
-                }
-                else
-                {
-                    TRACE_E("Failed to read websocket uri from NVS!");
-                }
-            }   
-            nvs_close(my_handle);
+                    uri_str = malloc(required_size);
+                    if (nvs_get_str(websocket_nvs_handle, "Websocket-uri", uri_str, &required_size) == ESP_OK)
+                    {
+                        nvs_read_complete =1;
+                        TRACE_D("uri nvs: %s", uri_str ? uri_str : "NULL");
+                    }
+                    else
+                    {
+                        TRACE_E("Failed to read websocket uri from NVS!");
+                    }
+                }   
+                nvs_close(websocket_nvs_handle);
+            }
+            else
+            {
+                TRACE_E("Failed to open NVS!");
+            }
         }
-        else
-        {
-            TRACE_E("Failed to open NVS!");
-        }
-        
-        if(!(strcmp(read_str,"NULL") == 0) && websocket_client_start_check == 0)
+
+        if(uri_str != NULL && websocket_client_start_check == 0 && nvs_read_complete == 1)
         {
             ezlopi_core_broadcast_method_add(__send_str_data_to_nma_websocket, "nma-websocket", 4);
 
@@ -173,7 +185,7 @@ static void __fetch_wss_endpoint(void *pv)
             uri_object = cJSON_CreateObject(__FUNCTION__); 
             if(uri_object)
             {
-                cJSON_AddStringToObject(__FUNCTION__, uri_object, "uri", read_str);
+                cJSON_AddStringToObject(__FUNCTION__, uri_object, "uri", uri_str);
             }
             cJSON* uri_cjson = cJSON_GetObjectItem(__FUNCTION__, uri_object, "uri");
             if(uri_cjson)
@@ -210,13 +222,13 @@ __wsc_ssl = ezlopi_core_wsc_init(cjson_uri, __message_upcall, __connection_upcal
                             if (cjson_uri)
                             {
                                 TRACE_D("uri: %s", cjson_uri->valuestring ? cjson_uri->valuestring : "NULL");
-                                if(nvs_open("ariza-websocket", NVS_READWRITE, &my_handle) == ESP_OK)
+                                if(nvs_open("ariza-websocket", NVS_READWRITE, &websocket_nvs_handle) == ESP_OK)
                                 {
-                                    const char *str_to_save = cjson_uri->valuestring ? cjson_uri->valuestring : "NULL";
-                                    nvs_set_str(my_handle, "Websocket-uri", str_to_save);//"wss://nma-server20-cloud.ezlo.com:443"
-                                    nvs_commit(my_handle);
-                                    nvs_close(my_handle);
-                                    // TRACE_D("uri saved to nvs: %s", str_to_save);
+                                    const char *uri_to_save = cjson_uri->valuestring ? cjson_uri->valuestring : "NULL";
+                                    nvs_set_str(websocket_nvs_handle, "Websocket-uri", uri_to_save);//"wss://nma-server20-cloud.ezlo.com:443"
+                                    nvs_commit(websocket_nvs_handle);
+                                    nvs_close(websocket_nvs_handle);
+                                    nvs_read_complete =0;
                                 }
                                 ezlopi_core_broadcast_method_add(__send_str_data_to_nma_websocket, "nma-websocket", 4);
     #if (1 == EZPI_CORE_WSS_USE_WSC_LIB)
@@ -237,12 +249,11 @@ __wsc_ssl = ezlopi_core_wsc_init(cjson_uri, __message_upcall, __connection_upcal
                 }
             }
         }
-
+//         // ezlopi_free(__FUNCTION__, uri_str);
         if (task_complete)
         {
             while (_wss_message_queue && ezlopi_websocket_client_is_connected())
             {
-                // TRACE_E("IM HEREEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE");
                 char *payload = NULL;
                 xQueueReceive(_wss_message_queue, &payload, 100 / portTICK_RATE_MS);
 

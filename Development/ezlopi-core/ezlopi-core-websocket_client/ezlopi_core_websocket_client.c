@@ -68,7 +68,7 @@ void ezlopi_websocket_client_kill(void)
 
 esp_websocket_client_handle_t ezlopi_websocket_client_init(cJSON* uri, void (*msg_upcall)(const char*, uint32_t), void (*connection_upcall)(bool connected))
 {
-    if ((NULL == client) && (NULL != uri) && (NULL != uri->valuestring) && (NULL != msg_upcall))// && !ezlopi_websocket_client_is_connected())
+    if ((NULL == client) && (NULL != uri) && (NULL != uri->valuestring) && (NULL != msg_upcall))
     {
         char * ca_cert = ezlopi_factory_info_v3_get_ca_certificate();
         char * ssl_priv = ezlopi_factory_info_v3_get_ssl_private_key();
@@ -103,11 +103,7 @@ esp_websocket_client_handle_t ezlopi_websocket_client_init(cJSON* uri, void (*ms
     }
     else
     {
-        if(client == NULL)
-        {
-            TRACE_E("Client NULL NULL");
-        }
-            TRACE_I("Client already active!");
+        TRACE_I("Client already active!");
     }
 
     return client;
