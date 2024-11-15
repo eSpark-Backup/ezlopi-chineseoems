@@ -98,6 +98,8 @@ set(EZLOPI_SENSOR_DEVICE_COMPONENTS
         device-00103-GRACE-PIR
         device-00104-Frankever-Dimmer
         device-00105-Ariza-Water-Detector-Alarm
+        device-00106-Ariza-Vibrating-Door-Window-Alarm
+        device-00107-Ariza-Smart-Door-Window-Alarm
 )
 
 

@@ -82,5 +82,7 @@
 #include "device_00103_GRACE_PIR.h"
 #include "device_00104_Frankever_dimmer.h"
 #include "device_00105_Ariza_Water_Detector_Alarm.h"
+#include "device_00106_Ariza_Vibrating_Door_Window_Alarm.h"
+#include "device_00107_Ariza_Smart_Door_Window_Alarm.h"
 
 #endif // _EZLOPI_CORE_DEVICES_LIST_INCLUDES_H_

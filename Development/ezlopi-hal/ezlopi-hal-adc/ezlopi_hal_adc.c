@@ -118,6 +118,7 @@ int ezlopi_adc_get_adc_data(uint8_t gpio_num, s_ezlopi_analog_data_t* ezlopi_ana
     }
     else if (NULL != ezlopi_analog_object_array[channel])
     {
+        vTaskDelay(30/ portTICK_RATE_MS); 
         ezlopi_analog_data->value = adc1_get_raw((adc1_channel_t)ezlopi_analog_object_array[channel]->adc_channel);
         ezlopi_analog_data->voltage = esp_adc_cal_raw_to_voltage(ezlopi_analog_data->value, &ezlopi_analog_object_array[channel]->adc_characteristics);
         vTaskDelay(500 / portTICK_PERIOD_MS);
