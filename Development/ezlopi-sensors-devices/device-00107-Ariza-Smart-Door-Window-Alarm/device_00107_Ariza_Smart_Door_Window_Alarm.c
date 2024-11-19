@@ -33,8 +33,6 @@ typedef struct ariza_door_window_alarm_s
 ariza_door_window_alarm_t Ariza_Door_Window_Object; 
 static int __prepare(void* arg);
 static int __init(l_ezlopi_item_t* item);
-static int __notify(l_ezlopi_item_t* item);
-static int __set_value(l_ezlopi_item_t* item, void* arg);
 static int __get_item(l_ezlopi_item_t* item, void* arg);
 static int __get_value_cjson(l_ezlopi_item_t* item, void* arg);
 
@@ -153,7 +151,6 @@ void reed_switch_task(void* arg)
 {
     l_ezlopi_item_t* item = (l_ezlopi_item_t*)arg;
     bool dw_value = gpio_get_level(item->interface.gpio.gpio_in.gpio_num);
-    TRACE_I("GPIO REED SWITCH: %d", dw_value);
     while(1)
     {
         if(Ariza_Door_Window_Object.pwr_pin)
@@ -174,8 +171,6 @@ void reed_switch_task(void* arg)
                 }
                 dw_value = !dw_value;
                 Ariza_Door_Window_Object.door_state = !dw_value;
-                TRACE_I("GPIO REED SWITCH: %d", dw_value);
-                TRACE_I("ADC VALUE: %d\t\tVOLTAGE CALC: %.2f",ezlopi_analog_data.value, Ariza_Door_Window_Object.battery_voltage);
                 gpio_set_level(Ariza_Door_Window_Object.red_led_pin, 0);
                 ezlopi_device_value_updated_from_device_broadcast(item);
                 ezlopi_device_value_updated_from_device_broadcast(item->next);
@@ -207,7 +202,6 @@ static int __init(l_ezlopi_item_t* item)
     {
         if (GPIO_IS_VALID_GPIO(item->interface.adc.gpio_num))
         {
-            TRACE_I("adc GPIO_NUM is %d", item->interface.adc.gpio_num);
             if (0 == ezlopi_adc_init(item->interface.adc.gpio_num, item->interface.adc.resln_bit))
             {
                 ret = 1;
@@ -255,7 +249,6 @@ static void __prepare_smart_door_window_item_cloud_properties(l_ezlopi_item_t* i
 
     CJSON_GET_VALUE_GPIO(cj_device, ezlopi_gpio_out_str, Ariza_Door_Window_Object.red_led_pin);
     CJSON_GET_VALUE_GPIO(cj_device, ezlopi_gpio_in_str, item->interface.gpio.gpio_in.gpio_num);
-    TRACE_I("OUTPUT GPIO_NUM is %d", Ariza_Door_Window_Object.red_led_pin);
 }
 
 static void __prepare_security_threat_item_cloud_properties(l_ezlopi_item_t* item, cJSON* cj_device)
