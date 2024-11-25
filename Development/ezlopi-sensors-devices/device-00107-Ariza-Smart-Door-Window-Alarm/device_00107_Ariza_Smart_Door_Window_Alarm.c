@@ -150,11 +150,18 @@ static int __get_value_cjson(l_ezlopi_item_t* item, void* args)
 void reed_switch_task(void* arg)
 {
     l_ezlopi_item_t* item = (l_ezlopi_item_t*)arg;
-    bool dw_value = gpio_get_level(item->interface.gpio.gpio_in.gpio_num);
+    
     while(1)
     {
-        if(Ariza_Door_Window_Object.pwr_pin)
+        if(gpio_get_level(Ariza_Door_Window_Object.pwr_pin))
         {
+            bool dw_value = gpio_get_level(item->interface.gpio.gpio_in.gpio_num);
+            Ariza_Door_Window_Object.door_state = dw_value;
+            if(item && item->next->next)
+            {
+                ezlopi_device_value_updated_from_device_broadcast(item);
+                ezlopi_device_value_updated_from_device_broadcast(item->next->next);
+            }
             if(gpio_get_level(item->interface.gpio.gpio_in.gpio_num) == !dw_value)
             {
                 gpio_set_level(Ariza_Door_Window_Object.red_led_pin, 1);
@@ -163,7 +170,7 @@ void reed_switch_task(void* arg)
                 Ariza_Door_Window_Object.battery_voltage = mapValue(ezlopi_analog_data.value);
                 if(Ariza_Door_Window_Object.battery_voltage > 100)
                 {
-                    Ariza_Door_Window_Object.battery_voltage =100;
+                    Ariza_Door_Window_Object.battery_voltage = 100;
                 }
                 else if(Ariza_Door_Window_Object.battery_voltage <= 0)
                 {
@@ -172,9 +179,13 @@ void reed_switch_task(void* arg)
                 dw_value = !dw_value;
                 Ariza_Door_Window_Object.door_state = !dw_value;
                 gpio_set_level(Ariza_Door_Window_Object.red_led_pin, 0);
-                ezlopi_device_value_updated_from_device_broadcast(item);
-                ezlopi_device_value_updated_from_device_broadcast(item->next);
-                ezlopi_device_value_updated_from_device_broadcast(item->next->next);
+                TRACE_I("GPIO REED SWITCH: %d", dw_value);
+                if(item && item->next && item->next->next)
+                {
+                    ezlopi_device_value_updated_from_device_broadcast(item);
+                    ezlopi_device_value_updated_from_device_broadcast(item->next);
+                    ezlopi_device_value_updated_from_device_broadcast(item->next->next);
+                }
             }
         }
         vTaskDelay(10/ portTICK_RATE_MS);  
@@ -192,7 +203,15 @@ static int __init(l_ezlopi_item_t* item)
             Ariza_Door_Window_Object.pwr_pin = GPIO_NUM_25;
             gpio_set_direction(Ariza_Door_Window_Object.pwr_pin, GPIO_MODE_INPUT);
             gpio_set_direction(Ariza_Door_Window_Object.red_led_pin,GPIO_MODE_OUTPUT);
-            gpio_set_direction(item->interface.gpio.gpio_in.gpio_num, GPIO_MODE_INPUT);
+            const gpio_config_t io_conf = {
+                .pin_bit_mask = (1ULL << item->interface.gpio.gpio_in.gpio_num),
+                .mode = GPIO_MODE_INPUT,
+                .pull_up_en = GPIO_PULLUP_DISABLE,
+                .pull_down_en = GPIO_PULLDOWN_DISABLE,
+                .intr_type = GPIO_INTR_DISABLE,
+            };
+
+            gpio_config(&io_conf);
             gpio_set_level(Ariza_Door_Window_Object.red_led_pin,0);
 
             xTaskCreate(reed_switch_task,"reed_switch", 2*2048, item, 5, NULL);
