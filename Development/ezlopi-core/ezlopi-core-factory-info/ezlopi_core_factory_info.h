@@ -171,7 +171,7 @@ extern "C"
 #elif (EZLOPI_DEVICE_TYPE_TEST_DEVICE == EZLOPI_DEVICE_TYPE)
 #if defined(CONFIG_IDF_TARGET_ESP32)
     // static const char* ezlopi_config_test = "{\"cmd\":3,\"dev_detail\":[{\"dev_type\":101,\"dev_name\":\"Neo Water\",\"id_room\":\"\",\"id_item\":101,\"gpio_in\":27,\"logic_inv\":false,\"pull_up\":true},{\"dev_type\":99,\"dev_name\":\"Neo Water\",\"id_room\":\"\",\"id_item\":99,\"gpio_scl\":32,\"gpio_sda\":33}],\"config_id\":\"2578723617\",\"config_time\":1722960582,\"config_name\":\"Neo_Water\",\"chipset\":\"ESP32\"}";//
-    static const char* ezlopi_config_test = "{\"cmd\":3,\"dev_detail\":[{\"dev_type\":101,\"dev_name\":\"Neo Water\",\"id_room\":\"\",\"id_item\":101,\"gpio_in\":27,\"logic_inv\":false,\"pull_up\":true},{\"dev_type\":99,\"dev_name\":\"Neo Water\",\"id_room\":\"\",\"id_item\":99,\"gpio_scl\":32,\"gpio_sda\":33}],\"config_id\":\"2578723617\",\"config_time\":1722960582,\"config_name\":\"Neo_Water\",\"chipset\":\"ESP32\"}";
+    static const char* ezlopi_config_test = "{\"cmd\":3,\"dev_detail\":[{\"dev_type\":101,\"dev_name\":\"Neo Water\",\"id_room\":\"\",\"id_item\":101,\"gpio_in\":27,\"logic_inv\":false,\"pull_up\":true},{\"dev_type\":99,\"dev_name\":\"Neo\",\"id_room\":\"\",\"id_item\":99,\"gpio_scl\":32,\"gpio_sda\":33}],\"config_id\":\"2578723617\",\"config_time\":1722960582,\"config_name\":\"Neo_Water\",\"chipset\":\"ESP32\"}";
 #elif defined (CONFIG_IDF_TARGET_ESP32S3)
 // Smoke Sensors
 // BME680

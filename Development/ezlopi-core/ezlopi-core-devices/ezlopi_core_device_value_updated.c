@@ -46,7 +46,7 @@ int ezlopi_device_value_updated_from_device_broadcast(l_ezlopi_item_t* item)
 
                         // TRACE_D("%d -> here", xTaskGetTickCount());
                     }
-
+                    ret = 1;
                     break;
                 }
 
