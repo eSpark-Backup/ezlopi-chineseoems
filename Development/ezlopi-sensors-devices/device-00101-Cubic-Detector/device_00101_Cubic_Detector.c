@@ -1,17 +1,19 @@
+#include "shtc3.h"
+#include "esp_bt.h"
 #include "esp_sleep.h"
 #include "driver/ledc.h"
-#include "ezlopi_util_trace.h"
 #include "ezlopi_core_wifi.h"
 #include "ezlopi_core_cloud.h"
-#include "ezlopi_core_cjson_macros.h"
-#include "ezlopi_core_valueformatter.h"
-#include "ezlopi_core_device_value_updated.h"
+#include "ezlopi_util_trace.h"
 #include "ezlopi_cloud_items.h"
 #include "ezlopi_cloud_constants.h"
-#include "ezlopi_core_websocket_client.h"
 #include "ezlopi_service_gpioisr.h"
+#include "ezlopi_core_cjson_macros.h"
+#include "ezlopi_core_valueformatter.h"
 #include "device_00101_Cubic_Detector.h"
+#include "ezlopi_core_websocket_client.h"
 #include "sensor_0099_SHTC3_temp_humidity.h"
+#include "ezlopi_core_device_value_updated.h"
 
 #define SENSOR_ADDR 0x70
 
@@ -142,8 +144,12 @@ void update_task(void* arg)
                     gpio_pulldown_dis(item->interface.gpio.gpio_in.gpio_num);
 
                     esp_sleep_enable_ext0_wakeup(item->interface.gpio.gpio_in.gpio_num, !item->interface.gpio.gpio_in.value);
-                    // TRACE_I("------------UPDATED------------");
-                    // TRACE_I("GOING TO SLEEP");
+                    gpio_reset_pin(GPIO_NUM_12);
+                    gpio_reset_pin(GPIO_NUM_13);
+                    gpio_pullup_dis(GPIO_NUM_18);
+                    esp_wifi_stop();
+                    esp_bt_controller_disable();
+                    shtc3_sleep_sensor(&device_head->next->items->interface.i2c_master);
                     esp_deep_sleep_start();
                 }
                 vTaskDelay(10 / portTICK_PERIOD_MS);
@@ -156,20 +162,16 @@ static int __get_value_cjson(l_ezlopi_item_t* item, void* args)
 {
     int ret = 0;
     cJSON* cj_result = (cJSON*)args;
-    // TRACE_I("------------CUBIC DETECTOR GET VALUE------------",item->interface.gpio.gpio_in.value);
     if (cj_result)
     {   
         const char* curret_value = NULL;
         item->interface.gpio.gpio_in.value = gpio_get_level(item->interface.gpio.gpio_in.gpio_num);
-        // TRACE_I("------------CUBIC DETECTOR------------%d",item->interface.gpio.gpio_in.value);
         if (1 == item->interface.gpio.gpio_in.value)
         {
-            // TRACE_I("------------LEAK------------");
             curret_value = "water_leak_detected";
         }
         else
         {
-            // TRACE_I("------------NO LEAK------------");
             curret_value = "no_water_leak";
         }
         if (curret_value != (char*)item->user_arg)
@@ -197,7 +199,13 @@ static void device_cubic_detector_value_updated_from_device_v3(void* arg)
             {
                 vTaskDelay(5000 / portTICK_PERIOD_MS);
                 esp_sleep_enable_ext0_wakeup(item->interface.gpio.gpio_in.gpio_num, !item->interface.gpio.gpio_in.value);
-                // TRACE_I("GOING TO SLEEP");
+                gpio_reset_pin(GPIO_NUM_12);
+                gpio_reset_pin(GPIO_NUM_13);
+                gpio_reset_pin(GPIO_NUM_18);
+                gpio_pullup_dis(GPIO_NUM_18);
+                esp_wifi_stop();
+                esp_bt_controller_disable();
+                shtc3_sleep_sensor(&device_head->next->items->interface.i2c_master);
                 esp_deep_sleep_start();
             }
         }
@@ -229,13 +237,11 @@ static int __init(l_ezlopi_item_t* item)
                 item->interface.gpio.gpio_in.value = gpio_get_level(item->interface.gpio.gpio_in.gpio_num);
                 if (1 == item->interface.gpio.gpio_in.value)
                 {
-                    // TRACE_I("------------LEAK------------");
                     ledc_set_duty(neo_ledc_channel.speed_mode, neo_ledc_channel.channel, 4096);
                     ledc_update_duty(neo_ledc_channel.speed_mode, neo_ledc_channel.channel);
                 }
                 else
                 {
-                    // TRACE_I("------------NO LEAK------------");
                     ledc_set_duty(neo_ledc_channel.speed_mode, neo_ledc_channel.channel, 0);
                     ledc_update_duty(neo_ledc_channel.speed_mode, neo_ledc_channel.channel);
                 }
@@ -270,14 +276,19 @@ void timer_task(void* arg)
         {
             if((esp_timer_get_time() - start_time) > (15*1000*1000)) //15sec
             {
-                gpio_pad_select_gpio(item->interface.gpio.gpio_in.gpio_num);
-                gpio_set_direction(item->interface.gpio.gpio_in.gpio_num, GPIO_MODE_INPUT);
-                gpio_pullup_en(item->interface.gpio.gpio_in.gpio_num);
-                gpio_pulldown_dis(item->interface.gpio.gpio_in.gpio_num);
-
-                esp_sleep_enable_ext0_wakeup(item->interface.gpio.gpio_in.gpio_num, !item->interface.gpio.gpio_in.value);
-                TRACE_I("GOING TO SLEEP");
-                esp_deep_sleep_start();
+                l_ezlopi_device_t* device_head = ezlopi_device_get_head();
+                if(device_head)
+                {
+                    esp_sleep_enable_ext0_wakeup(item->interface.gpio.gpio_in.gpio_num, !item->interface.gpio.gpio_in.value);
+                    gpio_reset_pin(GPIO_NUM_12);
+                    gpio_reset_pin(GPIO_NUM_13);
+                    gpio_pullup_dis(GPIO_NUM_18);
+                    esp_wifi_stop();
+                    esp_bt_controller_disable();
+                    shtc3_sleep_sensor(&device_head->next->items->interface.i2c_master);
+                    TRACE_I("GOING TO SLEEP");
+                    esp_deep_sleep_start();
+                }
             }
             vTaskDelay(10 / portTICK_PERIOD_MS);
         }
