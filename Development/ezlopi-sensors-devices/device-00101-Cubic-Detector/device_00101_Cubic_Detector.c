@@ -15,17 +15,20 @@
 #include "sensor_0099_SHTC3_temp_humidity.h"
 #include "ezlopi_core_device_value_updated.h"
 
-#define SENSOR_ADDR 0x70
-
-#define NEO_BUZZER_PIN 18       // GPIO pin where the buzzer is connected
+#define SENSOR_ADDR             0x70
+#define LED_BLUE                GPIO_NUM_12
+#define LED_RED                 GPIO_NUM_13
+#define NEO_BUZZER_PIN          GPIO_NUM_18
 #define NEO_LEDC_TIMER          LEDC_TIMER_0
 #define NEO_LEDC_MODE           LEDC_HIGH_SPEED_MODE
 #define NEO_LEDC_OUTPUT_IO      NEO_BUZZER_PIN
 #define NEO_LEDC_CHANNEL        LEDC_CHANNEL_0
-#define NEO_LEDC_DUTY_RES       LEDC_TIMER_13_BIT // Set duty resolution to 13 bits
+#define NEO_LEDC_DUTY_RES       LEDC_TIMER_13_BIT
 #define NEO_LEDC_FREQUENCY      1000   
 
 static uint64_t start_time = 0;
+uint64_t sleep_time = (15*1000*1000);
+
 const char* neo_water_leak_alarm_states[] = {
     "no_water_leak",
     "water_leak_detected",
@@ -46,7 +49,7 @@ ledc_channel_config_t neo_ledc_channel = {
     .timer_sel      = NEO_LEDC_TIMER,
     .intr_type      = LEDC_INTR_FADE_END,
     .gpio_num       = NEO_LEDC_OUTPUT_IO,
-    .duty           = 0, // Set duty to 0%
+    .duty           = 0,
     .hpoint         = 0
 };
 
@@ -120,6 +123,32 @@ static int __get_item_list(l_ezlopi_item_t* item, void* arg)
     }
     return ret;
 }
+void output_task(void* arg)
+{
+    l_ezlopi_item_t* item = (l_ezlopi_item_t*) arg;
+    while(1)
+    {
+        if(item)
+        {
+            item->interface.gpio.gpio_in.value = gpio_get_level(item->interface.gpio.gpio_in.gpio_num);
+            if (1 == item->interface.gpio.gpio_in.value)
+            {
+                ledc_set_duty(neo_ledc_channel.speed_mode, neo_ledc_channel.channel, 4096);
+                ledc_update_duty(neo_ledc_channel.speed_mode, neo_ledc_channel.channel);
+                gpio_set_level(LED_RED, 1);
+                vTaskDelay(200 / portTICK_PERIOD_MS);
+                ledc_set_duty(neo_ledc_channel.speed_mode, neo_ledc_channel.channel, 0);
+                ledc_update_duty(neo_ledc_channel.speed_mode, neo_ledc_channel.channel);
+                gpio_set_level(LED_RED, 0);
+                vTaskDelay(200 / portTICK_PERIOD_MS);
+            }
+            else
+            {
+                vTaskDelete(NULL);
+            }
+        }
+    }
+}
 
 void update_task(void* arg)
 {
@@ -137,20 +166,7 @@ void update_task(void* arg)
                     __0099_notify(device_head->next->next->items);
                     ezlopi_device_value_updated_from_device_broadcast(item);
                     vTaskDelay(5000 / portTICK_PERIOD_MS);
-                    
-                    gpio_pad_select_gpio(item->interface.gpio.gpio_in.gpio_num);
-                    gpio_set_direction(item->interface.gpio.gpio_in.gpio_num, GPIO_MODE_INPUT);
-                    gpio_pullup_en(item->interface.gpio.gpio_in.gpio_num);
-                    gpio_pulldown_dis(item->interface.gpio.gpio_in.gpio_num);
-
-                    esp_sleep_enable_ext0_wakeup(item->interface.gpio.gpio_in.gpio_num, !item->interface.gpio.gpio_in.value);
-                    gpio_reset_pin(GPIO_NUM_12);
-                    gpio_reset_pin(GPIO_NUM_13);
-                    gpio_pullup_dis(GPIO_NUM_18);
-                    esp_wifi_stop();
-                    esp_bt_controller_disable();
-                    shtc3_sleep_sensor(&device_head->next->items->interface.i2c_master);
-                    esp_deep_sleep_start();
+                    vTaskDelete(NULL);
                 }
                 vTaskDelay(10 / portTICK_PERIOD_MS);
             }
@@ -169,17 +185,15 @@ static int __get_value_cjson(l_ezlopi_item_t* item, void* args)
         if (1 == item->interface.gpio.gpio_in.value)
         {
             curret_value = "water_leak_detected";
+            xTaskCreate(output_task, "Output", 2*2048, item, 5, NULL);
         }
         else
         {
             curret_value = "no_water_leak";
         }
-        if (curret_value != (char*)item->user_arg)
-        {
-            item->user_arg = (void*)curret_value;
-            cJSON_AddStringToObject(__FUNCTION__, cj_result, ezlopi_value_str, (char*)item->user_arg ? item->user_arg : "no_water_leak");
-            cJSON_AddStringToObject(__FUNCTION__, cj_result, ezlopi_valueFormatted_str, (char*)item->user_arg ? item->user_arg : "no_water_leak");
-        }
+        item->user_arg = (void*)curret_value;
+        cJSON_AddStringToObject(__FUNCTION__, cj_result, ezlopi_value_str, (char*)item->user_arg ? item->user_arg : "no_water_leak");
+        cJSON_AddStringToObject(__FUNCTION__, cj_result, ezlopi_valueFormatted_str, (char*)item->user_arg ? item->user_arg : "no_water_leak");
         ret = 1;
     }
     return ret;
@@ -197,16 +211,7 @@ static void device_cubic_detector_value_updated_from_device_v3(void* arg)
             __0099_notify(device_head->next->next->items);
             if(ezlopi_device_value_updated_from_device_broadcast(item))
             {
-                vTaskDelay(5000 / portTICK_PERIOD_MS);
-                esp_sleep_enable_ext0_wakeup(item->interface.gpio.gpio_in.gpio_num, !item->interface.gpio.gpio_in.value);
-                gpio_reset_pin(GPIO_NUM_12);
-                gpio_reset_pin(GPIO_NUM_13);
-                gpio_reset_pin(GPIO_NUM_18);
-                gpio_pullup_dis(GPIO_NUM_18);
-                esp_wifi_stop();
-                esp_bt_controller_disable();
-                shtc3_sleep_sensor(&device_head->next->items->interface.i2c_master);
-                esp_deep_sleep_start();
+                sleep_time = sleep_time +(5*1000*1000);
             }
         }
     }
@@ -226,25 +231,33 @@ static int __init(l_ezlopi_item_t* item)
                 .pull_down_en = GPIO_PULLDOWN_DISABLE,
                 .intr_type = item->interface.gpio.gpio_in.interrupt,
             };
+            
+            const gpio_config_t io_conf_blue = {
+                .pin_bit_mask = (1ULL << LED_BLUE),
+                .mode = GPIO_MODE_OUTPUT,
+                .pull_up_en = GPIO_PULLUP_DISABLE,
+                .pull_down_en = GPIO_PULLDOWN_DISABLE,
+            };
+            
+            const gpio_config_t io_conf_red = {
+                .pin_bit_mask = (1ULL << LED_RED),
+                .mode = GPIO_MODE_OUTPUT,
+                .pull_up_en = GPIO_PULLUP_DISABLE,
+                .pull_down_en = GPIO_PULLDOWN_DISABLE,
+            };
 
             ledc_timer_config(&neo_ledc_timer);
             ledc_channel_config(&neo_ledc_channel);
             ledc_fade_func_install(0);
 
-            if (ESP_OK == gpio_config(&io_conf))
+            if (ESP_OK == gpio_config(&io_conf) && ESP_OK == gpio_config(&io_conf_red) && ESP_OK == gpio_config(&io_conf_blue))
             {
                 TRACE_I("Water Leak Sensor initialized successfully.");
-                item->interface.gpio.gpio_in.value = gpio_get_level(item->interface.gpio.gpio_in.gpio_num);
-                if (1 == item->interface.gpio.gpio_in.value)
-                {
-                    ledc_set_duty(neo_ledc_channel.speed_mode, neo_ledc_channel.channel, 4096);
-                    ledc_update_duty(neo_ledc_channel.speed_mode, neo_ledc_channel.channel);
-                }
-                else
-                {
-                    ledc_set_duty(neo_ledc_channel.speed_mode, neo_ledc_channel.channel, 0);
-                    ledc_update_duty(neo_ledc_channel.speed_mode, neo_ledc_channel.channel);
-                }
+                gpio_set_direction(LED_RED, GPIO_MODE_OUTPUT);    
+                gpio_set_direction(LED_BLUE, GPIO_MODE_OUTPUT);
+                gpio_set_level(LED_RED, 1);
+                gpio_set_level(LED_BLUE, 1); 
+                xTaskCreate(output_task, "Output", 2*2048, item, 5, NULL);
                 xTaskCreate(update_task, "Update", 2*2048, item, 5, NULL);
                 ezlopi_service_gpioisr_register_v3(item, device_cubic_detector_value_updated_from_device_v3, 200);
                 ret = 1;
@@ -274,7 +287,7 @@ void timer_task(void* arg)
     {
         while(1)
         {
-            if((esp_timer_get_time() - start_time) > (15*1000*1000)) //15sec
+            if((esp_timer_get_time() - start_time) > sleep_time) //20sec
             {
                 l_ezlopi_device_t* device_head = ezlopi_device_get_head();
                 if(device_head)
@@ -282,7 +295,7 @@ void timer_task(void* arg)
                     esp_sleep_enable_ext0_wakeup(item->interface.gpio.gpio_in.gpio_num, !item->interface.gpio.gpio_in.value);
                     gpio_reset_pin(GPIO_NUM_12);
                     gpio_reset_pin(GPIO_NUM_13);
-                    gpio_pullup_dis(GPIO_NUM_18);
+                    gpio_pullup_dis(NEO_BUZZER_PIN);
                     esp_wifi_stop();
                     esp_bt_controller_disable();
                     shtc3_sleep_sensor(&device_head->next->items->interface.i2c_master);
