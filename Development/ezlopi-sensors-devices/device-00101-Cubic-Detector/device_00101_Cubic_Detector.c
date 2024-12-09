@@ -143,11 +143,11 @@ void output_task(void* arg)
             {
                 ledc_set_duty(neo_ledc_channel.speed_mode, neo_ledc_channel.channel, 4096);
                 ledc_update_duty(neo_ledc_channel.speed_mode, neo_ledc_channel.channel);
-                gpio_set_level(LED_RED, 1);
+                gpio_set_level(LED_RED, 0);
                 vTaskDelay(200 / portTICK_PERIOD_MS);
                 ledc_set_duty(neo_ledc_channel.speed_mode, neo_ledc_channel.channel, 0);
                 ledc_update_duty(neo_ledc_channel.speed_mode, neo_ledc_channel.channel);
-                gpio_set_level(LED_RED, 0);
+                gpio_set_level(LED_RED, 1);
                 vTaskDelay(200 / portTICK_PERIOD_MS);
             }
             else
