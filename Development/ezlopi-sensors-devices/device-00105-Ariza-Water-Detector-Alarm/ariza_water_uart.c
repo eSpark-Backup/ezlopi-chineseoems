@@ -5,6 +5,11 @@
 #define ALARM           0x0C
 #define BATTERY         0x0F
 
+#define BUF_SIZE        1024
+
+uint8_t network_status[] = {0x55, 0xAA, 0x00, 0x02, 0x00, 0x01, 0x00, 0x02};
+uint8_t config_done[] = {0x55, 0xAA, 0x00, 0x02, 0x00, 0x01, 0x04, 0x06};
+
 static void normal_packet(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_object_handle_t uart_object_handle);
 
 typedef struct command {
@@ -35,13 +40,42 @@ uint8_t get_battery_value()
     return Values.battery_value;
 }
 
+void send_packet(l_ezlopi_item_t* item) {
+    int len = uart_write_bytes(item->interface.uart.channel, (const char *)network_status, sizeof(network_status));
+    if (len > 0) {
+        printf("Packet Sent: ");
+        for (int i = 0; i < len; i++) {
+            printf("0x%02X ", network_status[i]);
+        }
+        printf("\n");
+    } else {
+        TRACE_I("Failed to send packet");
+    }
+}
+
 static void normal_packet(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_object_handle_t uart_object_handle)
 {
     l_ezlopi_item_t* item = NULL;
+    uint8_t *data = (uint8_t *)malloc(BUF_SIZE);
     TRACE_I("----------PACKET VALUEEEEEEE----------%X",buffer[5]);
     if(uart_object_handle)
     {
         item = (l_ezlopi_item_t*) uart_object_handle->arg;
+    }
+    for (size_t i = 0; i < 3; i++)
+    {
+        send_packet(item);
+        int len = uart_read_bytes(item->interface.uart.channel, data, BUF_SIZE, 500 / portTICK_PERIOD_MS);
+        if (len > 0)
+        {
+            printf("Response Received: ");
+            for (int i = 0; i < len; i++)
+            {
+                printf("0x%02X ", data[i]);
+            }
+        } else {
+            TRACE_I("No response received");
+        }
     }
     if(buffer[5] == ALARM)
     {
