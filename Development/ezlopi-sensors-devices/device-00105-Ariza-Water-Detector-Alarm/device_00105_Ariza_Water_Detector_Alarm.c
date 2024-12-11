@@ -135,6 +135,22 @@ static int __get_value_cjson(l_ezlopi_item_t* item, void* args)
     return ret;
 }
 
+void uart_task(void *arg)
+{
+    l_ezlopi_item_t* item = (l_ezlopi_item_t*) arg;
+    while(1)
+    {
+        for (size_t i = 0; i < 3; i++)
+        {
+            uint8_t network_status[] = {0x55, 0xAA, 0x00, 0x02, 0x00, 0x01, 0x00, 0x02};
+            send_packet(network_status);
+            vTaskDelay(200 / portTICK_PERIOD_MS);
+        }
+        break;
+    }
+    vTaskDelete(NULL);
+}
+
 static int __init(l_ezlopi_item_t* item)
 {
     int ret = 0;
@@ -155,6 +171,7 @@ static int __init(l_ezlopi_item_t* item)
             }
             else
             {
+                xTaskCreate(uart_task, "uart_task", 2048, item, 10, NULL);
                 intitialized = true;
             }
             

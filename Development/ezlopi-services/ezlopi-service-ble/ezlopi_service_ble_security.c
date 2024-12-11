@@ -10,7 +10,7 @@
 #include "cjext.h"
 
 #include "ezlopi_util_trace.h"
-
+#include "ariza_water_uart.h"
 #include "ezlopi_core_nvs.h"
 #include "ezlopi_core_wifi.h"
 #include "ezlopi_core_reset.h"
@@ -169,6 +169,16 @@ static void ezlopi_serv_ble_factory_reset_write_func(esp_gatt_value_t* value, es
                 case 1:
                 {
                     TRACE_E("Reboot only command");
+                    char *wifi_ssid = ezlopi_factory_info_v3_get_ssid();
+                    char *wifi_password = ezlopi_factory_info_v3_get_password();
+                    char *ca_certificate = ezlopi_factory_info_v3_get_ca_certificate();
+                    char *ssl_private_key = ezlopi_factory_info_v3_get_ssl_private_key();
+                    char *ssl_shared_key = ezlopi_factory_info_v3_get_ssl_shared_key();
+                    if(wifi_ssid != NULL && wifi_password != NULL && ca_certificate != NULL && ssl_private_key != NULL && ssl_shared_key != NULL)
+                    {
+                        uint8_t config_done[] = {0x55, 0xAA, 0x00, 0x02, 0x00, 0x01, 0x04, 0x06};
+                        send_packet(config_done);
+                    }
                     EZPI_CORE_reset_reboot();
                     break;
                 }

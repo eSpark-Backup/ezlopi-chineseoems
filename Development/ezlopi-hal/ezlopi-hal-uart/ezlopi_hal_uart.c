@@ -114,7 +114,7 @@ static void ezlopi_uart_channel_task(void* args)
                     buffer = ezlopi_malloc(__FUNCTION__, bufferred_data_len);
                     if (buffer)
                     {
-                        data_len = uart_read_bytes(ezlopi_uart_object->ezlopi_uart.channel, buffer, event.size, 100 / portTICK_PERIOD_MS);
+                        data_len = uart_read_bytes(ezlopi_uart_object->ezlopi_uart.channel, buffer, event.size, 150 / portTICK_PERIOD_MS);
                     }
                     else
                     {
