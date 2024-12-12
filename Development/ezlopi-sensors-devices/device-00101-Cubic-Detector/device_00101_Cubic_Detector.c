@@ -18,7 +18,7 @@
 #define RESET                   (10*1000*1000)
 #define PAIRING_MODE            (5*1000*1000)
 #define PAIRING_TIME            (600*1000*1000)
-
+#define WAKEUP_TIME             (50*1000*1000)
 #define SENSOR_ADDR             0x70
 
 #define NEO_BUZZER_PIN          GPIO_NUM_18
@@ -385,6 +385,10 @@ void timer_task(void* arg)
                 l_ezlopi_device_t* device_head = ezlopi_device_get_head();
                 if(device_head)
                 {
+                    if(item->interface.gpio.gpio_in.value == 1)
+                    {
+                        esp_sleep_enable_timer_wakeup(WAKEUP_TIME); // 50 seconds
+                    }
                     esp_sleep_enable_ext0_wakeup((item->interface.gpio.gpio_in.gpio_num), !item->interface.gpio.gpio_in.value);
                     esp_sleep_enable_ext1_wakeup((1ULL << SWITCH), ESP_EXT1_WAKEUP_ANY_HIGH);
                     gpio_reset_pin(LED_BLUE);
