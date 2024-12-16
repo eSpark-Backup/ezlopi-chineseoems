@@ -6,9 +6,12 @@
 #define HEADER 0xAA
 #define POWER_OFF 0x00
 #define POWER_ON 0x01
+#define BRIGHTNESS 0x64
 
 void send_command_dimmer(int value);
 void send_command_switch(bool value);
+void update_packet(uint8_t value);
+uint8_t fetch_packet();
 bool dimmer_init(s_ezlopi_uart_t *dimmer);
 
 #endif //__DIMMER_H__

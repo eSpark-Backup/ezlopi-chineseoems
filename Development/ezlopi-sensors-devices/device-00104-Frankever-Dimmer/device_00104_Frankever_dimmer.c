@@ -138,7 +138,7 @@ static int __set_value(l_ezlopi_item_t* item, void* arg)
             {
                 send_command_switch(cj_value->valueint);
                 Dimmer_data.switch_value = cj_value->valueint;
-                Dimmer_data.dimmer_value = Dimmer_data.switch_value * 100;
+                Dimmer_data.dimmer_value = Dimmer_data.switch_value ? fetch_packet() : 0x00;
                 __set_led_value(Dimmer_data.switch_value);
             }
             ezlopi_device_value_updated_from_device_broadcast(dimmer_item);
@@ -198,7 +198,8 @@ static void __interrupt_call(void *arg)
     else
     {
         Dimmer_data.switch_value = !Dimmer_data.switch_value;
-        Dimmer_data.dimmer_value = Dimmer_data.switch_value ? 0x64 : 0x00;
+        Dimmer_data.dimmer_value = Dimmer_data.switch_value ? fetch_packet() : 0x00;
+        TRACE_I("SWITCH VALUEEEEEEEEEEEE: %d",Dimmer_data.switch_value);
         send_command_switch(Dimmer_data.switch_value);
         __set_led_value(!toggle_status);
         toggle_status = !toggle_status;
@@ -275,6 +276,7 @@ static int __init(l_ezlopi_item_t* item)
             else
             {
                 send_command_switch(false);
+                update_packet(BRIGHTNESS);
                 __set_led_value(false);
             }
         }
