@@ -7,6 +7,10 @@
 #define ALARM             0x0C
 #define BATTERY           0x0F
 
+#define NVS_NAMESPACE "ariza-battery"
+#define NVS_KEY "battery-value"
+
+nvs_handle_t battery_nvs_handle = NULL;
 static void normal_packet(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_object_handle_t uart_object_handle);
 
 typedef struct command {
@@ -58,6 +62,64 @@ bool wifi_connection_status()
     return wifi_con->wifi_connection;
 }
 
+void battery_nvs_read()
+{
+    uint8_t battery_val = 0;
+    if (nvs_open(NVS_NAMESPACE, NVS_READONLY, &battery_nvs_handle) == ESP_OK)
+    {
+        if (nvs_get_u8(battery_nvs_handle, NVS_KEY, &battery_val) == ESP_OK)
+        {
+            TRACE_D("Battery Value from NVS: %d", battery_val);
+            Values.battery_value = battery_val;
+        }
+        else{
+            TRACE_D("Unable to read from NVS.");
+        }
+    }
+    else{
+        TRACE_D("Unable to open NVS.");
+    }
+    nvs_close(battery_nvs_handle);
+}
+
+static void battery_nvs_save(uint8_t bat_value)
+{
+    if (nvs_open(NVS_NAMESPACE, NVS_READWRITE, &battery_nvs_handle) == ESP_OK)
+    {
+        uint8_t battery_val = 0;
+        if (nvs_get_u8(battery_nvs_handle, NVS_KEY, &battery_val) == ESP_OK)
+        {
+            TRACE_D("Battery Value from NVS: %d", battery_val);
+        }
+        else
+        {
+            TRACE_E("Failed to read battery value from NVS!");
+        }
+        if(battery_val != bat_value)
+        {
+            TRACE_D("Battery Value to be saved: %d", bat_value);
+            if(nvs_set_u8(battery_nvs_handle, NVS_KEY, bat_value) == ESP_OK)
+            {
+                TRACE_D("Value saved: %d", bat_value);
+            }
+            else
+            {
+                TRACE_D("Value not saved: %d", bat_value);
+            }
+            nvs_commit(battery_nvs_handle);
+        }
+        else
+        {
+            TRACE_I("No CHANGE IN THE VALUE!");
+        }
+        nvs_close(battery_nvs_handle);
+    }   
+    else
+    {
+        TRACE_E("Failed to open NVS!");
+    }
+}
+
 static void normal_packet(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_object_handle_t uart_object_handle)
 {
     l_ezlopi_item_t* item = NULL;
@@ -83,6 +145,7 @@ static void normal_packet(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_ob
         {
             ezlopi_device_value_updated_from_device_broadcast(item->next);
         }
+        battery_nvs_save(Values.battery_value);
         TRACE_I("----------BATTERY VALUEEEEEEE----------%X",Values.battery_value);
     }
 }
