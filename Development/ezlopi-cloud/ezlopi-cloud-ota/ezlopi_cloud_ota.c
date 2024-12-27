@@ -117,7 +117,7 @@ cJSON* firmware_send_firmware_query_to_nma_server(uint32_t message_count)
             {
                 if (isalpha(device_type[0]))
                 {
-                    cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_firmware_type_str, device_type); //
+                    cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_firmware_type_str, device_type);
                 }
                 else
                 {
@@ -128,10 +128,7 @@ cJSON* firmware_send_firmware_query_to_nma_server(uint32_t message_count)
             {
                 cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_firmware_type_str, ezlopi_generic_str);
             }
-            cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_firmware_hardware_str, ezlopi_d03_hardware_str);
-            // cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_firmware_hardware_str, ezlopi_d01_hardware_str);
-            // cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_firmware_hardware_str, ezlopi_d02_hardware_str);
-            // cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_firmware_hardware_str, CONFIG_IDF_TARGET);
+            cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_firmware_hardware_str, ezlopi_d01_hardware_str);
         }
     }
 

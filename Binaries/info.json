@@ -1,0 +1,20 @@
+{
+    "binaries": [
+        {
+            "address": "0x1000",
+            "file": "bootloader.bin"
+        },
+        {
+            "address": "0x20000",
+            "file": "Ezlo_Pi_v4x.bin"
+        },
+        {
+            "address": "0x8000",
+            "file": "partition-table.bin"
+        },
+        {
+            "address": "0x15000",
+            "file": "ota_data_initial.bin"
+        }
+    ]
+}

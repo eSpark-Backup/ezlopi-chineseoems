@@ -9,25 +9,25 @@
 #include "device_00108_Qiao_Touch_Switch.h"
 #include "ezlopi_core_device_value_updated.h"
 
-#define WiFi_LED   GPIO_NUM_17
-#define CTRL_LED   GPIO_NUM_5
-#define INDICATOR1 GPIO_NUM_2
-#define INDICATOR2 GPIO_NUM_4
-#define INDICATOR3 GPIO_NUM_16
+#define WiFi_LED   GPIO_NUM_4
+#define CTRL_LED   GPIO_NUM_18
+#define INDICATOR1 GPIO_NUM_25
+#define INDICATOR2 GPIO_NUM_26
+#define INDICATOR3 GPIO_NUM_22
 
-static uint64_t start_time = 0;
 static bool wifi_state =0;
-static uint32_t master_item_id = 0;
+static uint64_t start_time = 0;
 TaskHandle_t __wifi_handle = NULL;
+static uint32_t master_item_id = 0;
 
 static int __prepare(void* arg);
 static int __init(l_ezlopi_item_t* item);
 static int __set_value(l_ezlopi_item_t* item, void* arg);
 static int __get_value_cjson(l_ezlopi_item_t* item, void* arg);
 
+static void wifi_status_task(void *args);
 static void __interrupt_upcall(void* arg);
 static void indicator_led_task(void *args);
-static void wifi_status_task(void *args);
 static int __prepare_master_control_device_item(uint32_t *parent_id, cJSON* cj_device); //parent device
 static int __prepare_switch_one_device_item(uint32_t parent_id, cJSON* cj_device);
 static int __prepare_switch_two_device_item(uint32_t parent_id, cJSON* cj_device);
@@ -172,97 +172,6 @@ static int __init(l_ezlopi_item_t* item)
     return ret;
 }
 
-static void __setup_device_cloud_properties(l_ezlopi_device_t* device)
-{
-    device->cloud_properties.category = category_switch;
-    device->cloud_properties.subcategory = subcategory_in_wall;
-    device->cloud_properties.device_type = dev_type_switch_inwall;
-    device->cloud_properties.info = NULL;
-    device->cloud_properties.device_type_id = NULL;
-}
-
-static void __setup_item_properties(l_ezlopi_item_t* item, cJSON* cjson_device)
-{
-    int tmp_var = 0;
-    item->cloud_properties.has_getter = true;
-    item->cloud_properties.has_setter = true;
-    item->cloud_properties.item_name = ezlopi_item_name_switch;
-    item->cloud_properties.value_type = value_type_bool;
-    item->cloud_properties.show = true;
-    item->cloud_properties.scale = NULL;
-    item->cloud_properties.item_id = ezlopi_cloud_generate_item_id();
-
-    CJSON_GET_VALUE_DOUBLE(cjson_device, ezlopi_dev_type_str, item->interface_type);
-
-    CJSON_GET_VALUE_DOUBLE(cjson_device, ezlopi_is_ip_str, item->interface.gpio.gpio_in.enable);
-    CJSON_GET_VALUE_DOUBLE(cjson_device, ezlopi_ip_inv_str, item->interface.gpio.gpio_in.invert);
-    CJSON_GET_VALUE_DOUBLE(cjson_device, ezlopi_val_ip_str, item->interface.gpio.gpio_in.value);
-    CJSON_GET_VALUE_DOUBLE(cjson_device, ezlopi_pullup_ip_str, tmp_var);
-    item->interface.gpio.gpio_in.pull = tmp_var ? GPIO_PULLUP_ONLY : GPIO_PULLDOWN_ONLY;
-    item->interface.gpio.gpio_in.interrupt = GPIO_INTR_DISABLE;
-
-    item->interface.gpio.gpio_out.enable = true;
-    CJSON_GET_VALUE_DOUBLE(cjson_device, ezlopi_op_inv_str, item->interface.gpio.gpio_out.invert);
-    CJSON_GET_VALUE_DOUBLE(cjson_device, ezlopi_val_op_str, item->interface.gpio.gpio_out.value);
-    CJSON_GET_VALUE_DOUBLE(cjson_device, ezlopi_pullup_op_str, tmp_var);
-    item->interface.gpio.gpio_out.interrupt = GPIO_INTR_DISABLE;
-    item->interface.gpio.gpio_out.pull = tmp_var ? GPIO_PULLUP_ONLY : GPIO_PULLDOWN_ONLY;
-}
-
-static void indicator_led_task(void *args)
-{
-    l_ezlopi_device_t* device_head = ezlopi_device_get_head();
-    if(device_head)
-    {
-        l_ezlopi_item_t* second_item = device_head->next->items;
-        l_ezlopi_item_t* third_item  = device_head->next->next->items;
-        l_ezlopi_item_t* fourth_item = device_head->next->next->next->items;
-        while(1)
-        {
-            gpio_set_level(CTRL_LED, 1);
-            gpio_set_level(INDICATOR1, second_item->user_arg);
-            gpio_set_level(INDICATOR2,third_item->user_arg);
-            gpio_set_level(INDICATOR3,fourth_item->user_arg);
-            vTaskDelay(10 / portTICK_PERIOD_MS);
-        }
-    }
-}
-
-static void wifi_status_task(void *args)
-{
-    ezlopi_wifi_status_t *wifi_status = (ezlopi_wifi_status_t *) args;
-    while (1)
-    {
-        int wifi_connection_stat = ezlopi_wifi_got_ip();
-        if(wifi_connection_stat)
-        {    
-            // TRACE_I("---------------WIFI----------%d",wifi_connection_stat);
-            gpio_set_level(WiFi_LED,0);
-        }
-        else
-        {
-            // TRACE_I("---------------WIFI-NOT----------%d",wifi_connection_stat);
-            gpio_set_level(WiFi_LED,1);
-        }
-        vTaskDelay(500 / portTICK_PERIOD_MS);
-    }
-}
-
-static int __get_value_cjson(l_ezlopi_item_t* item, void* arg)
-{
-    int ret = 0;
-    if (item && arg)
-    {
-        cJSON* cj_propertise = (cJSON*)arg;
-        if (cj_propertise)
-        {
-            ezlopi_valueformatter_bool_to_cjson(cj_propertise, item->user_arg, item->cloud_properties.scale);
-            ret = 1;
-        }
-    }
-    return ret;
-}
-
 static int __set_value(l_ezlopi_item_t* item, void* arg)
 {
     int ret = 0;
@@ -340,6 +249,97 @@ static int __set_value(l_ezlopi_item_t* item, void* arg)
     return ret;
 }
 
+static int __get_value_cjson(l_ezlopi_item_t* item, void* arg)
+{
+    int ret = 0;
+    if (item && arg)
+    {
+        cJSON* cj_propertise = (cJSON*)arg;
+        if (cj_propertise)
+        {
+            ezlopi_valueformatter_bool_to_cjson(cj_propertise, item->user_arg, item->cloud_properties.scale);
+            ret = 1;
+        }
+    }
+    return ret;
+}
+
+static void __setup_device_cloud_properties(l_ezlopi_device_t* device)
+{
+    device->cloud_properties.category = category_switch;
+    device->cloud_properties.subcategory = subcategory_in_wall;
+    device->cloud_properties.device_type = dev_type_switch_inwall;
+    device->cloud_properties.info = NULL;
+    device->cloud_properties.device_type_id = NULL;
+}
+
+static void __setup_item_properties(l_ezlopi_item_t* item, cJSON* cjson_device)
+{
+    int tmp_var = 0;
+    item->cloud_properties.has_getter = true;
+    item->cloud_properties.has_setter = true;
+    item->cloud_properties.item_name = ezlopi_item_name_switch;
+    item->cloud_properties.value_type = value_type_bool;
+    item->cloud_properties.show = true;
+    item->cloud_properties.scale = NULL;
+    item->cloud_properties.item_id = ezlopi_cloud_generate_item_id();
+
+    CJSON_GET_VALUE_DOUBLE(cjson_device, ezlopi_dev_type_str, item->interface_type);
+
+    CJSON_GET_VALUE_DOUBLE(cjson_device, ezlopi_is_ip_str, item->interface.gpio.gpio_in.enable);
+    CJSON_GET_VALUE_DOUBLE(cjson_device, ezlopi_ip_inv_str, item->interface.gpio.gpio_in.invert);
+    CJSON_GET_VALUE_DOUBLE(cjson_device, ezlopi_val_ip_str, item->interface.gpio.gpio_in.value);
+    CJSON_GET_VALUE_DOUBLE(cjson_device, ezlopi_pullup_ip_str, tmp_var);
+    item->interface.gpio.gpio_in.pull = tmp_var ? GPIO_PULLUP_ONLY : GPIO_PULLDOWN_ONLY;
+    item->interface.gpio.gpio_in.interrupt = GPIO_INTR_DISABLE;
+
+    item->interface.gpio.gpio_out.enable = true;
+    CJSON_GET_VALUE_DOUBLE(cjson_device, ezlopi_op_inv_str, item->interface.gpio.gpio_out.invert);
+    CJSON_GET_VALUE_DOUBLE(cjson_device, ezlopi_val_op_str, item->interface.gpio.gpio_out.value);
+    CJSON_GET_VALUE_DOUBLE(cjson_device, ezlopi_pullup_op_str, tmp_var);
+    item->interface.gpio.gpio_out.interrupt = GPIO_INTR_DISABLE;
+    item->interface.gpio.gpio_out.pull = tmp_var ? GPIO_PULLUP_ONLY : GPIO_PULLDOWN_ONLY;
+}
+
+static void indicator_led_task(void *args)
+{
+    l_ezlopi_device_t* device_head = ezlopi_device_get_head();
+    if(device_head)
+    {
+        l_ezlopi_item_t* second_item = device_head->next->items;
+        l_ezlopi_item_t* third_item  = device_head->next->next->items;
+        l_ezlopi_item_t* fourth_item = device_head->next->next->next->items;
+        while(1)
+        {
+            gpio_set_level(CTRL_LED, 1);
+            gpio_set_level(INDICATOR1, second_item->user_arg);
+            gpio_set_level(INDICATOR2,third_item->user_arg);
+            gpio_set_level(INDICATOR3,fourth_item->user_arg);
+            vTaskDelay(10 / portTICK_PERIOD_MS);
+        }
+    }
+}
+
+static void wifi_status_task(void *args)
+{
+    ezlopi_wifi_status_t *wifi_status = (ezlopi_wifi_status_t *) args;
+    while (1)
+    {
+        int wifi_connection_stat = ezlopi_wifi_got_ip();
+        if(wifi_connection_stat)
+        {    
+            // TRACE_I("---------------WIFI----------%d",wifi_connection_stat);
+            gpio_set_level(WiFi_LED,0);
+        }
+        else
+        {
+            // TRACE_I("---------------WIFI-NOT----------%d",wifi_connection_stat);
+            gpio_set_level(WiFi_LED,1);
+        }
+        vTaskDelay(500 / portTICK_PERIOD_MS);
+    }
+}
+
 static void factory_reset_task(void *arg)
 {
     l_ezlopi_item_t* item = (l_ezlopi_item_t*)arg;
@@ -357,6 +357,15 @@ static void factory_reset_task(void *arg)
                 {
                     if(ESP_OK == esp_partition_erase_range(partition_ctx_v3, EZLOPI_FINFO_REL_OFFSET_CA_CERTIFICATE, EZLOPI_FINFO_REL_OFFSET_SSL_SHARED_KEY));
                 }
+                vTaskDelete(__wifi_handle);
+                for (size_t i = 0; i < 10; i++)
+                {
+                    gpio_set_level(WiFi_LED,0);
+                    vTaskDelay(100 / portTICK_PERIOD_MS);
+                    gpio_set_level(WiFi_LED,1);
+                    vTaskDelay(100 / portTICK_PERIOD_MS);
+                }
+                
                 esp_restart();
             }
             else if(gpio_get_level(item->interface.gpio.gpio_in.gpio_num))
@@ -403,7 +412,7 @@ static int __prepare_master_control_device_item(uint32_t *parent_id, cJSON* cjso
             __setup_item_properties(item, cjson_device);
             master_item_id = item->cloud_properties.item_id;
             item->interface.gpio.gpio_in.gpio_num  = 14;
-            item->interface.gpio.gpio_out.gpio_num = 27;
+            item->interface.gpio.gpio_out.gpio_num = 21;
         }
         else
         {
@@ -436,8 +445,8 @@ static int __prepare_switch_one_device_item(uint32_t parent_id, cJSON* cjson_dev
             __setup_item_properties(item, cjson_device);
             CJSON_GET_VALUE_GPIO(cjson_device, ezlopi_gpio_in_1_str, item->interface.gpio.gpio_in.gpio_num);
             CJSON_GET_VALUE_GPIO(cjson_device, ezlopi_gpio_out_1_str, item->interface.gpio.gpio_out.gpio_num);
-            TRACE_D("item->interface.gpio.gpio_in.gpio_num:  %u", item->interface.gpio.gpio_in.gpio_num);
-            TRACE_D("item->interface.gpio.gpio_out.gpio_num: %u", item->interface.gpio.gpio_out.gpio_num);
+            // TRACE_D("item->interface.gpio.gpio_in.gpio_num:  %u", item->interface.gpio.gpio_in.gpio_num);
+            // TRACE_D("item->interface.gpio.gpio_out.gpio_num: %u", item->interface.gpio.gpio_out.gpio_num);
         }
 
         if (!item)
@@ -469,8 +478,8 @@ static int __prepare_switch_two_device_item(uint32_t parent_id, cJSON* cjson_dev
             __setup_item_properties(item, cjson_device);
             CJSON_GET_VALUE_GPIO(cjson_device, ezlopi_gpio_in_2_str, item->interface.gpio.gpio_in.gpio_num);
             CJSON_GET_VALUE_GPIO(cjson_device, ezlopi_gpio_out_2_str, item->interface.gpio.gpio_out.gpio_num);
-            TRACE_D("item->interface.gpio.gpio_in.gpio_num:  %u", item->interface.gpio.gpio_in.gpio_num);
-            TRACE_D("item->interface.gpio.gpio_out.gpio_num: %u", item->interface.gpio.gpio_out.gpio_num);
+            // TRACE_D("item->interface.gpio.gpio_in.gpio_num:  %u", item->interface.gpio.gpio_in.gpio_num);
+            // TRACE_D("item->interface.gpio.gpio_out.gpio_num: %u", item->interface.gpio.gpio_out.gpio_num);
         }
 
         if (!item)
@@ -503,8 +512,8 @@ static int __prepare_switch_three_device_item(uint32_t parent_id, cJSON* cjson_d
             __setup_item_properties(item, cjson_device);
             CJSON_GET_VALUE_GPIO(cjson_device, ezlopi_gpio_in_3_str, item->interface.gpio.gpio_in.gpio_num);
             CJSON_GET_VALUE_GPIO(cjson_device, ezlopi_gpio_out_3_str, item->interface.gpio.gpio_out.gpio_num);
-            TRACE_D("item->interface.gpio.gpio_in.gpio_num:  %u", item->interface.gpio.gpio_in.gpio_num);
-            TRACE_D("item->interface.gpio.gpio_out.gpio_num: %u", item->interface.gpio.gpio_out.gpio_num);
+            // TRACE_D("item->interface.gpio.gpio_in.gpio_num:  %u", item->interface.gpio.gpio_in.gpio_num);
+            // TRACE_D("item->interface.gpio.gpio_out.gpio_num: %u", item->interface.gpio.gpio_out.gpio_num);
         }
 
         if (!item)
