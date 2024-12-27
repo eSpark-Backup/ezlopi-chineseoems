@@ -296,30 +296,43 @@ static int __set_value(l_ezlopi_item_t* item, void* arg)
                 }
                 item->user_arg = value;
                 start_time = esp_timer_get_time();
-                if(item->cloud_properties.item_id == master_item_id)
+                l_ezlopi_device_t* device_head = ezlopi_device_get_head();
+                if(device_head)
                 {
-                    l_ezlopi_device_t* device_head = ezlopi_device_get_head();
-                    if(device_head)
+                    l_ezlopi_item_t* second_item = device_head->next->items;
+                    l_ezlopi_item_t* third_item  = device_head->next->next->items;
+                    l_ezlopi_item_t* fourth_item = device_head->next->next->next->items;
+                    if(second_item && third_item && fourth_item)
                     {
-                        l_ezlopi_item_t* second_item = device_head->next->items;
-                        l_ezlopi_item_t* third_item  = device_head->next->next->items;
-                        l_ezlopi_item_t* fourth_item = device_head->next->next->next->items;
-                        gpio_set_level(second_item->interface.gpio.gpio_out.gpio_num, item->user_arg);
-                        gpio_set_level(third_item->interface.gpio.gpio_out.gpio_num,  item->user_arg);
-                        gpio_set_level(fourth_item->interface.gpio.gpio_out.gpio_num, item->user_arg);
-                        second_item->user_arg = item->user_arg;
-                        third_item->user_arg  = item->user_arg;
-                        fourth_item->user_arg = item->user_arg;
-                        ezlopi_device_value_updated_from_device_broadcast(item);
-                        ezlopi_device_value_updated_from_device_broadcast(second_item);
-                        ezlopi_device_value_updated_from_device_broadcast(third_item);
-                        ezlopi_device_value_updated_from_device_broadcast(fourth_item);
+                        if(item->cloud_properties.item_id == master_item_id)
+                        {   
+                            gpio_set_level(second_item->interface.gpio.gpio_out.gpio_num, item->user_arg);
+                            gpio_set_level(third_item->interface.gpio.gpio_out.gpio_num,  item->user_arg);
+                            gpio_set_level(fourth_item->interface.gpio.gpio_out.gpio_num, item->user_arg);
+                            second_item->user_arg = item->user_arg;
+                            third_item->user_arg  = item->user_arg;
+                            fourth_item->user_arg = item->user_arg;
+                            ezlopi_device_value_updated_from_device_broadcast(item);
+                            ezlopi_device_value_updated_from_device_broadcast(second_item);
+                            ezlopi_device_value_updated_from_device_broadcast(third_item);
+                            ezlopi_device_value_updated_from_device_broadcast(fourth_item);
+                        }
+                        else
+                        {
+                            gpio_set_level(item->interface.gpio.gpio_out.gpio_num,item->user_arg);
+                            ezlopi_device_value_updated_from_device_broadcast(item);
+                            if(second_item->user_arg && third_item->user_arg && fourth_item->user_arg)
+                            {
+                                device_head->items->user_arg = 1;
+                                ezlopi_device_value_updated_from_device_broadcast(device_head->items);
+                            }
+                            else
+                            {
+                                device_head->items->user_arg = 0;
+                                ezlopi_device_value_updated_from_device_broadcast(device_head->items);
+                            }
+                        }
                     }
-                }
-                else
-                {
-                    gpio_set_level(item->interface.gpio.gpio_out.gpio_num,item->user_arg);
-                    ezlopi_device_value_updated_from_device_broadcast(item);
                 }
             }
         }
@@ -334,8 +347,7 @@ static void factory_reset_task(void *arg)
     {
         if(item)
         {
-            TRACE_I("RESET-------------%d",item->interface.gpio.gpio_in.gpio_num);
-            if(((esp_timer_get_time() - start_time) > (20*1000*1000)) && (gpio_get_level(item->interface.gpio.gpio_in.gpio_num)))
+            if(((esp_timer_get_time() - start_time) > (20*1000*1000)) && (!gpio_get_level(item->interface.gpio.gpio_in.gpio_num)))
             {
                 TRACE_I("FACTORY RESET");
                 if (ESP_OK == esp_partition_erase_range(partition_ctx_v3, EZLOPI_FINFO_OFFSET_HUB_DATA, EZLOPI_FINFO_READ_LEN_4KB))
@@ -347,10 +359,14 @@ static void factory_reset_task(void *arg)
                 }
                 esp_restart();
             }
-            else if(!gpio_get_level(item->interface.gpio.gpio_in.gpio_num))
+            else if(gpio_get_level(item->interface.gpio.gpio_in.gpio_num))
             {
                 TRACE_I("NO RESET-------------%d",item->interface.gpio.gpio_in.gpio_num);
                 vTaskDelete(NULL);
+            }
+            else
+            {
+                vTaskDelay(10 / portTICK_PERIOD_MS);
             }
         }
     }
