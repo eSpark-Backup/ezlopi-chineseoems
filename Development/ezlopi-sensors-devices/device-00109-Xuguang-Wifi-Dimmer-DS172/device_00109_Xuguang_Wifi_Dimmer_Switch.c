@@ -123,61 +123,25 @@ static int __init(l_ezlopi_item_t* item)
 static int __set_value(l_ezlopi_item_t* item, void* arg)
 {
     int ret = 0;
-    // if(item && arg)
-    // {
-    //     cJSON* cjson_params = (cJSON*)arg;
-    //     if (NULL != cjson_params)
-    //     {
-    //         cJSON* cj_value = cJSON_GetObjectItem(__FUNCTION__, cjson_params, ezlopi_value_str);
-    //         ret = 1;
-    //         if (ezlopi_item_name_thermostat_setpoint == item->cloud_properties.item_name)
-    //         {
-    //             send_temp_sp(cj_value->valuedouble,CMD_TEMP);
-    //         }
-    //         else if (ezlopi_item_name_power_mode == item->cloud_properties.item_name)
-    //         {
-    //             if(!strcmp(cj_value->valuestring, power_state_token[0]))
-    //             {
-    //                 send_command(CMD_TURN_ON);
-    //             }
-    //             else if(!strcmp(cj_value->valuestring, power_state_token[1]))
-    //             {
-    //                 send_command(CMD_TURN_OFF);
-    //             }
-    //             else if(!strcmp(cj_value->valuestring, power_state_token[2]))
-    //             {
-    //                 send_command(CMD_ENERGY_SAVING_ON);
-    //             }
-    //             else if(!strcmp(cj_value->valuestring, power_state_token[3]))
-    //             {
-    //                 send_command(CMD_ENERGY_SAVING_OFF);
-    //             }
-    //         }
-    //         else if(ezlopi_item_name_child_lock == item->cloud_properties.item_name)
-    //         {
-    //             if(!strcmp(cj_value->valuestring, child_lock_token[0]))
-    //             {
-    //                 send_command(CMD_LOCK_ENABLE);
-    //             }
-    //             else if(!strcmp(cj_value->valuestring, child_lock_token[1]))
-    //             {
-    //                 send_command(CMD_LOCK_DISABLE);
-    //             }
-    //         }
-    //         else if (ezlopi_item_name_program_mode_selection == item->cloud_properties.item_name)
-    //         {
-    //             if(!strcmp(cj_value->valuestring, mode_select_token[0]))
-    //             {
-    //                 send_command(CMD_MANUAL_MODE);
-    //             }
-    //             else if(!strcmp(cj_value->valuestring, mode_select_token[1]))
-    //             {
-    //                 send_command(CMD_PROGRAM_MODE);
-    //             }
-    //         }
-    //         ezlopi_device_value_updated_from_device_broadcast(item);
-    //     }
-    // }
+    if(item && arg)
+    {
+        cJSON* cjson_params = (cJSON*)arg;
+        if (NULL != cjson_params)
+        {
+            cJSON* cj_value = cJSON_GetObjectItem(__FUNCTION__, cjson_params, ezlopi_value_str);
+            ret = 1;
+            if (ezlopi_item_name_dimmer == item->cloud_properties.item_name)
+            {
+                // send_intensity(cj_value->valuedouble, CMD_INTENSITY);
+            }
+            else if (ezlopi_item_name_switch == item->cloud_properties.item_name)
+            {
+                TRACE_I("I'm HERE");
+                send_command(CMD_PWR, cj_value->valueint);
+            }
+            ezlopi_device_value_updated_from_device_broadcast(item);
+        }
+    }
     return ret;
 }
 
@@ -216,14 +180,13 @@ static void __prepare_device_cloud_properties(l_ezlopi_device_t* device)
 
 static void __prepare_dimmer_item_properties(l_ezlopi_item_t* item, cJSON* cjson_device)
 {
-    CJSON_GET_VALUE_DOUBLE(cjson_device, ezlopi_dev_type_str, item->interface_type);
     item->cloud_properties.show = true;
-    item->cloud_properties.scale = NULL;
     item->cloud_properties.has_getter = true;
     item->cloud_properties.has_setter = true;
     item->cloud_properties.item_name = ezlopi_item_name_dimmer;
     item->cloud_properties.value_type = value_type_int;
     item->cloud_properties.item_id = ezlopi_cloud_generate_item_id();
+    item->cloud_properties.scale = NULL;
 
     item->interface.uart.enable = true;
     item->interface_type = EZLOPI_DEVICE_INTERFACE_UART;
@@ -234,10 +197,9 @@ static void __prepare_dimmer_item_properties(l_ezlopi_item_t* item, cJSON* cjson
 
 static void __prepare_dimmer_switch_item_properties(l_ezlopi_item_t* item, cJSON* cjson_device)
 {
-    int tmp_var = 0;
+    item->cloud_properties.show = true;
     item->cloud_properties.has_getter = true;
     item->cloud_properties.has_setter = true;
-    item->cloud_properties.show = true;
     item->cloud_properties.item_name = ezlopi_item_name_switch;
     item->cloud_properties.value_type = value_type_bool;
     item->cloud_properties.item_id = ezlopi_cloud_generate_item_id();
@@ -249,4 +211,3 @@ static void __prepare_dimmer_switch_item_properties(l_ezlopi_item_t* item, cJSON
     CJSON_GET_VALUE_GPIO(cjson_device, ezlopi_gpio_rx_str, item->interface.uart.rx); //GPIO_NUM_5
     CJSON_GET_VALUE_DOUBLE(cjson_device, ezlopi_baud_str, item->interface.uart.baudrate); //9600
 }
-
