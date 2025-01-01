@@ -17,7 +17,7 @@
 #include "esp_event_base.h"
 #include "esp_log.h"
 #include "cjext.h"
-
+#include "xuguang_dimmer.h"
 #include "lwip/err.h"
 #include "lwip/sys.h"
 
@@ -215,6 +215,8 @@ static void __event_handler(void* arg, esp_event_base_t event_base, int32_t even
         case WIFI_EVENT_STA_CONNECTED:
         {
             TRACE_D("wifi-connected!");
+            send_command(CMD_PAIRED, 1);
+            send_command(CMD_RESET, 1);
             break;
         }
         default:

@@ -1,4 +1,5 @@
 #include "xuguang_dimmer.h"
+#include "ezlopi_core_wifi.h"
 #include "ezlopi_cloud_items.h"
 #include "ezlopi_cloud_constants.h"
 #include "ezlopi_core_valueformatter.h"
@@ -55,7 +56,6 @@ static int __prepare(void* arg)
 {
     int ret = 0;
     s_ezlopi_prep_arg_t* prep_arg = (s_ezlopi_prep_arg_t*)arg;
-    // xTaskCreate(wifi_status_task,"wifi_status",1024 * 3,NULL,5,NULL);
     if (prep_arg)
     {
         cJSON* cj_device = prep_arg->cjson_device;
@@ -132,12 +132,13 @@ static int __set_value(l_ezlopi_item_t* item, void* arg)
             ret = 1;
             if (ezlopi_item_name_dimmer == item->cloud_properties.item_name)
             {
-                // send_intensity(cj_value->valuedouble, CMD_INTENSITY);
+                send_command(CMD_INTENSITY, cj_value->valueint);
+                intensity_update(cj_value->valueint);
             }
             else if (ezlopi_item_name_switch == item->cloud_properties.item_name)
             {
-                TRACE_I("I'm HERE");
                 send_command(CMD_PWR, cj_value->valueint);
+                power_update(cj_value->valueint);
             }
             ezlopi_device_value_updated_from_device_broadcast(item);
         }

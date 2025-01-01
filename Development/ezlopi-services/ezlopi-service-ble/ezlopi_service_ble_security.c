@@ -20,6 +20,7 @@
 #include "ezlopi_core_ble_profile.h"
 #include "ezlopi_core_factory_info.h"
 #include "ezlopi_core_reset.h"
+#include "xuguang_dimmer.h"
 
 #include "ezlopi_cloud_constants.h"
 
@@ -169,6 +170,16 @@ static void ezlopi_serv_ble_factory_reset_write_func(esp_gatt_value_t* value, es
                 case 1:
                 {
                     TRACE_E("Reboot only command");
+                    char *wifi_ssid = ezlopi_factory_info_v3_get_ssid();
+                    char *wifi_password = ezlopi_factory_info_v3_get_password();
+                    char *ca_certificate = ezlopi_factory_info_v3_get_ca_certificate();
+                    char *ssl_private_key = ezlopi_factory_info_v3_get_ssl_private_key();
+                    char *ssl_shared_key = ezlopi_factory_info_v3_get_ssl_shared_key();
+                    if(wifi_ssid != NULL && wifi_password != NULL && ca_certificate != NULL && ssl_private_key != NULL && ssl_shared_key != NULL)
+                    {
+                        send_command(CMD_PAIRED, 1);
+                        send_command(CMD_RESET, 1);
+                    }
                     EZPI_CORE_reset_reboot();
                     break;
                 }
