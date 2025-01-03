@@ -17,7 +17,6 @@
 #include "esp_event_base.h"
 #include "esp_log.h"
 #include "cjext.h"
-
 #include "lwip/err.h"
 #include "lwip/sys.h"
 
