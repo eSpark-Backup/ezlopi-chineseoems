@@ -7,7 +7,7 @@ extern const char *ezlopi_item_name_acceleration_x_axis;
 extern const char *ezlopi_item_name_acceleration_y_axis;
 extern const char *ezlopi_item_name_acceleration_z_axis;
 // extern const  char *ezlopi_item_name_appliance_status;
-// extern const  char *ezlopi_item_name_lock_operation;
+extern const  char *ezlopi_item_name_lock_operation;
 // extern const  char *ezlopi_item_name_user_code_operation;
 // extern const  char *ezlopi_item_name_dw_handle_state;
 extern const char *ezlopi_item_name_dw_state;

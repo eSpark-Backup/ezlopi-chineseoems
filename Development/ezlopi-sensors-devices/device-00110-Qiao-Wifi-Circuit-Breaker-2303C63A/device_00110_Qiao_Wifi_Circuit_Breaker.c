@@ -8,8 +8,14 @@
 
 static int __prepare(void* arg);
 static int __init(l_ezlopi_item_t* item);
-// static int __set_value(l_ezlopi_item_t* item, void* arg);
+static int __set_value(l_ezlopi_item_t* item, void* arg);
 static int __get_value_cjson(l_ezlopi_item_t* item, void* arg);
+
+static uint32_t switch_item_id;
+static uint32_t mode_item_id;
+static uint32_t lock_item_id;
+
+// const char* breaker_name = 'Breaker Switch';
 
 static void __prepare_switch_device_cloud_properties(l_ezlopi_device_t* device);
 static void __prepare_mode_device_cloud_properties(l_ezlopi_device_t* device);
@@ -41,11 +47,11 @@ int device_00110_Qiao_Wifi_Circuit_Breaker(e_ezlopi_actions_t action, l_ezlopi_i
             ret = __init(item);
             break;
         }
-        // case EZLOPI_ACTION_SET_VALUE:
-        // {
-        //     ret = __set_value(item, args);
-        //     break;
-        // }
+        case EZLOPI_ACTION_SET_VALUE:
+        {
+            ret = __set_value(item, args);
+            break;
+        }
         case EZLOPI_ACTION_HUB_GET_ITEM:
         case EZLOPI_ACTION_GET_EZLOPI_VALUE:
         {
@@ -119,31 +125,26 @@ static int __init(l_ezlopi_item_t* item)
     return ret;
 }
 
-// static int __set_value(l_ezlopi_item_t* item, void* arg)
-// {
-//     int ret = 0;
-//     if(item && arg)
-//     {
-//         cJSON* cjson_params = (cJSON*)arg;
-//         if (NULL != cjson_params)
-//         {
-//             cJSON* cj_value = cJSON_GetObjectItem(__FUNCTION__, cjson_params, ezlopi_value_str);
-//             ret = 1;
-//             if (ezlopi_item_name_dimmer == item->cloud_properties.item_name)
-//             {
-//                 send_command(CMD_INTENSITY, cj_value->valueint);
-//                 intensity_update(cj_value->valueint);
-//             }
-//             else if (ezlopi_item_name_switch == item->cloud_properties.item_name)
-//             {
-//                 send_command(CMD_PWR, cj_value->valueint);
-//                 power_update(cj_value->valueint);
-//             }
-//             ezlopi_device_value_updated_from_device_broadcast(item);
-//         }
-//     }
-//     return ret;
-// }
+static int __set_value(l_ezlopi_item_t* item, void* arg)
+{
+    int ret = 0;
+    if(item && arg && !(Values.mode_value))
+    {
+        cJSON* cjson_params = (cJSON*)arg;
+        if (NULL != cjson_params)
+        {
+            cJSON* cj_value = cJSON_GetObjectItem(__FUNCTION__, cjson_params, ezlopi_value_str);
+            ret = 1;
+            if (lock_item_id == item->cloud_properties.item_id)
+            {
+                send_command(cj_value->valueint);
+                lock_update(cj_value->valueint);
+            }
+            ezlopi_device_value_updated_from_device_broadcast(item);
+        }
+    }
+    return ret;
+}
 
 static int __get_value_cjson(l_ezlopi_item_t* item, void* args)
 {
@@ -157,14 +158,18 @@ static int __get_value_cjson(l_ezlopi_item_t* item, void* args)
 
     ret = 1;
 
-    if (ezlopi_item_name_switch == item->cloud_properties.item_name)
+    if (switch_item_id == item->cloud_properties.item_id)
     {
         ezlopi_valueformatter_bool_to_cjson(cj_params, qiao_switch_value(), item->cloud_properties.scale);
     }
-    // else if (ezlopi_item_name_switch == item->cloud_properties.item_name)
-    // {
-    //     ezlopi_valueformatter_bool_to_cjson(cj_params, xuguang_power_value(), item->cloud_properties.scale);
-    // }
+    else if (mode_item_id == item->cloud_properties.item_id)
+    {
+        ezlopi_valueformatter_bool_to_cjson(cj_params, qiao_mode_value(), item->cloud_properties.scale);
+    }
+    else if (lock_item_id == item->cloud_properties.item_id)
+    {
+        ezlopi_valueformatter_bool_to_cjson(cj_params, qiao_lock_value(), item->cloud_properties.scale);
+    }
     
     return ret;
 }
@@ -173,7 +178,7 @@ static int __get_value_cjson(l_ezlopi_item_t* item, void* args)
 
 static int __prepare_switch_device(uint32_t *parent_id, cJSON* cj_device) {
     int ret = 0;
-    l_ezlopi_device_t* device = ezlopi_device_add_device(cj_device, NULL);
+    l_ezlopi_device_t* device = ezlopi_device_add_device(cj_device, " Breaker Status");
         if (device)
         {
             ret = 1;
@@ -184,13 +189,6 @@ static int __prepare_switch_device(uint32_t *parent_id, cJSON* cj_device) {
             {
                 __prepare_switch_item_properties(switch_item, cj_device);
             }
-
-            // l_ezlopi_item_t* toggle_item = ezlopi_device_add_item_to_device(device, device_00110_Qiao_Wifi_Circuit_Breaker);
-            // if (toggle_item)
-            // {
-            //     __prepare_dimmer_switch_item_properties(toggle_item, cj_device);
-            // }
-
             if ((NULL == switch_item))
             {
                 ezlopi_device_free_device(device);
@@ -203,7 +201,7 @@ static int __prepare_switch_device(uint32_t *parent_id, cJSON* cj_device) {
 
 static int __prepare_mode_device(uint32_t parent_id, cJSON* cj_device) {
     int ret = 0;
-    l_ezlopi_device_t* device = ezlopi_device_add_device(cj_device, NULL);
+    l_ezlopi_device_t* device = ezlopi_device_add_device(cj_device, " Mode Status");
         if (device)
         {
             ret = 1;
@@ -214,13 +212,6 @@ static int __prepare_mode_device(uint32_t parent_id, cJSON* cj_device) {
             {
                 __prepare_mode_item_properties(mode_item, cj_device);
             }
-
-            // l_ezlopi_item_t* toggle_item = ezlopi_device_add_item_to_device(device, device_00110_Qiao_Wifi_Circuit_Breaker);
-            // if (toggle_item)
-            // {
-            //     __prepare_dimmer_switch_item_properties(toggle_item, cj_device);
-            // }
-
             if ((NULL == mode_item))
             {
                 ezlopi_device_free_device(device);
@@ -233,7 +224,7 @@ static int __prepare_mode_device(uint32_t parent_id, cJSON* cj_device) {
 
 static int __prepare_switch_lock_device(uint32_t parent_id, cJSON* cj_device) {
     int ret = 0;
-    l_ezlopi_device_t* device = ezlopi_device_add_device(cj_device, NULL);
+    l_ezlopi_device_t* device = ezlopi_device_add_device(cj_device, " Switch lock");
         if (device)
         {
             ret = 1;
@@ -244,13 +235,6 @@ static int __prepare_switch_lock_device(uint32_t parent_id, cJSON* cj_device) {
             {
                 __prepare_switch_lock_item_properties(lock_item, cj_device);
             }
-
-            // l_ezlopi_item_t* toggle_item = ezlopi_device_add_item_to_device(device, device_00110_Qiao_Wifi_Circuit_Breaker);
-            // if (toggle_item)
-            // {
-            //     __prepare_dimmer_switch_item_properties(toggle_item, cj_device);
-            // }
-
             if ((NULL == lock_item))
             {
                 ezlopi_device_free_device(device);
@@ -266,7 +250,7 @@ static int __prepare_switch_lock_device(uint32_t parent_id, cJSON* cj_device) {
 static void __prepare_switch_device_cloud_properties(l_ezlopi_device_t* device)
 {
     device->cloud_properties.category = category_switch;
-    device->cloud_properties.subcategory = subcategory_in_wall;
+    device->cloud_properties.subcategory = subcategory_relay;
     device->cloud_properties.device_type = dev_type_switch_inwall;
     device->cloud_properties.info = NULL;
     device->cloud_properties.device_type_id = NULL;
@@ -281,6 +265,7 @@ static void __prepare_switch_item_properties(l_ezlopi_item_t* item, cJSON* cjson
     item->cloud_properties.value_type = value_type_bool;
     item->cloud_properties.item_id = ezlopi_cloud_generate_item_id();
     item->cloud_properties.scale = NULL;
+    switch_item_id = item->cloud_properties.item_id;
 
     item->interface.uart.enable = true;
     item->interface_type = EZLOPI_DEVICE_INTERFACE_UART;
@@ -292,7 +277,7 @@ static void __prepare_switch_item_properties(l_ezlopi_item_t* item, cJSON* cjson
 static void __prepare_mode_device_cloud_properties(l_ezlopi_device_t* device)
 {
     device->cloud_properties.category = category_switch;
-    device->cloud_properties.subcategory = subcategory_in_wall;
+    device->cloud_properties.subcategory = subcategory_manual_auto;
     device->cloud_properties.device_type = dev_type_switch_inwall;
     device->cloud_properties.info = NULL;
     device->cloud_properties.device_type_id = NULL;
@@ -307,6 +292,7 @@ static void __prepare_mode_item_properties(l_ezlopi_item_t* item, cJSON* cjson_d
     item->cloud_properties.value_type = value_type_bool;
     item->cloud_properties.item_id = ezlopi_cloud_generate_item_id();
     item->cloud_properties.scale = NULL;
+    mode_item_id = item->cloud_properties.item_id;
 
     item->interface.uart.enable = true;
     item->interface_type = EZLOPI_DEVICE_INTERFACE_UART;
@@ -318,7 +304,7 @@ static void __prepare_mode_item_properties(l_ezlopi_item_t* item, cJSON* cjson_d
 static void __prepare_switch_lock_device_cloud_properties(l_ezlopi_device_t* device)
 {
     device->cloud_properties.category = category_switch;
-    device->cloud_properties.subcategory = subcategory_in_wall;
+    device->cloud_properties.subcategory = subcategory_child_lock;
     device->cloud_properties.device_type = dev_type_switch_inwall;
     device->cloud_properties.info = NULL;
     device->cloud_properties.device_type_id = NULL;
@@ -328,11 +314,12 @@ static void __prepare_switch_lock_item_properties(l_ezlopi_item_t* item, cJSON* 
 {
     item->cloud_properties.show = true;
     item->cloud_properties.has_getter = true;
-    item->cloud_properties.has_setter = false;
-    item->cloud_properties.item_name = ezlopi_item_name_switch;
+    item->cloud_properties.has_setter = true;
+    item->cloud_properties.item_name = ezlopi_item_name_lock_operation;
     item->cloud_properties.value_type = value_type_bool;
     item->cloud_properties.item_id = ezlopi_cloud_generate_item_id();
     item->cloud_properties.scale = NULL;
+    lock_item_id = item->cloud_properties.item_id;
 
     item->interface.uart.enable = true;
     item->interface_type = EZLOPI_DEVICE_INTERFACE_UART;

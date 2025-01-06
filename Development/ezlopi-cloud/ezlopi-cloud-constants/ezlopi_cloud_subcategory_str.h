@@ -10,6 +10,8 @@ extern const char *subcategory_dimmable_colored;
 // extern const  char *subcategory_interior_plugin;
 // extern const  char *subcategory_exterior_plugin;
 extern const char *subcategory_in_wall;
+extern const char *subcategory_manual_auto;
+extern const char *subcategory_lock;
 // extern const  char *subcategory_refrigerator;
 // extern const  char *subcategory_valve;
 extern const char *subcategory_relay;
