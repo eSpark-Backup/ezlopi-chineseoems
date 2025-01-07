@@ -10,6 +10,7 @@ extern const char *category_switch;
 extern const char *category_security_sensor;
 extern const char *category_generic_sensor;
 extern const  char *category_hvac;
+extern const char *category_mode;
 // extern const  char *category_camera;
 extern const char *category_door_lock;
 // extern const  char *category_window_cov;

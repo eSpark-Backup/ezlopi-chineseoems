@@ -46,6 +46,7 @@ extern const char *subcategory_moisture;
 // extern const  char *subcategory_freeze;
 extern const  char *subcategory_power;
 extern const char *subcategory_child_lock;
+extern const char *subcategory_lock;
 extern const char *subcategory_mode_selection;
 // extern const  char *subcategory_activity;
 // extern const  char *subcategory_current;

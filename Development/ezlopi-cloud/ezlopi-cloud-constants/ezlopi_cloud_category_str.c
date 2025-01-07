@@ -6,6 +6,7 @@ const char *category_not_defined = "";
 const char *category_interface = "interface";
 const char *category_dimmable_light = "dimmable_light";
 const char *category_switch = "switch";
+const char *category_mode = "mode";
 const char *category_security_sensor = "security_sensor";
 const char *category_generic_sensor = "generic_sensor";
 const  char *category_hvac = "hvac";
