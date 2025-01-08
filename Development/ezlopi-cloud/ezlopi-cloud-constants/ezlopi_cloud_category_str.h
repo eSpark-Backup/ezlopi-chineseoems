@@ -7,6 +7,8 @@ extern const char *category_not_defined;
 extern const char *category_interface;
 extern const char *category_dimmable_light;
 extern const char *category_switch;
+extern const char *category_mode;
+extern const char *category_lock;
 extern const char *category_security_sensor;
 extern const char *category_generic_sensor;
 extern const  char *category_hvac;
