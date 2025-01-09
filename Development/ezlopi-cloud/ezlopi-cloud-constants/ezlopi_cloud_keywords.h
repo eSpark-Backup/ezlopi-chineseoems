@@ -155,6 +155,8 @@ extern "C"
     extern const char *ezlopi_cloud_uuid_str;
     extern const char *ezlopi_config_version_str;
     extern const char *ezlopi_firmware_type_str;
+    extern const char* ezlopi_d02_type_str;
+    extern const char* ezlopi_d02_hardware_str;
     extern const char *ezlopi_deviceTypeId_str;
     extern const char *ezlopi_parentDeviceId_str;
     extern const char *ezlopi_category_str;

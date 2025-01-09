@@ -3,6 +3,7 @@
 #include "esp_wifi.h"
 #include "esp_sleep.h"
 #include "driver/ledc.h"
+#include "ezlopi_core_ota.h"
 #include "ezlopi_cloud_constants.h"
 #include "ezlopi_service_gpioisr.h"
 #include "ezlopi_core_factory_info.h"
@@ -31,7 +32,7 @@
 #define NEO_LEDC_FREQUENCY      1000   
 
 static uint64_t start_time = 0;
-uint64_t sleep_time = (15*1000*1000);
+uint64_t sleep_time = (50*1000*1000);
 TaskHandle_t  pairing_task_handle = NULL;
 
 const char* neo_water_leak_alarm_states[] = {
@@ -381,7 +382,11 @@ void timer_task(void* arg)
     {
         while(1)
         {
-            if((esp_timer_get_time() - start_time) > sleep_time) //20sec
+            if(EPZI_core_ota_get_state() == 1)
+            {
+                vTaskDelete(NULL);
+            }
+            else if((esp_timer_get_time() - start_time) > sleep_time) //50sec
             {
                 l_ezlopi_device_t* device_head = EZPI_core_device_get_head();
                 if(device_head)

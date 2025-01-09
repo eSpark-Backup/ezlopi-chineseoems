@@ -45,6 +45,7 @@
 #include "ezlopi_util_trace.h"
 
 #include "ezlopi_core_nvs.h"
+#include "ezlopi_cloud_keywords.h"
 #include "ezlopi_core_factory_info.h"
 // #include "ezlopi_core_errors.h"
 #include "EZLOPI_USER_CONFIG.h"
@@ -493,7 +494,7 @@ char *EZPI_core_factory_info_v3_get_provisioning_server(void)
 
 const char *EZPI_core_factory_info_v3_get_device_type(void)
 {
-    return "ezlopi_generic";
+    return ezlopi_d02_type_str;
 }
 
 void EZPI_core_factory_info_v3_free_ca_certificate(void)
