@@ -1,36 +1,91 @@
+/* ===========================================================================
+** Copyright (C) 2024 Ezlo Innovation Inc
+**
+** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
+**
+** Redistribution and use in source and binary forms, with or without
+** modification, are permitted provided that the following conditions are met:
+**
+** 1. Redistributions of source code must retain the above copyright notice,
+**    this list of conditions and the following disclaimer.
+** 2. Redistributions in binary form must reproduce the above copyright
+**    notice, this list of conditions and the following disclaimer in the
+**    documentation and/or other materials provided with the distribution.
+** 3. Neither the name of the copyright holder nor the names of its
+**    contributors may be used to endorse or promote products derived from
+**    this software without specific prior written permission.
+**
+** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+** AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+** IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+** ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+** LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+** CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+** SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+** INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+** CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+** ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+** POSSIBILITY OF SUCH DAMAGE.
+** ===========================================================================
+*/
+/**
+ * @file    sensor_0069_ze08_ch02_gas_sensor.h
+ * @brief   perform some function on sensor_0069_ze08_ch02_gas_sensor
+ * @author  xx
+ * @version 0.1
+ * @date    xx
+*/
 
 
 #ifndef _SENSOR_0069_ZE08_CH02_gas_sensor_H_
 #define _SENSOR_0069_ZE08_CH02_gas_sensor_H_
 
 
+/*******************************************************************************
+*                          Include Files
+*******************************************************************************/
 #include "ezlopi_core_actions.h"
 #include "ezlopi_core_devices.h"
+#include "ezlopi_core_errors.h"
 
-// Threshold values for smoke
-#define SMOKE_TVOC_THRESHOLD 450
-#define SMOKE_PM2_5_THRESHOLD 500
-#define SMOKE_CO_THRESHOLD 6.5
-#define SMOKE_NH3_THRESHOLD 6.0
-
-// Threshold values for vape
-#define VAPE_TVOC_THRESHOLD_LOW 160
-#define VAPE_TVOC_THRESHOLD_HIGH 200 
-#define VAPE_PM2_5_THRESHOLD 1000
-#define VAPE_CO_THRESHOLD 5.5f
-#define VAPE_NH3_THRESHOLD 6.0f
-
-typedef struct ezlopi_smoke
+/*******************************************************************************
+*                          C++ Declaration Wrapper
+*******************************************************************************/
+#ifdef __cplusplus
+extern "C"
 {
-    float co;
-    float nh3;
-    uint16_t tvoc;
-    uint16_t pm25_standard;
-} ezlopi_smoke_t;
+#endif
 
-int sensor_0069_ze08_ch02_gas_sensor(e_ezlopi_actions_t action, l_ezlopi_item_t *item, void *arg, void *user_arg);
+    /*******************************************************************************
+    *                          Type & Macro Declarations
+    *******************************************************************************/
 
+    /*******************************************************************************
+    *                          Extern Data Declarations
+    *******************************************************************************/
+
+    /*******************************************************************************
+    *                          Extern Function Prototypes
+    *******************************************************************************/
+
+    /**
+    * @brief Function to operate on actions
+    *
+    * @param action Current Action to Operate on
+    * @param item Target-Item node
+    * @param arg Arg for action
+    * @param user_arg User-arg
+    * @return ezlopi_error_t
+    */
+    ezlopi_error_t SENSOR_0069_ze08_ch02_gas_sensor(e_ezlopi_actions_t action, l_ezlopi_item_t *item, void *arg, void *user_arg);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // _SENSOR_0069_ZE08_CH02_gas_sensor_H_
 
-
+/*******************************************************************************
+*                          End of File
+*******************************************************************************/

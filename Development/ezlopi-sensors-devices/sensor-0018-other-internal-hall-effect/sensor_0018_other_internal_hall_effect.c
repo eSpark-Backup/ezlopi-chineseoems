@@ -1,14 +1,51 @@
+/* ===========================================================================
+** Copyright (C) 2024 Ezlo Innovation Inc
+**
+** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
+**
+** Redistribution and use in source and binary forms, with or without
+** modification, are permitted provided that the following conditions are met:
+**
+** 1. Redistributions of source code must retain the above copyright notice,
+**    this list of conditions and the following disclaimer.
+** 2. Redistributions in binary form must reproduce the above copyright
+**    notice, this list of conditions and the following disclaimer in the
+**    documentation and/or other materials provided with the distribution.
+** 3. Neither the name of the copyright holder nor the names of its
+**    contributors may be used to endorse or promote products derived from
+**    this software without specific prior written permission.
+**
+** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+** AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+** IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+** ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+** LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+** CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+** SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+** INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+** CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+** ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+** POSSIBILITY OF SUCH DAMAGE.
+** ===========================================================================
+*/
+/**
+ * @file    sensor_0018_other_internal_hall_effect.c
+ * @brief   perform some function on sensor_0018
+ * @author  xx
+ * @version 0.1
+ * @date    xx
+ */
 
+/*******************************************************************************
+ *                          Include Files
+ *******************************************************************************/
 
 #include "../../build/config/sdkconfig.h"
 
 #ifdef CONFIG_IDF_TARGET_ESP32
 
 #include <math.h>
-#include "ezlopi_util_trace.h"
-// #include "esp_err.h"
 
-// // #include "ezlopi_core_timer.h"
 #include "ezlopi_core_cloud.h"
 #include "ezlopi_core_cjson_macros.h"
 #include "ezlopi_core_valueformatter.h"
@@ -21,30 +58,51 @@
 #include "sensor_0018_other_internal_hall_effect.h"
 #include "EZLOPI_USER_CONFIG.h"
 
-const char* hall_door_window_states[] = {
-    "dw_is_opened",
-    "dw_is_closed",
-    "unknown",
-};
+/*******************************************************************************
+ *                          Extern Data Declarations
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Extern Function Declarations
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Type & Macro Definitions
+ *******************************************************************************/
 typedef struct s_hall_data
 {
     bool calibration_complete;
-    char* hall_state;
+    char *hall_state;
     int Custom_stable_val;
 } s_hall_data_t;
 
-static int __prepare(void* arg);
-static int __init(l_ezlopi_item_t* item);
-static int __get_item_cjson(l_ezlopi_item_t* item, void* arg);
-static int __get_value_cjson(l_ezlopi_item_t* item, void* arg);
-static int __notify(l_ezlopi_item_t* item);
-static void __setup_device_cloud_properties(l_ezlopi_device_t* device, cJSON* cj_device);
-static void __setup_item_properties(l_ezlopi_item_t* item, cJSON* cj_device, void* user_data);
-static void __hall_calibration_task(void* params);
+/*******************************************************************************
+ *                          Static Function Prototypes
+ *******************************************************************************/
+static ezlopi_error_t __prepare(void *arg);
+static ezlopi_error_t __init(l_ezlopi_item_t *item);
+static ezlopi_error_t __get_item_cjson(l_ezlopi_item_t *item, void *arg);
+static ezlopi_error_t __get_value_cjson(l_ezlopi_item_t *item, void *arg);
+static ezlopi_error_t __notify(l_ezlopi_item_t *item);
+static void __setup_device_cloud_properties(l_ezlopi_device_t *device, cJSON *cj_device);
+static void __setup_item_properties(l_ezlopi_item_t *item, cJSON *cj_device, void *user_data);
+static void __hall_calibration_task(void *params);
 
-int sensor_0018_other_internal_hall_effect(e_ezlopi_actions_t action, l_ezlopi_item_t* item, void* arg, void* user_arg)
+/*******************************************************************************
+ *                          Static Data Definitions
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Extern Data Definitions
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Extern Function Definitions
+ *******************************************************************************/
+
+ezlopi_error_t SENSOR_0018_other_internal_hall_effect(e_ezlopi_actions_t action, l_ezlopi_item_t *item, void *arg, void *user_arg)
 {
-    int ret = 0;
+    ezlopi_error_t ret = EZPI_SUCCESS;
 
     switch (action)
     {
@@ -83,7 +141,10 @@ int sensor_0018_other_internal_hall_effect(e_ezlopi_actions_t action, l_ezlopi_i
     return ret;
 }
 
-static void __setup_device_cloud_properties(l_ezlopi_device_t* device, cJSON* cj_device)
+/*******************************************************************************
+ *                         Static Function Definitions
+ *******************************************************************************/
+static void __setup_device_cloud_properties(l_ezlopi_device_t *device, cJSON *cj_device)
 {
     device->cloud_properties.category = category_security_sensor;
     device->cloud_properties.subcategory = subcategory_door;
@@ -92,9 +153,9 @@ static void __setup_device_cloud_properties(l_ezlopi_device_t* device, cJSON* cj
     device->cloud_properties.device_type_id = NULL;
 }
 
-static void __setup_item_properties(l_ezlopi_item_t* item, cJSON* cj_device, void* user_data)
+static void __setup_item_properties(l_ezlopi_item_t *item, cJSON *cj_device, void *user_data)
 {
-    item->cloud_properties.item_id = ezlopi_cloud_generate_item_id();
+    item->cloud_properties.item_id = EZPI_core_cloud_generate_item_id();
     item->cloud_properties.has_getter = true;
     item->cloud_properties.has_setter = true;
     item->cloud_properties.item_name = ezlopi_item_name_dw_state;
@@ -109,51 +170,45 @@ static void __setup_item_properties(l_ezlopi_item_t* item, cJSON* cj_device, voi
     item->user_arg = user_data;
 }
 
-static int __prepare(void* arg)
+static ezlopi_error_t __prepare(void *arg)
 {
-    int ret = 0;
-    s_ezlopi_prep_arg_t* prep_arg = (s_ezlopi_prep_arg_t*)arg;
+    ezlopi_error_t ret = EZPI_ERR_PREP_DEVICE_PREP_FAILED;
+    s_ezlopi_prep_arg_t *prep_arg = (s_ezlopi_prep_arg_t *)arg;
     if (arg && prep_arg->cjson_device)
     {
-        cJSON* cj_device = prep_arg->cjson_device;
-        s_hall_data_t* user_data = (s_hall_data_t*)ezlopi_malloc(__FUNCTION__, sizeof(s_hall_data_t));
+        cJSON *cj_device = prep_arg->cjson_device;
+        s_hall_data_t *user_data = (s_hall_data_t *)ezlopi_malloc(__FUNCTION__, sizeof(s_hall_data_t));
         if (user_data)
         {
             memset(user_data, 0, sizeof(s_hall_data_t));
-            l_ezlopi_device_t* hall_device = ezlopi_device_add_device(cj_device, NULL);
+            l_ezlopi_device_t *hall_device = EZPI_core_device_add_device(cj_device, NULL);
             if (hall_device)
             {
-                ret = 1;
                 __setup_device_cloud_properties(hall_device, cj_device);
-                l_ezlopi_item_t* hall_item = ezlopi_device_add_item_to_device(hall_device, sensor_0018_other_internal_hall_effect);
+                l_ezlopi_item_t *hall_item = EZPI_core_device_add_item_to_device(hall_device, SENSOR_0018_other_internal_hall_effect);
                 if (hall_item)
                 {
                     __setup_item_properties(hall_item, cj_device, user_data);
+                    ret = EZPI_SUCCESS;
                 }
                 else
                 {
-                    ezlopi_device_free_device(hall_device);
+                    EZPI_core_device_free_device(hall_device);
                     ezlopi_free(__FUNCTION__, user_data);
-                    ret = -1;
                 }
             }
             else
             {
                 ezlopi_free(__FUNCTION__, user_data);
-                ret = -1;
             }
-        }
-        else
-        {
-            ret = -1;
         }
     }
     return ret;
 }
 
-static int __init(l_ezlopi_item_t* item)
+static ezlopi_error_t __init(l_ezlopi_item_t *item)
 {
-    int ret = 0;
+    ezlopi_error_t ret = EZPI_ERR_INIT_DEVICE_FAILED;
     if (item)
     {
 #ifdef CONFIG_IDF_TARGET_ESP32
@@ -161,51 +216,57 @@ static int __init(l_ezlopi_item_t* item)
 #else
         esp_err_t error = ESP_ERR_NOT_FOUND;
 #endif
-        s_hall_data_t* user_data = (s_hall_data_t*)item->user_arg;
+        s_hall_data_t *user_data = (s_hall_data_t *)item->user_arg;
         if (user_data)
         {
             if (ESP_OK == error)
             {
+                ret = EZPI_SUCCESS;
                 TRACE_I("Width configuration was successfully done!");
                 TRACE_W("Calibrating.....");
                 user_data->hall_state = "dw_is_closed";
-                TaskHandle_t ezlopi_sensor_hall_callibration_task_handle = NULL;
-                xTaskCreate(__hall_calibration_task, "Hall_Calibration_Task", EZLOPI_SENSOR_HALL_CALLIBRATION_TASK_DEPTH, item, 1, &ezlopi_sensor_hall_callibration_task_handle);
-                ezlopi_core_process_set_process_info(ENUM_EZLOPI_SENSOR_HALL_CALLIBRATION_TASK, &ezlopi_sensor_hall_callibration_task_handle, EZLOPI_SENSOR_HALL_CALLIBRATION_TASK_DEPTH);
-                ret = 1;
+                // TaskHandle_t ezlopi_sensor_hall_callibration_task_handle = NULL;
+                // xTaskCreate(__hall_calibration_task, "Hall_Calibration_Task", EZLOPI_SENSOR_HALL_CALLIBRATION_TASK_DEPTH, item, 1, &ezlopi_sensor_hall_callibration_task_handle);
+                if (false == user_data->calibration_complete)
+                {
+                    __hall_calibration_task(item);
+                }
+                // #if defined(CONFIG_FREERTOS_USE_TRACE_FACILITY)
+                //                 EZPI_core_process_set_process_info(ENUM_EZLOPI_SENSOR_HALL_CALLIBRATION_TASK, &ezlopi_sensor_hall_callibration_task_handle, EZLOPI_SENSOR_HALL_CALLIBRATION_TASK_DEPTH);
+                // #endif
             }
             else
             {
                 TRACE_E("Error 'sensor_door_init'. error: %s)", esp_err_to_name(error));
-                ret = -1;
             }
-        }
-        else
-        {
-            ret = -1;
         }
     }
     return ret;
 }
 
-static int __get_item_cjson(l_ezlopi_item_t* item, void* arg)
+static ezlopi_error_t __get_item_cjson(l_ezlopi_item_t *item, void *arg)
 {
-    int ret = 0;
+    ezlopi_error_t ret = EZPI_FAILED;
     if (item && arg)
     {
-        s_hall_data_t* user_data = (s_hall_data_t*)item->user_arg;
+        s_hall_data_t *user_data = (s_hall_data_t *)item->user_arg;
         if (user_data)
         {
-            cJSON* cj_result = (cJSON*)arg;
+            cJSON *cj_result = (cJSON *)arg;
             if (cj_result)
             {
                 //-------------------  POSSIBLE JSON ENUM LPGNTENTS ----------------------------------
-                cJSON* json_array_enum = cJSON_CreateArray(__FUNCTION__);
+                cJSON *json_array_enum = cJSON_CreateArray(__FUNCTION__);
                 if (NULL != json_array_enum)
                 {
+                    char *hall_door_window_states[] = {
+                        "dw_is_opened",
+                        "dw_is_closed",
+                        "unknown",
+                    };
                     for (uint8_t i = 0; i < HALL_DOOR_WINDOW_MAX; i++)
                     {
-                        cJSON* json_value = cJSON_CreateString(__FUNCTION__, hall_door_window_states[i]);
+                        cJSON *json_value = cJSON_CreateString(__FUNCTION__, hall_door_window_states[i]);
                         if (NULL != json_value)
                         {
                             cJSON_AddItemToArray(json_array_enum, json_value);
@@ -216,44 +277,44 @@ static int __get_item_cjson(l_ezlopi_item_t* item, void* arg)
                 //--------------------------------------------------------------------------------------
                 cJSON_AddStringToObject(__FUNCTION__, cj_result, ezlopi_value_str, user_data->hall_state);
                 cJSON_AddStringToObject(__FUNCTION__, cj_result, ezlopi_valueFormatted_str, user_data->hall_state);
+                ret = EZPI_SUCCESS;
             }
-            ret = 1;
         }
     }
     return ret;
 }
 
-static int __get_value_cjson(l_ezlopi_item_t* item, void* arg)
+static ezlopi_error_t __get_value_cjson(l_ezlopi_item_t *item, void *arg)
 {
-    int ret = 0;
+    ezlopi_error_t ret = EZPI_FAILED;
     if (item && arg)
     {
-        s_hall_data_t* user_data = (s_hall_data_t*)item->user_arg;
+        s_hall_data_t *user_data = (s_hall_data_t *)item->user_arg;
         if (user_data)
         {
-            cJSON* cj_result = (cJSON*)arg;
+            cJSON *cj_result = (cJSON *)arg;
             if (cj_result)
             {
                 cJSON_AddStringToObject(__FUNCTION__, cj_result, ezlopi_valueFormatted_str, user_data->hall_state);
                 cJSON_AddStringToObject(__FUNCTION__, cj_result, ezlopi_value_str, user_data->hall_state);
+                ret = EZPI_SUCCESS;
             }
-            ret = 1;
         }
     }
     return ret;
 }
 
-static int __notify(l_ezlopi_item_t* item)
+static ezlopi_error_t __notify(l_ezlopi_item_t *item)
 {
-    int ret = 0;
+    ezlopi_error_t ret = EZPI_FAILED;
     if (item)
     {
-        s_hall_data_t* user_data = (s_hall_data_t*)item->user_arg;
+        s_hall_data_t *user_data = (s_hall_data_t *)item->user_arg;
         if (user_data)
         {
             if (user_data->calibration_complete)
             {
-                char* curret_value = NULL;
+                char *curret_value = NULL;
 #ifdef CONFIG_IDF_TARGET_ESP32
                 int sensor_data = hall_sensor_read();
 #else
@@ -266,22 +327,22 @@ static int __notify(l_ezlopi_item_t* item)
                 if (curret_value != user_data->hall_state) // calls update only if there is change in state
                 {
                     user_data->hall_state = curret_value;
-                    ezlopi_device_value_updated_from_device_broadcast(item);
+                    EZPI_core_device_value_updated_from_device_broadcast(item);
                 }
-                ret = 1;
+                ret = EZPI_SUCCESS;
             }
         }
     }
     return ret;
 }
 
-static void __hall_calibration_task(void* params) // calibrate task
+static void __hall_calibration_task(void *params) // calibrate task
 {
-    l_ezlopi_item_t* item = (l_ezlopi_item_t*)params;
+    l_ezlopi_item_t *item = (l_ezlopi_item_t *)params;
     if (item)
     {
-        s_hall_data_t* user_data = (s_hall_data_t*)item->user_arg;
-        if (user_data)
+        s_hall_data_t *user_data = (s_hall_data_t *)item->user_arg;
+        if (user_data && (false == user_data->calibration_complete))
         {
 
             float sensor_data = (float)hall_sensor_read();
@@ -295,8 +356,14 @@ static void __hall_calibration_task(void* params) // calibrate task
             user_data->calibration_complete = true;
         }
     }
-    ezlopi_core_process_set_is_deleted(ENUM_EZLOPI_SENSOR_HALL_CALLIBRATION_TASK);
-    vTaskDelete(NULL);
+    // #if defined(CONFIG_FREERTOS_USE_TRACE_FACILITY)
+    //     EZPI_core_process_set_is_deleted(ENUM_EZLOPI_SENSOR_HALL_CALLIBRATION_TASK);
+    // #endif
+    //     vTaskDelete(NULL);
 }
 
 #endif // CONFIG_IDF_TARGET_ESP32
+
+/*******************************************************************************
+ *                          End of File
+ *******************************************************************************/

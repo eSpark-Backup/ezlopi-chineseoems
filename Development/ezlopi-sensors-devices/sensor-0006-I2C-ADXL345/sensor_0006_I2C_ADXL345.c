@@ -1,7 +1,46 @@
-#include <math.h>
-#include "ezlopi_util_trace.h"
+/* ===========================================================================
+** Copyright (C) 2024 Ezlo Innovation Inc
+**
+** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
+**
+** Redistribution and use in source and binary forms, with or without
+** modification, are permitted provided that the following conditions are met:
+**
+** 1. Redistributions of source code must retain the above copyright notice,
+**    this list of conditions and the following disclaimer.
+** 2. Redistributions in binary form must reproduce the above copyright
+**    notice, this list of conditions and the following disclaimer in the
+**    documentation and/or other materials provided with the distribution.
+** 3. Neither the name of the copyright holder nor the names of its
+**    contributors may be used to endorse or promote products derived from
+**    this software without specific prior written permission.
+**
+** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+** AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+** IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+** ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+** LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+** CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+** SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+** INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+** CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+** ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+** POSSIBILITY OF SUCH DAMAGE.
+** ===========================================================================
+*/
+/**
+* @file    sensor_0006_I2C_ADXL345.c
+* @brief   perform some function on sensor_0006
+* @author  xx
+* @version 0.1
+* @date    xx
+*/
 
-// #include "ezlopi_core_timer.h"
+/*******************************************************************************
+*                          Include Files
+*******************************************************************************/
+#include <math.h>
+
 #include "ezlopi_core_cloud.h"
 #include "ezlopi_core_cjson_macros.h"
 #include "ezlopi_core_valueformatter.h"
@@ -15,17 +54,43 @@
 #include "sensor_0006_I2C_ADXL345.h"
 #include "EZLOPI_USER_CONFIG.h"
 
-static int __prepare(void* arg);
-static int __init(l_ezlopi_item_t* item);
-static int __get_cjson_value(l_ezlopi_item_t* item, void* arg);
-static int __notify(l_ezlopi_item_t* item);
-static void __prepare_device_cloud_properties(l_ezlopi_device_t* device, cJSON* cj_device);
-static void __prepare_item_cloud_properties(l_ezlopi_item_t* item, void* user_data);
-static void __prepare_item_interface_properties(l_ezlopi_item_t* item, cJSON* cj_device);
+/*******************************************************************************
+*                          Extern Data Declarations
+*******************************************************************************/
 
-int sensor_0006_I2C_ADXL345(e_ezlopi_actions_t action, l_ezlopi_item_t* item, void* arg, void* user_arg)
+/*******************************************************************************
+*                          Extern Function Declarations
+*******************************************************************************/
+
+/*******************************************************************************
+*                          Type & Macro Definitions
+*******************************************************************************/
+
+/*******************************************************************************
+*                          Static Function Prototypes
+*******************************************************************************/
+static ezlopi_error_t __prepare(void *arg);
+static ezlopi_error_t __init(l_ezlopi_item_t *item);
+static ezlopi_error_t __get_cjson_value(l_ezlopi_item_t *item, void *arg);
+static ezlopi_error_t __notify(l_ezlopi_item_t *item);
+static void __prepare_device_cloud_properties(l_ezlopi_device_t *device, cJSON *cj_device);
+static void __prepare_item_cloud_properties(l_ezlopi_item_t *item, void *user_data);
+static void __prepare_item_interface_properties(l_ezlopi_item_t *item, cJSON *cj_device);
+
+/*******************************************************************************
+*                          Static Data Definitions
+*******************************************************************************/
+
+/*******************************************************************************
+*                          Extern Data Definitions
+*******************************************************************************/
+
+/*******************************************************************************
+*                          Extern Function Definitions
+*******************************************************************************/
+ezlopi_error_t SENSOR_0006_i2c_adxl345(e_ezlopi_actions_t action, l_ezlopi_item_t *item, void *arg, void *user_arg)
 {
-    int ret = 0;
+    ezlopi_error_t ret = EZPI_SUCCESS;
     switch (action)
     {
     case EZLOPI_ACTION_PREPARE:
@@ -57,7 +122,10 @@ int sensor_0006_I2C_ADXL345(e_ezlopi_actions_t action, l_ezlopi_item_t* item, vo
     return ret;
 }
 
-static void __prepare_device_cloud_properties(l_ezlopi_device_t* device, cJSON* cj_device)
+/*******************************************************************************
+*                         Static Function Definitions
+*******************************************************************************/
+static void __prepare_device_cloud_properties(l_ezlopi_device_t *device, cJSON *cj_device)
 {
     device->cloud_properties.category = category_level_sensor;
     device->cloud_properties.subcategory = subcategory_not_defined;
@@ -66,11 +134,11 @@ static void __prepare_device_cloud_properties(l_ezlopi_device_t* device, cJSON* 
     device->cloud_properties.device_type = dev_type_sensor;
 }
 
-static void __prepare_item_cloud_properties(l_ezlopi_item_t* item, void* user_data)
+static void __prepare_item_cloud_properties(l_ezlopi_item_t *item, void *user_data)
 {
     if (item)
     {
-        item->cloud_properties.item_id = ezlopi_cloud_generate_item_id();
+        item->cloud_properties.item_id = EZPI_core_cloud_generate_item_id();
         item->cloud_properties.has_getter = true;
         item->cloud_properties.has_setter = false;
         item->cloud_properties.show = true;
@@ -83,13 +151,14 @@ static void __prepare_item_cloud_properties(l_ezlopi_item_t* item, void* user_da
         }
     }
 }
-static void __prepare_item_interface_properties(l_ezlopi_item_t* item, cJSON* cj_device)
+static void __prepare_item_interface_properties(l_ezlopi_item_t *item, cJSON *cj_device)
 {
     if (item && cj_device)
     {
         if (ezlopi_item_name_acceleration_x_axis == item->cloud_properties.item_name)
         {
             item->interface.i2c_master.enable = true;
+            item->interface.i2c_master.channel = I2C_NUM_0;
             CJSON_GET_VALUE_DOUBLE(cj_device, ezlopi_dev_type_str, item->interface_type);
             CJSON_GET_VALUE_GPIO(cj_device, ezlopi_gpio_sda_str, item->interface.i2c_master.sda);
             CJSON_GET_VALUE_GPIO(cj_device, ezlopi_gpio_scl_str, item->interface.i2c_master.scl);
@@ -107,24 +176,23 @@ static void __prepare_item_interface_properties(l_ezlopi_item_t* item, cJSON* cj
     }
 }
 
-static int __prepare(void* arg)
+static ezlopi_error_t __prepare(void *arg)
 {
-    int ret = 0;
-    s_ezlopi_prep_arg_t* prep_arg = (s_ezlopi_prep_arg_t*)arg;
+    ezlopi_error_t ret = EZPI_ERR_PREP_DEVICE_PREP_FAILED;
+    s_ezlopi_prep_arg_t *prep_arg = (s_ezlopi_prep_arg_t *)arg;
     if (prep_arg && prep_arg->cjson_device)
     {
-        cJSON* cj_device = prep_arg->cjson_device;
-        s_adxl345_data_t* user_data = (s_adxl345_data_t*)ezlopi_malloc(__FUNCTION__, sizeof(s_adxl345_data_t));
+        cJSON *cj_device = prep_arg->cjson_device;
+        s_adxl345_data_t *user_data = (s_adxl345_data_t *)ezlopi_malloc(__FUNCTION__, sizeof(s_adxl345_data_t));
         if (NULL != user_data)
         {
             memset(user_data, 0, sizeof(s_adxl345_data_t));
-            l_ezlopi_device_t* adxl345_parent_x_device = ezlopi_device_add_device(cj_device, "acc_x");
+            l_ezlopi_device_t *adxl345_parent_x_device = EZPI_core_device_add_device(cj_device, "acc_x");
             if (adxl345_parent_x_device)
             {
-                ret = 1;
                 TRACE_I("Parent_adxl345_acc-x-[0x%x] ", adxl345_parent_x_device->cloud_properties.device_id);
                 __prepare_device_cloud_properties(adxl345_parent_x_device, cj_device);
-                l_ezlopi_item_t* x_item = ezlopi_device_add_item_to_device(adxl345_parent_x_device, sensor_0006_I2C_ADXL345);
+                l_ezlopi_item_t *x_item = EZPI_core_device_add_item_to_device(adxl345_parent_x_device, SENSOR_0006_i2c_adxl345);
                 if (x_item)
                 {
                     x_item->cloud_properties.item_name = ezlopi_item_name_acceleration_x_axis;
@@ -132,13 +200,13 @@ static int __prepare(void* arg)
                     __prepare_item_interface_properties(x_item, cj_device);
                 }
 
-                l_ezlopi_device_t* adxl345_child_y_device = ezlopi_device_add_device(cj_device, "acc_y");
+                l_ezlopi_device_t *adxl345_child_y_device = EZPI_core_device_add_device(cj_device, "acc_y");
                 if (adxl345_child_y_device)
                 {
                     TRACE_I("child_mpu6050_acc-y-[0x%x] ", adxl345_child_y_device->cloud_properties.device_id);
                     __prepare_device_cloud_properties(adxl345_child_y_device, cj_device);
-                    adxl345_child_y_device->cloud_properties.parent_device_id = adxl345_parent_x_device->cloud_properties.device_id;
-                    l_ezlopi_item_t* y_item = ezlopi_device_add_item_to_device(adxl345_child_y_device, sensor_0006_I2C_ADXL345);
+
+                    l_ezlopi_item_t *y_item = EZPI_core_device_add_item_to_device(adxl345_child_y_device, SENSOR_0006_i2c_adxl345);
                     if (y_item)
                     {
                         y_item->cloud_properties.item_name = ezlopi_item_name_acceleration_y_axis;
@@ -147,18 +215,17 @@ static int __prepare(void* arg)
                     }
                     else
                     {
-                        ret = -1;
-                        ezlopi_device_free_device(adxl345_child_y_device);
+                        EZPI_core_device_free_device(adxl345_child_y_device);
                     }
                 }
 
-                l_ezlopi_device_t* adxl345_child_z_device = ezlopi_device_add_device(cj_device, "acc_z");
+                l_ezlopi_device_t *adxl345_child_z_device = EZPI_core_device_add_device(cj_device, "acc_z");
                 if (adxl345_child_z_device)
                 {
                     TRACE_I("child_mpu6050_acc-z-[0x%x] ", adxl345_child_z_device->cloud_properties.device_id);
                     __prepare_device_cloud_properties(adxl345_child_z_device, cj_device);
-                    adxl345_child_z_device->cloud_properties.parent_device_id = adxl345_parent_x_device->cloud_properties.device_id;
-                    l_ezlopi_item_t* z_item = ezlopi_device_add_item_to_device(adxl345_child_z_device, sensor_0006_I2C_ADXL345);
+
+                    l_ezlopi_item_t *z_item = EZPI_core_device_add_item_to_device(adxl345_child_z_device, SENSOR_0006_i2c_adxl345);
                     if (z_item)
                     {
                         z_item->cloud_properties.item_name = ezlopi_item_name_acceleration_z_axis;
@@ -167,8 +234,7 @@ static int __prepare(void* arg)
                     }
                     else
                     {
-                        ret = -1;
-                        ezlopi_device_free_device(adxl345_child_z_device);
+                        EZPI_core_device_free_device(adxl345_child_z_device);
                     }
                 }
 
@@ -176,15 +242,17 @@ static int __prepare(void* arg)
                     (NULL == adxl345_child_y_device) &&
                     (NULL == adxl345_child_z_device))
                 {
-                    ezlopi_device_free_device(adxl345_parent_x_device);
+                    EZPI_core_device_free_device(adxl345_parent_x_device);
                     ezlopi_free(__FUNCTION__, user_data);
-                    ret = -1;
+                }
+                else
+                {
+                    ret = EZPI_SUCCESS;
                 }
             }
             else
             {
                 ezlopi_free(__FUNCTION__, user_data);
-                ret = -1;
             }
         }
     }
@@ -192,87 +260,78 @@ static int __prepare(void* arg)
     return ret;
 }
 
-static int __init(l_ezlopi_item_t* item)
+static ezlopi_error_t __init(l_ezlopi_item_t *item)
 {
-    int ret = 0;
+    ezlopi_error_t ret = EZPI_ERR_INIT_DEVICE_FAILED;
     if (item)
     {
-        s_adxl345_data_t* user_data = (s_adxl345_data_t*)item->user_arg;
+        s_adxl345_data_t *user_data = (s_adxl345_data_t *)item->user_arg;
         if (user_data)
         {
             if (item->interface.i2c_master.enable)
             {
-                ezlopi_i2c_master_init(&item->interface.i2c_master);
-                if (0 == __adxl345_configure_device(item)) // ESP_OK
+                EZPI_hal_i2c_master_init(&item->interface.i2c_master);
+                if (0 == ADXL345_configure_device(item)) // ESP_OK
                 {
                     TRACE_S("Configuration Complete...");
-                    ret = 1;
-                }
-                else
-                {
-                    ret = -1;
+                    ret = EZPI_SUCCESS;
                 }
             }
         }
-        else
-        {
-            ret = -1;
-        }
     }
-
     return ret;
 }
 
-static int __get_cjson_value(l_ezlopi_item_t* item, void* arg)
+static ezlopi_error_t __get_cjson_value(l_ezlopi_item_t *item, void *arg)
 {
-    int ret = 0;
+    ezlopi_error_t ret = EZPI_FAILED;
     if (item && arg)
     {
-        cJSON* cj_result = (cJSON*)arg;
+        cJSON *cj_result = (cJSON *)arg;
         if (cj_result)
         {
             float acceleration_value = 0;
-            s_adxl345_data_t* user_data = (s_adxl345_data_t*)item->user_arg;
+            s_adxl345_data_t *user_data = (s_adxl345_data_t *)item->user_arg;
             if (user_data)
             {
                 if (ezlopi_item_name_acceleration_x_axis == item->cloud_properties.item_name)
                 {
                     acceleration_value = (user_data->acc_x * ADXL345_CONVERTER_FACTOR_MG_TO_G * ADXL345_STANDARD_G_TO_ACCEL_CONVERSION_VALUE);
-                    ezlopi_valueformatter_float_to_cjson(cj_result, acceleration_value, item->cloud_properties.scale);
+                    EZPI_core_valueformatter_float_to_cjson(cj_result, acceleration_value, item->cloud_properties.scale);
                 }
                 if (ezlopi_item_name_acceleration_y_axis == item->cloud_properties.item_name)
                 {
                     acceleration_value = (user_data->acc_y * ADXL345_CONVERTER_FACTOR_MG_TO_G * ADXL345_STANDARD_G_TO_ACCEL_CONVERSION_VALUE);
-                    ezlopi_valueformatter_float_to_cjson(cj_result, acceleration_value, item->cloud_properties.scale);
+                    EZPI_core_valueformatter_float_to_cjson(cj_result, acceleration_value, item->cloud_properties.scale);
                 }
                 if (ezlopi_item_name_acceleration_z_axis == item->cloud_properties.item_name)
                 {
                     acceleration_value = (user_data->acc_z * ADXL345_CONVERTER_FACTOR_MG_TO_G * ADXL345_STANDARD_G_TO_ACCEL_CONVERSION_VALUE);
-                    ezlopi_valueformatter_float_to_cjson(cj_result, acceleration_value, item->cloud_properties.scale);
+                    EZPI_core_valueformatter_float_to_cjson(cj_result, acceleration_value, item->cloud_properties.scale);
                 }
-                ret = 1;
+                ret = EZPI_SUCCESS;
             }
         }
     }
     return ret;
 }
 
-static int __notify(l_ezlopi_item_t* item)
+static ezlopi_error_t __notify(l_ezlopi_item_t *item)
 {
-    int ret = 0;
+    ezlopi_error_t ret = EZPI_FAILED;
     static float __prev[3] = { 0 };
     if (item)
     {
-        s_adxl345_data_t* user_data = (s_adxl345_data_t*)item->user_arg;
+        s_adxl345_data_t *user_data = (s_adxl345_data_t *)item->user_arg;
         if (user_data)
         {
             if (ezlopi_item_name_acceleration_x_axis == item->cloud_properties.item_name)
             {
                 __prev[0] = user_data->acc_x;
-                __adxl345_get_axis_value(item);
+                ADXL345_get_axis_value(item);
                 if (fabs((__prev[0] - user_data->acc_x) > 0.5))
                 {
-                    ezlopi_device_value_updated_from_device_broadcast(item);
+                    EZPI_core_device_value_updated_from_device_broadcast(item);
                 }
             }
             if (ezlopi_item_name_acceleration_y_axis == item->cloud_properties.item_name)
@@ -280,7 +339,7 @@ static int __notify(l_ezlopi_item_t* item)
                 __prev[1] = user_data->acc_y;
                 if (fabs((__prev[1] - user_data->acc_x) > 0.5))
                 {
-                    ezlopi_device_value_updated_from_device_broadcast(item);
+                    EZPI_core_device_value_updated_from_device_broadcast(item);
                 }
             }
             if (ezlopi_item_name_acceleration_z_axis == item->cloud_properties.item_name)
@@ -288,11 +347,16 @@ static int __notify(l_ezlopi_item_t* item)
                 __prev[2] = user_data->acc_z;
                 if (fabs((__prev[2] - user_data->acc_x) > 0.5))
                 {
-                    ezlopi_device_value_updated_from_device_broadcast(item);
+                    EZPI_core_device_value_updated_from_device_broadcast(item);
                 }
             }
+            ret = EZPI_SUCCESS;
         }
-        ret = 1;
     }
     return ret;
 }
+
+
+/*******************************************************************************
+*                          End of File
+*******************************************************************************/

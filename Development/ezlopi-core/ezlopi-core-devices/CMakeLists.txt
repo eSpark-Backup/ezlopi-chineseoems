@@ -1,9 +1,14 @@
 file(GLOB_RECURSE config_src "*.c")
 
+set(EZLOPI_IDF_COMPONENTS
+)
+
 set(EZLOPI_CORE_COMPONENTS 
+        ezlopi-core-nvs
         ezlopi-core-cloud 
         ezlopi-core-actions
         ezlopi-core-devices 
+        ezlopi-core-errors
 )
 set(EZLOPI_HAL_COMPONENTS 
         ezlopi-hal-gpio
@@ -57,14 +62,14 @@ set(EZLOPI_SENSOR_DEVICE_COMPONENTS
         device-0036-PWM-servo-MG996R
         sensor-0037-pms5003-sensor
         device-0038-other-RGB
-        
+                
         sensor-0040-other-TCS230          
         sensor-0041-ADC-FC28-soilMoisture  
         sensor-0042-ADC-shunt-voltmeter                                
         sensor-0043-ADC-GYML8511-UV-intensity
         sensor-0044-I2C-TSL256-luminosity
         sensor-0046-ADC-ACS712-05B-currentmeter
-        
+
         sensor-0047-other-HX711-loadcell
         sensor-0048-other-MQ4-CH4-detector
         sensor-0049-other-MQ2-LPG-detector
@@ -86,26 +91,16 @@ set(EZLOPI_SENSOR_DEVICE_COMPONENTS
         sensor-0067-UART-hilink-presence-sensor
         sensor-0068-I2C-ENS160-gas-sensor
         sensor-0069-UART-ze08-ch02-gas-sensor
-        
-        sensor-0070-ADC-dummy-potentiometer
-        sensor-0096-sound-detector
-        sensor-0098-I2C-tamper-switch
-        sensor-0099-SHTC3-temp-humidity
 
-        device-00100-FrankEver-Switch
-        device-00101-Cubic-Detector
+        sensor-0070-ADC-dummy-potentiometer
         device-00102-Beca-BHT003-GCLW
-        device-00103-GRACE-PIR
-        device-00104-Frankever-Dimmer
-        device-00105-Ariza-Water-Detector-Alarm
-        device-00106-Ariza-Vibrating-Door-Window-Alarm
-        device-00107-Ariza-Smart-Door-Window-Alarm
 )
 
 
-idf_component_register(SRCS "ezlopi_core_devices.c" "ezlopi_core_device_group.c" "${config_src}"
+idf_component_register(SRCS "ezlopi_core_device_value_updated.c" "${config_src}"
                         INCLUDE_DIRS "."
-                        REQUIRES        ${EZLOPI_CORE_COMPONENTS}
+                        REQUIRES        ${EZLOPI_IDF_COMPONENTS}
+                                        ${EZLOPI_CORE_COMPONENTS}
                                         ${EZLOPI_HAL_COMPONENTS}
                                         ${EZLOPI_CLOUD_COMPONENTS}
                                         ${EZLOPI_SENSOR_DEVICE_COMPONENTS} 

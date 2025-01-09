@@ -1,11 +1,51 @@
-#include <math.h>
-#include "ezlopi_util_trace.h"
+/* ===========================================================================
+** Copyright (C) 2024 Ezlo Innovation Inc
+**
+** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
+**
+** Redistribution and use in source and binary forms, with or without
+** modification, are permitted provided that the following conditions are met:
+**
+** 1. Redistributions of source code must retain the above copyright notice,
+**    this list of conditions and the following disclaimer.
+** 2. Redistributions in binary form must reproduce the above copyright
+**    notice, this list of conditions and the following disclaimer in the
+**    documentation and/or other materials provided with the distribution.
+** 3. Neither the name of the copyright holder nor the names of its
+**    contributors may be used to endorse or promote products derived from
+**    this software without specific prior written permission.
+**
+** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+** AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+** IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+** ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+** LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+** CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+** SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+** INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+** CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+** ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+** POSSIBILITY OF SUCH DAMAGE.
+** ===========================================================================
+*/
+/**
+* @file    sensor_0030_oneWire_DS18B20.c
+* @brief   perform some function on sensor_0030
+* @author  xx
+* @version 0.1
+* @date    xx
+*/
 
-// #include "ezlopi_core_timer.h"
+/*******************************************************************************
+*                          Include Files
+*******************************************************************************/
+#include <math.h>
+
 #include "ezlopi_core_cloud.h"
 #include "ezlopi_core_cjson_macros.h"
 #include "ezlopi_core_valueformatter.h"
 #include "ezlopi_core_device_value_updated.h"
+#include "ezlopi_core_setting_commands.h"
 
 #include "ezlopi_cloud_items.h"
 #include "ezlopi_cloud_constants.h"
@@ -14,22 +54,49 @@
 #include "sensor_0030_oneWire_DS18B20.h"
 #include "EZLOPI_USER_CONFIG.h"
 
-static int __prepare(void* arg);
-static int __init(l_ezlopi_item_t* item);
-static int __notify(l_ezlopi_item_t* item);
-static int __get_cjson_value(l_ezlopi_item_t* item, void* arg);
+/*******************************************************************************
+*                          Extern Data Declarations
+*******************************************************************************/
 
-static esp_err_t ds18b20_write_data(uint8_t* data, uint32_t gpio_pin);
-static esp_err_t ds18b20_read_data(uint8_t* data, uint32_t gpio_pin);
+/*******************************************************************************
+*                          Extern Function Declarations
+*******************************************************************************/
+
+/*******************************************************************************
+*                          Type & Macro Definitions
+*******************************************************************************/
+
+/*******************************************************************************
+*                          Static Function Prototypes
+*******************************************************************************/
+static ezlopi_error_t __prepare(void *arg);
+static ezlopi_error_t __init(l_ezlopi_item_t *item);
+static ezlopi_error_t __notify(l_ezlopi_item_t *item);
+static ezlopi_error_t __get_cjson_value(l_ezlopi_item_t *item, void *arg);
+
+static esp_err_t ds18b20_write_data(uint8_t *data, uint32_t gpio_pin);
+static esp_err_t ds18b20_read_data(uint8_t *data, uint32_t gpio_pin);
 static bool ds18b20_reset_line(uint32_t gpio_pin);
 static esp_err_t ds18b20_write_to_scratchpad(uint8_t th_val, uint8_t tl_val, uint8_t resolution, uint8_t gpio_pin);
 static bool ds18b20_recognize_device(uint32_t gpio_pin);
-static esp_err_t ds18b20_get_temperature_data(double* temperature_data, uint32_t gpio_pin);
-static uint8_t ds18b20_calculate_crc(const uint8_t* data, uint8_t len);
+static esp_err_t ds18b20_get_temperature_data(double *temperature_data, uint32_t gpio_pin);
+static uint8_t ds18b20_calculate_crc(const uint8_t *data, uint8_t len);
 
-int sensor_0030_oneWire_DS18B20(e_ezlopi_actions_t action, l_ezlopi_item_t* item, void* arg, void* user_arg)
+/*******************************************************************************
+*                          Static Data Definitions
+*******************************************************************************/
+
+/*******************************************************************************
+*                          Extern Data Definitions
+*******************************************************************************/
+
+/*******************************************************************************
+*                          Extern Function Definitions
+*******************************************************************************/
+ezlopi_error_t SENSOR_0030_oneWire_DS18B20(e_ezlopi_actions_t action, l_ezlopi_item_t *item, void *arg, void *user_arg)
 {
-    int ret = 0;
+
+    ezlopi_error_t ret = EZPI_SUCCESS;
     switch (action)
     {
     case EZLOPI_ACTION_PREPARE:
@@ -61,41 +128,54 @@ int sensor_0030_oneWire_DS18B20(e_ezlopi_actions_t action, l_ezlopi_item_t* item
     return ret;
 }
 
-static int __notify(l_ezlopi_item_t* item)
+/*******************************************************************************
+*                         Static Function Definitions
+*******************************************************************************/
+static ezlopi_error_t __notify(l_ezlopi_item_t *item)
 {
-    int ret = 0;
-    double* temperature_prev_value = (double*)item->user_arg;
+    ezlopi_error_t ret = EZPI_FAILED;
+    double *temperature_prev_value = (double *)item->user_arg;
     double temperature_current_value = 0.00;
     esp_err_t error = ds18b20_get_temperature_data(&temperature_current_value, item->interface.onewire_master.onewire_pin);
     if (ESP_OK == error)
     {
         // TRACE_I("Current %f, prev %f", temperature_current_value, *temperature_prev_value);
         // TRACE_I("Diff is %f", fabs(*temperature_prev_value - temperature_current_value));
+        item->cloud_properties.scale = EZPI_core_setting_get_temperature_scale_str();
+
+        e_enum_temperature_scale_t scale_to_use = EZPI_core_setting_get_temperature_scale();
+        if (TEMPERATURE_SCALE_FAHRENHEIT == scale_to_use)
+        {
+            temperature_current_value = (temperature_current_value * (9.0f / 5.0f)) + 32.0f;
+        }
+
         if (fabs(*temperature_prev_value - temperature_current_value) > 0.2)
         {
             *temperature_prev_value = temperature_current_value;
-            ezlopi_device_value_updated_from_device_broadcast(item);
+            EZPI_core_device_value_updated_from_device_broadcast(item);
+            ret = EZPI_SUCCESS;
         }
     }
     return ret;
 }
 
-static int __get_cjson_value(l_ezlopi_item_t* item, void* arg)
+static ezlopi_error_t __get_cjson_value(l_ezlopi_item_t *item, void *arg)
 {
-    int ret = 0;
+    ezlopi_error_t ret = EZPI_FAILED;
 
     if (item && arg && item->user_arg)
     {
-        cJSON* cj_result = (cJSON*)arg;
-        double* temperatue_value = (double*)item->user_arg;
-        ezlopi_valueformatter_double_to_cjson(cj_result, *temperatue_value, item->cloud_properties.scale);
+        cJSON *cj_result = (cJSON *)arg;
+        double *temperatue_value = (double *)item->user_arg;
+        EZPI_core_valueformatter_double_to_cjson(cj_result, *temperatue_value, scales_celsius);
+        ret = EZPI_SUCCESS;
     }
     return ret;
 }
 
-static int __init(l_ezlopi_item_t* item)
+static ezlopi_error_t __init(l_ezlopi_item_t *item)
 {
-    int ret = -1;
+    ezlopi_error_t ret = EZPI_ERR_INIT_DEVICE_FAILED;
     if ((item) && (item->interface.onewire_master.enable))
     {
         if (GPIO_IS_VALID_GPIO(item->interface.onewire_master.onewire_pin) &&
@@ -103,26 +183,19 @@ static int __init(l_ezlopi_item_t* item)
         {
             if (ds18b20_recognize_device(item->interface.onewire_master.onewire_pin))
             {
-                double* temperature_prev_value = (double*)item->user_arg;
+                double *temperature_prev_value = (double *)item->user_arg;
                 TRACE_D("Providing initial settings to DS18B20");
                 ds18b20_write_to_scratchpad(DS18B20_TH_HIGHER_THRESHOLD, DS18B20_TL_LOWER_THRESHOLD, 12, item->interface.onewire_master.onewire_pin);
                 ds18b20_get_temperature_data(temperature_prev_value, item->interface.onewire_master.onewire_pin);
-                ret = 1;
+                ret = EZPI_SUCCESS;
+
             }
-            else
-            {
-                ret = -1;
-            }
-        }
-        else
-        {
-            ret = -1;
         }
     }
     return ret;
 }
 
-static void __prepare_device_cloud_properties(l_ezlopi_device_t* device, cJSON* cj_device)
+static void __prepare_device_cloud_properties(l_ezlopi_device_t *device, cJSON *cj_device)
 {
     device->cloud_properties.category = category_temperature;
     device->cloud_properties.subcategory = subcategory_not_defined;
@@ -131,7 +204,7 @@ static void __prepare_device_cloud_properties(l_ezlopi_device_t* device, cJSON* 
     device->cloud_properties.device_type_id = NULL;
 }
 
-static void __prepare_item_properties(l_ezlopi_item_t* item, cJSON* cj_device)
+static void __prepare_item_properties(l_ezlopi_item_t *item, cJSON *cj_device)
 {
     CJSON_GET_VALUE_DOUBLE(cj_device, ezlopi_dev_type_str, item->interface_type);
     item->cloud_properties.show = true;
@@ -139,66 +212,63 @@ static void __prepare_item_properties(l_ezlopi_item_t* item, cJSON* cj_device)
     item->cloud_properties.has_setter = false;
     item->cloud_properties.item_name = ezlopi_item_name_temp;
     item->cloud_properties.value_type = value_type_temperature;
-    item->cloud_properties.item_id = ezlopi_cloud_generate_item_id();
-    item->cloud_properties.scale = scales_celsius;
+    item->cloud_properties.item_id = EZPI_core_cloud_generate_item_id();
+
+    item->cloud_properties.scale = EZPI_core_setting_get_temperature_scale_str();
+
     item->interface_type = EZLOPI_DEVICE_INTERFACE_ONEWIRE_MASTER;
 
     item->interface.onewire_master.enable = true;
     CJSON_GET_VALUE_GPIO(cj_device, ezlopi_gpio_str, item->interface.onewire_master.onewire_pin);
 }
 
-static int __prepare(void* arg)
+static ezlopi_error_t __prepare(void *arg)
 {
-    int ret = 0;
-    s_ezlopi_prep_arg_t* prep_arg = (s_ezlopi_prep_arg_t*)arg;
+    ezlopi_error_t ret = EZPI_ERR_PREP_DEVICE_PREP_FAILED;
+    s_ezlopi_prep_arg_t *prep_arg = (s_ezlopi_prep_arg_t *)arg;
 
     if (prep_arg && prep_arg->cjson_device)
     {
-        l_ezlopi_device_t* device = ezlopi_device_add_device(prep_arg->cjson_device, NULL);
+        l_ezlopi_device_t *device = EZPI_core_device_add_device(prep_arg->cjson_device, NULL);
         if (device)
         {
-            ret = 1;
             __prepare_device_cloud_properties(device, prep_arg->cjson_device);
-            l_ezlopi_item_t* item_temperature = ezlopi_device_add_item_to_device(device, sensor_0030_oneWire_DS18B20);
+            l_ezlopi_item_t *item_temperature = EZPI_core_device_add_item_to_device(device, SENSOR_0030_oneWire_DS18B20);
             if (item_temperature)
             {
                 __prepare_item_properties(item_temperature, prep_arg->cjson_device);
 
-                double* temperature_value = (double*)ezlopi_malloc(__FUNCTION__, sizeof(double));
+                double *temperature_value = (double *)ezlopi_malloc(__FUNCTION__, sizeof(double));
                 if (temperature_value)
                 {
                     memset(temperature_value, 0, sizeof(double));
                     *temperature_value = 65536.0f;
                     item_temperature->is_user_arg_unique = true;
-                    item_temperature->user_arg = (void*)temperature_value;
+                    item_temperature->user_arg = (void *)temperature_value;
+                    ret = EZPI_SUCCESS;
                 }
             }
             else
             {
-                ezlopi_device_free_device(device);
-                ret = -1;
+                EZPI_core_device_free_device(device);
             }
-        }
-        else
-        {
-            ret = -1;
         }
     }
 
     return ret;
 }
 
-static esp_err_t ds18b20_write_data(uint8_t* data, uint32_t gpio_pin)
+static esp_err_t ds18b20_write_data(uint8_t *data, uint32_t gpio_pin)
 {
     esp_err_t error = ESP_OK;
-    error = one_wire_write_byte_to_line(data, gpio_pin);
+    error = DS18B20_write_byte_to_line(data, gpio_pin);
     return error;
 }
 
-static esp_err_t ds18b20_read_data(uint8_t* data, uint32_t gpio_pin)
+static esp_err_t ds18b20_read_data(uint8_t *data, uint32_t gpio_pin)
 {
     esp_err_t error = ESP_OK;
-    error = one_wire_read_byte_from_line(data, gpio_pin);
+    error = DS18B20_read_byte_from_line(data, gpio_pin);
     return error;
 }
 
@@ -255,7 +325,7 @@ static esp_err_t ds18b20_write_to_scratchpad(uint8_t th_val, uint8_t tl_val, uin
 static bool ds18b20_reset_line(uint32_t gpio_pin)
 {
     bool present = false;
-    present = one_wire_reset_line(gpio_pin);
+    present = DS18B20_reset_line(gpio_pin);
     return present;
 }
 
@@ -268,7 +338,7 @@ static bool ds18b20_recognize_device(uint32_t gpio_pin)
     return (data_from_ds18b20 == DS18B20_FAMILY_CODE) ? true : false;
 }
 
-static esp_err_t ds18b20_get_temperature_data(double* temperature_data, uint32_t gpio_pin)
+static esp_err_t ds18b20_get_temperature_data(double *temperature_data, uint32_t gpio_pin)
 {
     esp_err_t error = ESP_OK;
     uint8_t ds18b20_skip_rom = DS18B20_ROM_COMMAND_SKIP_ROM;
@@ -336,7 +406,7 @@ static esp_err_t ds18b20_get_temperature_data(double* temperature_data, uint32_t
     return error;
 }
 
-static uint8_t ds18b20_calculate_crc(const uint8_t* data, uint8_t len)
+static uint8_t ds18b20_calculate_crc(const uint8_t *data, uint8_t len)
 {
     uint8_t crc = 0;
     uint8_t length = len;
@@ -347,3 +417,7 @@ static uint8_t ds18b20_calculate_crc(const uint8_t* data, uint8_t len)
     }
     return crc;
 }
+
+/*******************************************************************************
+*                          End of File
+*******************************************************************************/

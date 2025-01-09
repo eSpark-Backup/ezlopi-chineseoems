@@ -1,7 +1,46 @@
-#include <math.h>
-#include "ezlopi_util_trace.h"
+/* ===========================================================================
+** Copyright (C) 2024 Ezlo Innovation Inc
+**
+** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
+**
+** Redistribution and use in source and binary forms, with or without
+** modification, are permitted provided that the following conditions are met:
+**
+** 1. Redistributions of source code must retain the above copyright notice,
+**    this list of conditions and the following disclaimer.
+** 2. Redistributions in binary form must reproduce the above copyright
+**    notice, this list of conditions and the following disclaimer in the
+**    documentation and/or other materials provided with the distribution.
+** 3. Neither the name of the copyright holder nor the names of its
+**    contributors may be used to endorse or promote products derived from
+**    this software without specific prior written permission.
+**
+** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+** AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+** IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+** ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+** LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+** CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+** SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+** INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+** CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+** ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+** POSSIBILITY OF SUCH DAMAGE.
+** ===========================================================================
+*/
+/**
+* @file    sensor_0017_ADC_potentiometer.c
+* @brief   perform some function on sensor_0017
+* @author  xx
+* @version 0.1
+* @date    xx
+*/
 
-// #include "ezlopi_core_timer.h"
+/*******************************************************************************
+*                          Include Files
+*******************************************************************************/
+#include <math.h>
+
 #include "ezlopi_core_cloud.h"
 #include "ezlopi_core_cjson_macros.h"
 #include "ezlopi_core_valueformatter.h"
@@ -14,21 +53,45 @@
 
 #include "sensor_0017_ADC_potentiometer.h"
 #include "EZLOPI_USER_CONFIG.h"
+/*******************************************************************************
+*                          Extern Data Declarations
+*******************************************************************************/
 
+/*******************************************************************************
+*                          Extern Function Declarations
+*******************************************************************************/
 
+/*******************************************************************************
+*                          Type & Macro Definitions
+*******************************************************************************/
 typedef struct s_potentiometer
 {
     float pot_val;
 } s_potentiometer_t;
 
-static int __0017_prepare(void* arg);
-static int __0017_init(l_ezlopi_item_t* item);
-static int __0017_get_cjson_value(l_ezlopi_item_t* item, void* arg);
-static int __0017_notify(l_ezlopi_item_t* item);
-//--------------------------------------------------------------------------------------------------------
-int sensor_0017_ADC_potentiometer(e_ezlopi_actions_t action, l_ezlopi_item_t* item, void* arg, void* user_arg)
+/*******************************************************************************
+*                          Static Function Prototypes
+*******************************************************************************/
+static ezlopi_error_t __0017_prepare(void *arg);
+static ezlopi_error_t __0017_init(l_ezlopi_item_t *item);
+static ezlopi_error_t __0017_get_cjson_value(l_ezlopi_item_t *item, void *arg);
+static ezlopi_error_t __0017_notify(l_ezlopi_item_t *item);
+static void __prepare_device_cloud_properties(l_ezlopi_device_t *device, cJSON *cj_device);
+static void __prepare_item_cloud_properties(l_ezlopi_item_t *item, cJSON *cj_device, void *user_data);
+/*******************************************************************************
+*                          Static Data Definitions
+*******************************************************************************/
+
+/*******************************************************************************
+*                          Extern Data Definitions
+*******************************************************************************/
+
+/*******************************************************************************
+*                          Extern Function Definitions
+*******************************************************************************/
+ezlopi_error_t SENSOR_0017_adc_potentiometer(e_ezlopi_actions_t action, l_ezlopi_item_t *item, void *arg, void *user_arg)
 {
-    int ret = 0;
+    ezlopi_error_t ret = EZPI_SUCCESS;
     switch (action)
     {
     case EZLOPI_ACTION_PREPARE:
@@ -59,8 +122,11 @@ int sensor_0017_ADC_potentiometer(e_ezlopi_actions_t action, l_ezlopi_item_t* it
     }
     return ret;
 }
-//-------------------------------------------------------------------------------------------------------------------------
-static void __prepare_device_cloud_properties(l_ezlopi_device_t* device, cJSON* cj_device)
+
+/*******************************************************************************
+*                         Static Function Definitions
+*******************************************************************************/
+static void __prepare_device_cloud_properties(l_ezlopi_device_t *device, cJSON *cj_device)
 {
     device->cloud_properties.category = category_level_sensor;
     device->cloud_properties.subcategory = subcategory_not_defined;
@@ -68,9 +134,9 @@ static void __prepare_device_cloud_properties(l_ezlopi_device_t* device, cJSON* 
     device->cloud_properties.info = NULL;
     device->cloud_properties.device_type = dev_type_sensor;
 }
-static void __prepare_item_cloud_properties(l_ezlopi_item_t* item, cJSON* cj_device, void* user_data)
+static void __prepare_item_cloud_properties(l_ezlopi_item_t *item, cJSON *cj_device, void *user_data)
 {
-    item->cloud_properties.item_id = ezlopi_cloud_generate_item_id();
+    item->cloud_properties.item_id = EZPI_core_cloud_generate_item_id();
     item->cloud_properties.has_getter = true;
     item->cloud_properties.has_setter = false;
     item->cloud_properties.item_name = ezlopi_item_name_voltage;
@@ -85,121 +151,105 @@ static void __prepare_item_cloud_properties(l_ezlopi_item_t* item, cJSON* cj_dev
     CJSON_GET_VALUE_GPIO(cj_device, ezlopi_gpio_str, item->interface.adc.gpio_num);
     item->interface.adc.resln_bit = 3;
 }
-//-------------------------------------------------------------------------------------------------------------------------
-static int __0017_prepare(void* arg)
+
+static ezlopi_error_t __0017_prepare(void *arg)
 {
-    int ret = 0;
-    s_ezlopi_prep_arg_t* device_prep_arg = (s_ezlopi_prep_arg_t*)arg;
+    ezlopi_error_t ret = EZPI_ERR_PREP_DEVICE_PREP_FAILED;
+    s_ezlopi_prep_arg_t *device_prep_arg = (s_ezlopi_prep_arg_t *)arg;
     if (device_prep_arg && (NULL != device_prep_arg->cjson_device))
     {
-        cJSON* cj_device = device_prep_arg->cjson_device;
-        s_potentiometer_t* user_data = (s_potentiometer_t*)ezlopi_malloc(__FUNCTION__, sizeof(s_potentiometer_t));
+        cJSON *cj_device = device_prep_arg->cjson_device;
+        s_potentiometer_t *user_data = (s_potentiometer_t *)ezlopi_malloc(__FUNCTION__, sizeof(s_potentiometer_t));
         if (NULL != user_data)
         {
             memset(user_data, 0, sizeof(s_potentiometer_t));
-            l_ezlopi_device_t* potentiometer_device = ezlopi_device_add_device(cj_device, NULL);
+            l_ezlopi_device_t *potentiometer_device = EZPI_core_device_add_device(cj_device, NULL);
             if (potentiometer_device)
             {
-                ret = 1;
                 __prepare_device_cloud_properties(potentiometer_device, cj_device);
-                l_ezlopi_item_t* potentiometer_item = ezlopi_device_add_item_to_device(potentiometer_device, sensor_0017_ADC_potentiometer);
+                l_ezlopi_item_t *potentiometer_item = EZPI_core_device_add_item_to_device(potentiometer_device, SENSOR_0017_adc_potentiometer);
                 if (potentiometer_item)
                 {
                     __prepare_item_cloud_properties(potentiometer_item, cj_device, user_data);
+                    ret = EZPI_SUCCESS;
                 }
                 else
                 {
-                    ezlopi_device_free_device(potentiometer_device);
+                    EZPI_core_device_free_device(potentiometer_device);
                     ezlopi_free(__FUNCTION__, user_data);
-                    ret = -1;
                 }
             }
             else
             {
                 ezlopi_free(__FUNCTION__, user_data);
-                ret = -1;
             }
-        }
-        else
-        {
-            ret = -1;
         }
     }
     return ret;
 }
 
-static int __0017_init(l_ezlopi_item_t* item)
+static ezlopi_error_t __0017_init(l_ezlopi_item_t *item)
 {
-    int ret = 0;
+    ezlopi_error_t ret = EZPI_ERR_INIT_DEVICE_FAILED;
     if (item)
     {
-        s_potentiometer_t* user_data = (s_potentiometer_t*)item->user_arg;
+        s_potentiometer_t *user_data = (s_potentiometer_t *)item->user_arg;
         if (user_data)
         {
             if (GPIO_IS_VALID_GPIO(item->interface.adc.gpio_num))
             {
-                if (0 == ezlopi_adc_init(item->interface.adc.gpio_num, item->interface.adc.resln_bit))
+                if (EZPI_SUCCESS == EZPI_hal_adc_init(item->interface.adc.gpio_num, item->interface.adc.resln_bit))
                 {
-                    ret = 1;
-                }
-                else
-                {
-                    ret = -1;
+                    ret = EZPI_SUCCESS;
                 }
             }
-            else
-            {
-                ret = -1;
-            }
-        }
-        else
-        {
-            ret = -1;
         }
     }
     return ret;
 }
 
-static int __0017_get_cjson_value(l_ezlopi_item_t* item, void* arg)
+static ezlopi_error_t __0017_get_cjson_value(l_ezlopi_item_t *item, void *arg)
 {
-    int ret = 0;
+    ezlopi_error_t ret = EZPI_FAILED;
     if (item && arg)
     {
-        cJSON* cj_result = (cJSON*)arg;
+        cJSON *cj_result = (cJSON *)arg;
         if (cj_result)
         {
-            s_potentiometer_t* user_data = (s_potentiometer_t*)item->user_arg;
+            s_potentiometer_t *user_data = (s_potentiometer_t *)item->user_arg;
             if (user_data)
             {
-                ezlopi_valueformatter_float_to_cjson(cj_result, user_data->pot_val, item->cloud_properties.scale);
-                ret = 1;
+                EZPI_core_valueformatter_float_to_cjson(cj_result, user_data->pot_val, scales_volt);
+                ret = EZPI_SUCCESS;
             }
         }
     }
     return ret;
 }
 
-static int __0017_notify(l_ezlopi_item_t* item)
+static ezlopi_error_t __0017_notify(l_ezlopi_item_t *item)
 {
-    int ret = 0;
+    ezlopi_error_t ret = EZPI_FAILED;
     if (item)
     {
-        s_potentiometer_t* user_data = (s_potentiometer_t*)item->user_arg;
+        s_potentiometer_t *user_data = (s_potentiometer_t *)item->user_arg;
         if (user_data)
         {
             s_ezlopi_analog_data_t adc_data = { .value = 0, .voltage = 0 };
-            ezlopi_adc_get_adc_data(item->interface.adc.gpio_num, &adc_data);
+            EZPI_hal_adc_get_adc_data(item->interface.adc.gpio_num, &adc_data);
             float new_pot = (((float)(4095.0f - (adc_data.value)) / 4095.0f) * 100);
 
             if (fabs((user_data->pot_val) - new_pot) > 0.05)
             {
                 user_data->pot_val = new_pot;
-                ezlopi_device_value_updated_from_device_broadcast(item);
+                EZPI_core_device_value_updated_from_device_broadcast(item);
             }
-            ret = 1;
+            ret = EZPI_SUCCESS;
         }
     }
     return ret;
 }
 
-//-------------------------------------------------------------------------------------------------------------------------
+/*******************************************************************************
+*                          End of File
+*******************************************************************************/

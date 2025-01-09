@@ -8,6 +8,7 @@ set(EZLOPI_CORE_COMPONENTS
         ezlopi-core-devices
         # ezlopi-core-timer
         ezlopi-core-valueformatter 
+        ezlopi-core-errors
 )
 set(EZLOPI_CLOUD_COMPONENTS
     ezlopi-cloud-constants
@@ -19,7 +20,7 @@ set(EZLOPI_SERVICE_COMPONENTS
     ezlopi-service-gpioisr
 )
 
-idf_component_register(SRCS "pms5003.c" "sensor_0037_pms5003_sensor.c" "pms_dev_items_prepare.c" "${config_src}"
+idf_component_register(SRCS "${config_src}"
     INCLUDE_DIRS "."
     REQUIRES    ${EZLOPI_COMPONENTS}
                 ${EZLOPI_CORE_COMPONENTS}

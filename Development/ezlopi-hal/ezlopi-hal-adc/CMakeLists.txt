@@ -2,10 +2,12 @@
 file(GLOB_RECURSE SOURCES "./*.c*")
 
 set(ESP_COMPONENTS
+        driver
         esp_adc_cal
 )
 set(EZLOPI_CORE_COMPONENTS
-        ezlopi-core-nvs        
+        ezlopi-core-nvs   
+        ezlopi-core-errors     
 )
 
 idf_component_register(SRCS ${SOURCES}

@@ -1,7 +1,46 @@
-#include <math.h>
-#include "ezlopi_util_trace.h"
+/* ===========================================================================
+** Copyright (C) 2024 Ezlo Innovation Inc
+**
+** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
+**
+** Redistribution and use in source and binary forms, with or without
+** modification, are permitted provided that the following conditions are met:
+**
+** 1. Redistributions of source code must retain the above copyright notice,
+**    this list of conditions and the following disclaimer.
+** 2. Redistributions in binary form must reproduce the above copyright
+**    notice, this list of conditions and the following disclaimer in the
+**    documentation and/or other materials provided with the distribution.
+** 3. Neither the name of the copyright holder nor the names of its
+**    contributors may be used to endorse or promote products derived from
+**    this software without specific prior written permission.
+**
+** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+** AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+** IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+** ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+** LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+** CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+** SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+** INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+** CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+** ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+** POSSIBILITY OF SUCH DAMAGE.
+** ===========================================================================
+*/
+/**
+* @file    sensor_0047_other_HX711_loadcell.c
+* @brief   perform some function on sensor_0047
+* @author  xx
+* @version 0.1
+* @date    xx
+*/
 
-// #include "ezlopi_core_timer.h"
+/*******************************************************************************
+*                          Include Files
+*******************************************************************************/
+#include <math.h>
+
 #include "ezlopi_core_cloud.h"
 #include "ezlopi_core_cjson_macros.h"
 #include "ezlopi_core_valueformatter.h"
@@ -14,12 +53,19 @@
 #include "sensor_0047_other_HX711_loadcell.h"
 #include "EZLOPI_USER_CONFIG.h"
 
-/********************************************************************************/
-/*                    global defines                                            */
-/********************************************************************************/
+/*******************************************************************************
+*                          Extern Data Declarations
+*******************************************************************************/
+
+/*******************************************************************************
+*                          Extern Function Declarations
+*******************************************************************************/
+
+/*******************************************************************************
+*                          Type & Macro Definitions
+*******************************************************************************/
 #define PORT_ENTER_CRITICAL() portENTER_CRITICAL(&mux)
 #define PORT_EXIT_CRITICAL() portEXIT_CRITICAL(&mux)
-static portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
 
 typedef enum
 {
@@ -37,20 +83,33 @@ typedef struct s_hx711_data
     float weight;
 } s_hx711_data_t;
 
-static int __0047_prepare(void* arg);
-static int __0047_init(l_ezlopi_item_t* item);
-static int __0047_get_cjson_value(l_ezlopi_item_t* item, void* arg);
-static int __0047_notify(l_ezlopi_item_t* item);
+/*******************************************************************************
+*                          Static Function Prototypes
+*******************************************************************************/
+static ezlopi_error_t __0047_prepare(void *arg);
+static ezlopi_error_t __0047_init(l_ezlopi_item_t *item);
+static ezlopi_error_t __0047_get_cjson_value(l_ezlopi_item_t *item, void *arg);
+static ezlopi_error_t __0047_notify(l_ezlopi_item_t *item);
+static void __prepare_device_cloud_properties(l_ezlopi_device_t *device, cJSON *cj_device);
+static void __prepare_item_cloud_properties(l_ezlopi_item_t *item, cJSON *cj_device, s_hx711_data_t *user_data);
+static void __hx711_power_reset(l_ezlopi_item_t *item);
+static float __hx711_rawdata(l_ezlopi_item_t *item, hx711_gain_t _gain);
+static float __hx711_avg_reading(l_ezlopi_item_t *item, uint8_t sample_iteration);
+static void __Calculate_hx711_tare_wt(void *params);
+/*******************************************************************************
+*                          Static Data Definitions
+*******************************************************************************/
+static portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
+/*******************************************************************************
+*                          Extern Data Definitions
+*******************************************************************************/
 
-static void __hx711_power_reset(l_ezlopi_item_t* item);
-static float __hx711_rawdata(l_ezlopi_item_t* item, hx711_gain_t _gain);
-static float __hx711_avg_reading(l_ezlopi_item_t* item, uint8_t sample_iteration);
-
-static void __Calculate_hx711_tare_wt(void* params);
-//-------------------------------------------------------------------------------------------------------------------
-int sensor_0047_other_HX711_loadcell(e_ezlopi_actions_t action, l_ezlopi_item_t* item, void* arg, void* user_arg)
+/*******************************************************************************
+*                          Extern Function Definitions
+*******************************************************************************/
+ezlopi_error_t SENSOR_0047_other_hx711_loadcell(e_ezlopi_actions_t action, l_ezlopi_item_t *item, void *arg, void *user_arg)
 {
-    int ret = 0;
+    ezlopi_error_t ret = EZPI_SUCCESS;
 
     switch (action)
     {
@@ -84,8 +143,11 @@ int sensor_0047_other_HX711_loadcell(e_ezlopi_actions_t action, l_ezlopi_item_t*
     }
     return ret;
 }
-//------------------------------------------------------------------------------------------------------
-static void __prepare_device_cloud_properties(l_ezlopi_device_t* device, cJSON* cj_device)
+
+/*******************************************************************************
+*                         Static Function Definitions
+*******************************************************************************/
+static void __prepare_device_cloud_properties(l_ezlopi_device_t *device, cJSON *cj_device)
 {
     device->cloud_properties.category = category_level_sensor;
     device->cloud_properties.subcategory = subcategory_not_defined;
@@ -93,9 +155,9 @@ static void __prepare_device_cloud_properties(l_ezlopi_device_t* device, cJSON* 
     device->cloud_properties.info = NULL;
     device->cloud_properties.device_type = dev_type_sensor;
 }
-static void __prepare_item_cloud_properties(l_ezlopi_item_t* item, cJSON* cj_device, s_hx711_data_t* user_data)
+static void __prepare_item_cloud_properties(l_ezlopi_item_t *item, cJSON *cj_device, s_hx711_data_t *user_data)
 {
-    item->cloud_properties.item_id = ezlopi_cloud_generate_item_id();
+    item->cloud_properties.item_id = EZPI_core_cloud_generate_item_id();
     item->cloud_properties.has_getter = true;
     item->cloud_properties.has_setter = false;
     item->cloud_properties.item_name = ezlopi_item_name_weight;
@@ -112,51 +174,47 @@ static void __prepare_item_cloud_properties(l_ezlopi_item_t* item, cJSON* cj_dev
     CJSON_GET_VALUE_DOUBLE(cj_device, ezlopi_gpio2_str, user_data->HX711_DT_pin);
     TRACE_I("hx711_DT_PIN: %d ", user_data->HX711_DT_pin);
 }
-
-static int __0047_prepare(void* arg)
+static ezlopi_error_t __0047_prepare(void *arg)
 {
-    int ret = 0;
-    s_ezlopi_prep_arg_t* device_prep_arg = (s_ezlopi_prep_arg_t*)arg;
+    ezlopi_error_t ret = EZPI_ERR_PREP_DEVICE_PREP_FAILED;
+    s_ezlopi_prep_arg_t *device_prep_arg = (s_ezlopi_prep_arg_t *)arg;
     if (device_prep_arg && (NULL != device_prep_arg->cjson_device))
     {
-        s_hx711_data_t* hx711_data = (s_hx711_data_t*)ezlopi_malloc(__FUNCTION__, sizeof(s_hx711_data_t));
+        s_hx711_data_t *hx711_data = (s_hx711_data_t *)ezlopi_malloc(__FUNCTION__, sizeof(s_hx711_data_t));
         if (hx711_data)
         {
             memset(hx711_data, 0, sizeof(s_hx711_data_t));
             //---------------------------  DIGI - DEVICE 1 --------------------------------------------
-            l_ezlopi_device_t* hx711_device = ezlopi_device_add_device(device_prep_arg->cjson_device, NULL);
+            l_ezlopi_device_t *hx711_device = EZPI_core_device_add_device(device_prep_arg->cjson_device, NULL);
             if (hx711_device)
             {
-                ret = 1;
                 __prepare_device_cloud_properties(hx711_device, device_prep_arg->cjson_device);
-                l_ezlopi_item_t* hx711_item = ezlopi_device_add_item_to_device(hx711_device, sensor_0047_other_HX711_loadcell);
+                l_ezlopi_item_t *hx711_item = EZPI_core_device_add_item_to_device(hx711_device, SENSOR_0047_other_hx711_loadcell);
                 if (hx711_item)
                 {
                     __prepare_item_cloud_properties(hx711_item, device_prep_arg->cjson_device, hx711_data);
+                    ret = EZPI_SUCCESS;
                 }
                 else
                 {
-                    ret = -1;
-                    ezlopi_device_free_device(hx711_device);
+                    EZPI_core_device_free_device(hx711_device);
                     ezlopi_free(__FUNCTION__, hx711_data);
                 }
             }
             else
             {
-                ret = -1;
                 ezlopi_free(__FUNCTION__, hx711_data);
             }
         }
     }
     return ret;
 }
-
-static int __0047_init(l_ezlopi_item_t* item)
+static ezlopi_error_t __0047_init(l_ezlopi_item_t *item)
 {
-    int ret = 0;
+    ezlopi_error_t ret = EZPI_ERR_INIT_DEVICE_FAILED;
     if (item)
     {
-        s_hx711_data_t* user_data = (s_hx711_data_t*)item->user_arg;
+        s_hx711_data_t *user_data = (s_hx711_data_t *)item->user_arg;
         if (user_data)
         {
             if (GPIO_IS_VALID_GPIO(user_data->HX711_SCK_pin) && (GPIO_IS_VALID_GPIO(user_data->HX711_DT_pin)))
@@ -184,56 +242,45 @@ static int __0047_init(l_ezlopi_item_t* item)
                     if (false == (user_data->HX711_initialized))
                     {
                         __hx711_power_reset(item);
-                        TaskHandle_t ezlopi_sensor_hx711_task_handle = NULL;
-                        xTaskCreate(__Calculate_hx711_tare_wt, "Calculate the Tare weight", EZLOPI_SENSOR_HX711_TASK_DEPTH, item, 1, &ezlopi_sensor_hx711_task_handle);
-                        ezlopi_core_process_set_process_info(ENUM_EZLOPI_SENSOR_HX711_TASK, &ezlopi_sensor_hx711_task_handle, EZLOPI_SENSOR_HX711_TASK_DEPTH);
-                        ret = 1;
+                        // TaskHandle_t ezlopi_sensor_hx711_task_handle = NULL;
+                        // xTaskCreate(__Calculate_hx711_tare_wt, "Calculate the Tare weight", EZLOPI_SENSOR_HX711_TASK_DEPTH, item, 1, &ezlopi_sensor_hx711_task_handle);
+                        __Calculate_hx711_tare_wt(item);
+                        // #if defined(CONFIG_FREERTOS_USE_TRACE_FACILITY)
+                        //                         EZPI_core_process_set_process_info(ENUM_EZLOPI_SENSOR_HX711_TASK, &ezlopi_sensor_hx711_task_handle, EZLOPI_SENSOR_HX711_TASK_DEPTH);
+                        // #endif
+                        ret = EZPI_SUCCESS;
                     }
                 }
-                else
-                {
-                    ret = -1;
-                }
             }
-            else
-            {
-                ret = -1;
-            }
-        }
-        else
-        {
-            ret = -1;
         }
     }
     return ret;
 }
-
-static int __0047_get_cjson_value(l_ezlopi_item_t* item, void* arg)
+static ezlopi_error_t __0047_get_cjson_value(l_ezlopi_item_t *item, void *arg)
 {
-    int ret = 0;
+    ezlopi_error_t ret = EZPI_FAILED;
 
     if (item && arg)
     {
-        cJSON* cj_result = (cJSON*)arg;
+        cJSON *cj_result = (cJSON *)arg;
         if (cj_result)
         {
-            s_hx711_data_t* user_data = (s_hx711_data_t*)item->user_arg;
+            s_hx711_data_t *user_data = (s_hx711_data_t *)item->user_arg;
             if (user_data)
             {
-                ezlopi_valueformatter_float_to_cjson(cj_result, user_data->weight, item->cloud_properties.scale);
-                ret = 1;
+                EZPI_core_valueformatter_float_to_cjson(cj_result, user_data->weight, scales_kilo_gram);
+                ret = EZPI_SUCCESS;
             }
         }
     }
     return ret;
 }
-
-static int __0047_notify(l_ezlopi_item_t* item)
+static ezlopi_error_t __0047_notify(l_ezlopi_item_t *item)
 {
-    int ret = 0;
+    ezlopi_error_t ret = EZPI_FAILED;
     if (item)
     {
-        s_hx711_data_t* user_data = (s_hx711_data_t*)item->user_arg;
+        s_hx711_data_t *user_data = (s_hx711_data_t *)item->user_arg;
         if ((user_data) && (true == user_data->HX711_initialized))
         {
             float Mass = __hx711_avg_reading(item, 10); /// 1000.0f; // to avoid spikes
@@ -247,22 +294,21 @@ static int __0047_notify(l_ezlopi_item_t* item)
                 }
                 user_data->weight = weight_in_kg;
                 // TRACE_I("Mass : %0.2f unit , _Offset : %0.2f unit , Actual_Mass : %0.2f kg ,", Mass, (user_data->HX711_tare_wt), weight_in_kg);
-                ezlopi_device_value_updated_from_device_broadcast(item);
+                EZPI_core_device_value_updated_from_device_broadcast(item);
+                ret = EZPI_SUCCESS;
             }
-            ret = 1;
         }
     }
     return ret;
 }
-
-static void __Calculate_hx711_tare_wt(void* params)
+static void __Calculate_hx711_tare_wt(void *params)
 {
     float RAW_tare = 0;
-    l_ezlopi_item_t* item = (l_ezlopi_item_t*)params;
+    l_ezlopi_item_t *item = (l_ezlopi_item_t *)params;
     if (item)
     {
-        s_hx711_data_t* user_data = (s_hx711_data_t*)item->user_arg;
-        if (user_data)
+        s_hx711_data_t *user_data = (s_hx711_data_t *)item->user_arg;
+        if (user_data && (false == user_data->HX711_initialized))
         { // For Output settling time ; [10SPS] is 400ms
             // So, wait for 400ms after reset [as per datasheet]
             vTaskDelay(400 / portTICK_PERIOD_MS);
@@ -288,17 +334,18 @@ static void __Calculate_hx711_tare_wt(void* params)
             }
         }
     }
-    ezlopi_core_process_set_is_deleted(ENUM_EZLOPI_SENSOR_HX711_TASK);
-    vTaskDelete(NULL);
+    // #if defined(CONFIG_FREERTOS_USE_TRACE_FACILITY)
+    //     EZPI_core_process_set_is_deleted(ENUM_EZLOPI_SENSOR_HX711_TASK);
+    // #endif
+        // vTaskDelete(NULL);
 }
-
-static float __hx711_rawdata(l_ezlopi_item_t* item, hx711_gain_t _gain)
+static float __hx711_rawdata(l_ezlopi_item_t *item, hx711_gain_t _gain)
 {
     float raw_data = 0;
     unsigned long data = 0;
     if (item)
     {
-        s_hx711_data_t* user_data = (s_hx711_data_t*)item->user_arg;
+        s_hx711_data_t *user_data = (s_hx711_data_t *)item->user_arg;
 
         if (user_data)
         {
@@ -358,8 +405,7 @@ static float __hx711_rawdata(l_ezlopi_item_t* item, hx711_gain_t _gain)
     // TRACE_E("Raw_data -> %.2f ", raw_data);
     return raw_data;
 }
-
-static float __hx711_avg_reading(l_ezlopi_item_t* item, uint8_t sample_iteration)
+static float __hx711_avg_reading(l_ezlopi_item_t *item, uint8_t sample_iteration)
 {
     float sum = 0;
     if (sample_iteration < 1)
@@ -378,12 +424,11 @@ static float __hx711_avg_reading(l_ezlopi_item_t* item, uint8_t sample_iteration
     sum /= (float)sample_iteration; // avoid dividing by zero
     return sum;
 }
-
-static void __hx711_power_reset(l_ezlopi_item_t* item)
+static void __hx711_power_reset(l_ezlopi_item_t *item)
 {
     if (item)
     {
-        s_hx711_data_t* user_data = (s_hx711_data_t*)item->user_arg;
+        s_hx711_data_t *user_data = (s_hx711_data_t *)item->user_arg;
         if (user_data)
         {
             PORT_ENTER_CRITICAL();
@@ -401,3 +446,7 @@ static void __hx711_power_reset(l_ezlopi_item_t* item)
         }
     }
 }
+
+/*******************************************************************************
+*                          End of File
+*******************************************************************************/

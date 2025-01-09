@@ -1,8 +1,6 @@
 #ifndef __BHT003_H__
 #define __BHT003_H__
 
-#include "esp_log.h"
-#include "driver/uart.h"
 #include "driver/gpio.h"
 #include "ezlopi_hal_uart.h"
 #include "ezlopi_cloud_items.h"
@@ -24,14 +22,15 @@ typedef enum
 
 void starting_cmd(starting_cmd);
 void send_command(CommandType cmd);
-void send_temp_sp(float value, CommandType cmd);
-void create_packet(CommandType cmd, uint8_t *packet, uint8_t *length, float data);
+void send_temp_sp(int value, CommandType cmd);
 bool bht003_init(s_ezlopi_uart_t *bht003_uart_config);
+void create_packet(CommandType cmd, uint8_t *packet, uint8_t *length, int data);
 
 bool bht003_power_value();
-uint32_t bht003_temp_sp_value();
 float bht003_amb_temp_value();
+float bht003_floor_temp_value();
 bool bht003_child_lock_value();
-uint8_t bht003_mode_selection_value();
+uint32_t bht003_temp_sp_value();
 bool bht003_energy_saving_value();
+uint8_t bht003_mode_selection_value();
 #endif//__BHT003_H__
