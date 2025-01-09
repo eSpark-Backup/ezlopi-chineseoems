@@ -1,5 +1,6 @@
 #include "shtc3.h"
 #include "esp_bt.h"
+#include "esp_wifi.h"
 #include "esp_sleep.h"
 #include "driver/ledc.h"
 #include "ezlopi_cloud_constants.h"
@@ -7,7 +8,7 @@
 #include "ezlopi_core_factory_info.h"
 #include "ezlopi_core_valueformatter.h"
 #include "device_00101_Cubic_Detector.h"
-#include "ezlopi_core_websocket_client.h"
+#include "ezlopi_service_webprov.h"
 #include "sensor_0099_SHTC3_temp_humidity.h"
 #include "ezlopi_core_device_value_updated.h"
 
@@ -57,39 +58,39 @@ ledc_channel_config_t neo_ledc_channel = {
     .hpoint         = 0
 };
 
-static int __prepare(void* arg);
-static int __init(l_ezlopi_item_t* item);
-static int __get_item_list(l_ezlopi_item_t* item, void* arg);
-static int __get_value_cjson(l_ezlopi_item_t* item, void* arg);
+static ezlopi_error_t __prepare(void* arg);
+static ezlopi_error_t __init(l_ezlopi_item_t* item);
+static ezlopi_error_t __get_item_list(l_ezlopi_item_t* item, void* arg);
+static ezlopi_error_t __get_value_cjson(l_ezlopi_item_t* item, void* arg);
 static void device_cubic_detector_value_updated_from_device_v3(void* arg);
 static void device_setup_item_properties(l_ezlopi_item_t* item, cJSON* cj_device);
 static void device_setup_device_cloud_properties(l_ezlopi_device_t* device, cJSON* cj_device);
 static void __prepare_security_threat_item_cloud_properties(l_ezlopi_item_t* item, cJSON* cj_device);
 
-int device_00101_Cubic_Detector(e_ezlopi_actions_t action, l_ezlopi_item_t* item, void* args, void* user_arg)
+ezlopi_error_t device_00101_Cubic_Detector(e_ezlopi_actions_t action, l_ezlopi_item_t* item, void* args, void* user_arg)
 {
-    int ret = 0;
+    ezlopi_error_t error = 0;
     
     switch (action)
     {
     case EZLOPI_ACTION_PREPARE:
     {
-        ret = __prepare(args);
+        error = __prepare(args);
         break;
     }
     case EZLOPI_ACTION_INITIALIZE:
     {
-        ret = __init(item);
+        error = __init(item);
         break;
     }
     case EZLOPI_ACTION_HUB_GET_ITEM:
     {
-        ret = __get_item_list(item, args);
+        error = __get_item_list(item, args);
         break;
     }
     case EZLOPI_ACTION_GET_EZLOPI_VALUE:
     {
-        ret = __get_value_cjson(item, args);
+        error = __get_value_cjson(item, args);
         break;
     }
     case EZLOPI_ACTION_NOTIFY_1000_MS:
@@ -99,12 +100,12 @@ int device_00101_Cubic_Detector(e_ezlopi_actions_t action, l_ezlopi_item_t* item
     }
     }
 
-    return ret;
+    return error;
 }
 
-static int __get_item_list(l_ezlopi_item_t* item, void* arg)
+static ezlopi_error_t __get_item_list(l_ezlopi_item_t* item, void* arg)
 {
-    int ret = 0;
+    ezlopi_error_t error = EZPI_FAILED;
     if(ezlopi_item_name_water_leak_alarm == item->cloud_properties.item_name)
     {
         cJSON* cjson_propertise = (cJSON*)arg;
@@ -126,10 +127,10 @@ static int __get_item_list(l_ezlopi_item_t* item, void* arg)
 
             cJSON_AddStringToObject(__FUNCTION__, cjson_propertise, ezlopi_value_str, (char*)item->user_arg ? item->user_arg : "no_water_leak");
             cJSON_AddStringToObject(__FUNCTION__, cjson_propertise, ezlopi_valueFormatted_str, (char*)item->user_arg ? item->user_arg : "no_water_leak");
-            ret = 1;
+            error = EZPI_SUCCESS;
         }
     }
-    return ret;
+    return error;
 }
 void output_task(void* arg)
 {
@@ -163,17 +164,17 @@ void update_task(void* arg)
     l_ezlopi_item_t* item = (l_ezlopi_item_t*)arg;
     if(item)
     {
-        l_ezlopi_device_t* device_head = ezlopi_device_get_head();
+        l_ezlopi_device_t* device_head = EZPI_core_device_get_head();
         if(device_head)
         {
             while(1)
             {
-                if(ezlopi_websocket_client_is_connected())
+                if(EZPI_service_webprov_is_connected())
                 {
                     __0099_notify(device_head->next->items);
                     __0099_notify(device_head->next->next->items);
-                    ezlopi_device_value_updated_from_device_broadcast(item);
-                    ezlopi_device_value_updated_from_device_broadcast(item->next);
+                    EZPI_core_device_value_updated_from_device_broadcast(item);
+                    EZPI_core_device_value_updated_from_device_broadcast(item->next);
                     vTaskDelay(5000 / portTICK_PERIOD_MS);
                     vTaskDelete(NULL);
                 }
@@ -240,13 +241,13 @@ void long_press_task(void* arg)
     }
 }
 
-static int __get_value_cjson(l_ezlopi_item_t* item, void* args)
+static ezlopi_error_t __get_value_cjson(l_ezlopi_item_t* item, void* args)
 {
-    int ret = 0;
+    ezlopi_error_t error = EZPI_FAILED;
     cJSON* cj_params = (cJSON*)args;
     if(!cj_params)
     {
-        return ret;
+        return error;
     }
 
     if(ezlopi_item_name_water_leak_alarm == item->cloud_properties.item_name)
@@ -265,23 +266,23 @@ static int __get_value_cjson(l_ezlopi_item_t* item, void* args)
         item->user_arg = (void*)curret_value;
         cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_value_str, (char*)item->user_arg ? item->user_arg : "no_water_leak");
         cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_valueFormatted_str, (char*)item->user_arg ? item->user_arg : "no_water_leak");
-        ret = 1;
+        error = EZPI_SUCCESS;
     }
     else if(ezlopi_item_name_security_threat == item->cloud_properties.item_name)
     {
-        l_ezlopi_device_t* device_head = ezlopi_device_get_head();
+        l_ezlopi_device_t* device_head = EZPI_core_device_get_head();
         if(device_head)
         {
-            ezlopi_valueformatter_bool_to_cjson(cj_params, device_head->items->interface.gpio.gpio_in.value, item->cloud_properties.scale);
+            EZPI_core_valueformatter_bool_to_cjson(cj_params, device_head->items->interface.gpio.gpio_in.value, item->cloud_properties.scale);
         }
-        ret = 1;
+        error = EZPI_SUCCESS;
     }
-    return ret;
+    return error;
 }
 
 static void device_cubic_detector_value_updated_from_device_v3(void* arg)
 {
-    l_ezlopi_device_t* device_head = ezlopi_device_get_head();
+    l_ezlopi_device_t* device_head = EZPI_core_device_get_head();
     if(device_head)
     {
         l_ezlopi_item_t* item = (l_ezlopi_item_t*)arg;
@@ -289,7 +290,7 @@ static void device_cubic_detector_value_updated_from_device_v3(void* arg)
         {
             __0099_notify(device_head->next->items);
             __0099_notify(device_head->next->next->items);
-            if(ezlopi_device_value_updated_from_device_broadcast(item) && ezlopi_device_value_updated_from_device_broadcast(item->next))
+            if(EZPI_core_device_value_updated_from_device_broadcast(item) && EZPI_core_device_value_updated_from_device_broadcast(item->next))
             {
                 sleep_time = sleep_time +(PAIRING_MODE);
             }
@@ -297,9 +298,9 @@ static void device_cubic_detector_value_updated_from_device_v3(void* arg)
     }
 }
 
-static int __init(l_ezlopi_item_t* item)
+static ezlopi_error_t __init(l_ezlopi_item_t* item)
 {
-    int ret = 0;
+    ezlopi_error_t error = EZPI_ERR_INIT_DEVICE_FAILED;
     if (ezlopi_item_name_water_leak_alarm == item->cloud_properties.item_name)
     {
         if (GPIO_IS_VALID_GPIO(item->interface.gpio.gpio_in.gpio_num))
@@ -348,29 +349,29 @@ static int __init(l_ezlopi_item_t* item)
                 xTaskCreate(output_task, "Output", 2*2048, item, 5, NULL);
                 xTaskCreate(update_task, "Update", 2*2048, item, 5, NULL);
                 xTaskCreate(long_press_task, "long_press", 2*2048, NULL, 5, NULL);
-                ezlopi_service_gpioisr_register_v3(item, device_cubic_detector_value_updated_from_device_v3, 200);
-                ret = 1;
+                EZPI_service_gpioisr_register_v3(item, device_cubic_detector_value_updated_from_device_v3, 200);
+                error = EZPI_SUCCESS;
             }
             else
             {
-                TRACE_E("Error initializing Water Leak Sensor, error: %s", esp_err_to_name(ret));
-                ret = -1;
+                TRACE_E("Error initializing Water Leak Sensor, error: %s", esp_err_to_name(error));
+                error = EZPI_FAILED;
             }
         }
         else
         {
-            ret = -1;
+            error = EZPI_FAILED;
         } 
     }
     else if(ezlopi_item_name_security_threat == item->cloud_properties.item_name)
     {
-        ret = 1;
+        error = EZPI_SUCCESS;
     }
     else
     {
-        ret = -1;
+        error = EZPI_FAILED;
     }
-    return ret;
+    return error;
 }
 
 void timer_task(void* arg)
@@ -382,7 +383,7 @@ void timer_task(void* arg)
         {
             if((esp_timer_get_time() - start_time) > sleep_time) //20sec
             {
-                l_ezlopi_device_t* device_head = ezlopi_device_get_head();
+                l_ezlopi_device_t* device_head = EZPI_core_device_get_head();
                 if(device_head)
                 {
                     if(item->interface.gpio.gpio_in.value == 1)
@@ -406,9 +407,10 @@ void timer_task(void* arg)
     }
 }
 
-static int __prepare(void* arg)
+static ezlopi_error_t __prepare(void* arg)
 {
-    int ret = 0;
+    ezlopi_error_t error = EZPI_ERR_PREP_DEVICE_PREP_FAILED;
+
     start_time = esp_timer_get_time();
     s_ezlopi_prep_arg_t* prep_arg = (s_ezlopi_prep_arg_t*)arg;
 
@@ -417,13 +419,13 @@ static int __prepare(void* arg)
         cJSON* cj_device = prep_arg->cjson_device;
         if (cj_device)
         {
-            l_ezlopi_device_t* device = ezlopi_device_add_device(prep_arg->cjson_device, NULL);
+            l_ezlopi_device_t* device = EZPI_core_device_add_device(prep_arg->cjson_device, NULL);
             if (device)
             {
-                ret = 1;
+                error = EZPI_SUCCESS;
                 device_setup_device_cloud_properties(device, cj_device);
                 
-                l_ezlopi_item_t* item1 = ezlopi_device_add_item_to_device(device, device_00101_Cubic_Detector);
+                l_ezlopi_item_t* item1 = EZPI_core_device_add_item_to_device(device, device_00101_Cubic_Detector);
                 if (item1)
                 {
                     device_setup_item_properties(item1, cj_device);
@@ -431,32 +433,32 @@ static int __prepare(void* arg)
                 }
                 else
                 {
-                    ezlopi_device_free_device(device);
-                    ret = -1;
+                    EZPI_core_device_free_device(device);
+                    error = EZPI_FAILED;
                 }
-                l_ezlopi_item_t *item2 = ezlopi_device_add_item_to_device(device, device_00101_Cubic_Detector);
+                l_ezlopi_item_t *item2 = EZPI_core_device_add_item_to_device(device, device_00101_Cubic_Detector);
                 if (item2)
                 {
                     __prepare_security_threat_item_cloud_properties(item2, cj_device);
                 }
                 else
                 {
-                    ret = 1;
-                    ezlopi_device_free_device(device);
+                    error = EZPI_FAILED;
+                    EZPI_core_device_free_device(device);
                 }
             }
             else
             {
-                ret = -1;
+                error = EZPI_FAILED;
             }
         }
         else
         {
-            ret = -1;
+            error = EZPI_FAILED;
         }
     }
 
-    return ret;
+    return error;
 }
 
 static void device_setup_device_cloud_properties(l_ezlopi_device_t* device, cJSON* cj_device)
@@ -479,7 +481,7 @@ static void device_setup_item_properties(l_ezlopi_item_t* item, cJSON* cj_device
     item->cloud_properties.has_setter = false;
     item->cloud_properties.item_name = ezlopi_item_name_water_leak_alarm;
     item->cloud_properties.value_type = value_type_token;
-    item->cloud_properties.item_id = ezlopi_cloud_generate_item_id();
+    item->cloud_properties.item_id = EZPI_core_cloud_generate_item_id();
 
     CJSON_GET_VALUE_DOUBLE(cj_device, ezlopi_dev_type_str, item->interface_type);
 
@@ -497,7 +499,7 @@ static void __prepare_security_threat_item_cloud_properties(l_ezlopi_item_t* ite
     item->cloud_properties.show = true;
     item->cloud_properties.has_setter = false;
     item->cloud_properties.has_getter = true;
-    item->cloud_properties.item_id = ezlopi_cloud_generate_item_id();
+    item->cloud_properties.item_id = EZPI_core_cloud_generate_item_id();
     item->cloud_properties.item_name = ezlopi_item_name_security_threat;
     item->cloud_properties.value_type = value_type_bool;
     item->cloud_properties.scale = NULL;

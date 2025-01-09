@@ -7,13 +7,13 @@ static const char *TAG = "SHCT";
 
 void shtc3_init_sensor(s_ezlopi_i2c_master_t *i2c_master_conf)
 {
-    ezlopi_i2c_master_init(i2c_master_conf);
+    EZPI_hal_i2c_master_init(i2c_master_conf);
 }
 
 esp_err_t shtc3_wakeup_sensor(s_ezlopi_i2c_master_t *i2c_master_conf)
 {
     uint8_t data[2] = {0x35, 0x17};  // Data to be sent
-    esp_err_t err = ezlopi_i2c_master_write_to_device(i2c_master_conf, data, sizeof(data));
+    esp_err_t err = EZPI_hal_i2c_master_write_to_device(i2c_master_conf, data, sizeof(data));
 
     if (err != ESP_OK) {
         ESP_LOGI(TAG, "I2C Command failed: %s", esp_err_to_name(err));
@@ -29,9 +29,9 @@ esp_err_t shtc3_read_out(s_ezlopi_i2c_master_t *i2c_master_conf, float *temp, fl
     uint8_t read_buffer[6] = {0};
 
     vTaskDelay(pdMS_TO_TICKS(10));
-    err = ezlopi_i2c_master_write_to_device(i2c_master_conf, write_buffer, sizeof(write_buffer));
+    err = EZPI_hal_i2c_master_write_to_device(i2c_master_conf, write_buffer, sizeof(write_buffer));
     vTaskDelay(pdMS_TO_TICKS(30));
-    err = ezlopi_i2c_master_read_from_device(i2c_master_conf, read_buffer, sizeof(read_buffer));
+    err = EZPI_hal_i2c_master_read_from_device(i2c_master_conf, read_buffer, sizeof(read_buffer));
 
     if (calc_crc8(read_buffer, 2) == read_buffer[2])
     {
@@ -57,7 +57,7 @@ esp_err_t shtc3_read_out(s_ezlopi_i2c_master_t *i2c_master_conf, float *temp, fl
 esp_err_t shtc3_sleep_sensor(s_ezlopi_i2c_master_t *i2c_master_conf)
 {
     uint8_t data[2] = {0xB0, 0x98};  // Data to be sent to put the sensor to sleep
-    esp_err_t err = ezlopi_i2c_master_write_to_device(i2c_master_conf, data, sizeof(data));
+    esp_err_t err = EZPI_hal_i2c_master_write_to_device(i2c_master_conf, data, sizeof(data));
 
     if (err != ESP_OK) {
         ESP_LOGI(TAG, "Failed to put sensor to sleep: %s", esp_err_to_name(err));
