@@ -53,6 +53,7 @@ extern "C"
 #endif
 
 #if defined(CONFIG_EZPI_WEBSOCKET_CLIENT)
+    #include "ezlopi_core_errors.h"
     /**
      * @brief Function to initialize web provisioning
      * @details Following operatons are perfromed
@@ -61,6 +62,11 @@ extern "C"
      *
      */
     void EZPI_service_web_provisioning_init(void);
+    /**
+     * @brief Function to send cjson data to ws
+     *
+     */
+    int __send_cjson_data_to_nma_websocket(cJSON *cj_data);
     /**
      * @brief Function to deinitialize web provisioning
      *

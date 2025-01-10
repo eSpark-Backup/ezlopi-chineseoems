@@ -4,12 +4,12 @@
 #include "esp_sleep.h"
 #include "driver/ledc.h"
 #include "ezlopi_core_ota.h"
+#include "ezlopi_service_webprov.h"
 #include "ezlopi_cloud_constants.h"
 #include "ezlopi_service_gpioisr.h"
 #include "ezlopi_core_factory_info.h"
 #include "ezlopi_core_valueformatter.h"
 #include "device_00101_Cubic_Detector.h"
-#include "ezlopi_service_webprov.h"
 #include "sensor_0099_SHTC3_temp_humidity.h"
 #include "ezlopi_core_device_value_updated.h"
 
@@ -19,6 +19,7 @@
 
 #define RESET                   (10*1000*1000)
 #define PAIRING_MODE            (5*1000*1000)
+#define OTA_MODE                (15*1000*1000)
 #define PAIRING_TIME            (600*1000*1000)
 #define WAKEUP_TIME             (50*1000*1000)
 #define SENSOR_ADDR             0x70
@@ -32,7 +33,7 @@
 #define NEO_LEDC_FREQUENCY      1000   
 
 static uint64_t start_time = 0;
-uint64_t sleep_time = (50*1000*1000);
+uint64_t sleep_time = (15*1000*1000);
 TaskHandle_t  pairing_task_handle = NULL;
 
 const char* neo_water_leak_alarm_states[] = {
@@ -197,6 +198,53 @@ void pairing_led_task(void* arg)
     }
 }
 
+void ota_led_task(void* arg)
+{
+    while(1)
+    {
+        switch(EPZI_core_ota_get_state())
+        {
+            case 0:
+            {
+                gpio_set_level(LED_RED, 0);
+                gpio_set_level(LED_BLUE, 0);
+                vTaskDelay(1000 / portTICK_PERIOD_MS);
+                vTaskDelete(NULL);
+            }
+            break;
+            case 1:
+            {
+                gpio_set_level(LED_RED, 0);
+                gpio_set_level(LED_BLUE, 1);
+                vTaskDelay(200 / portTICK_PERIOD_MS);
+                gpio_set_level(LED_RED, 1);
+                gpio_set_level(LED_BLUE, 0);
+                vTaskDelay(200 / portTICK_PERIOD_MS);
+            }
+            break;
+            case 2:
+            {
+                gpio_set_level(LED_RED, 0);
+                gpio_set_level(LED_BLUE, 1);
+                vTaskDelay(200 / portTICK_PERIOD_MS);
+                gpio_set_level(LED_RED, 1);
+                gpio_set_level(LED_BLUE, 0);
+                vTaskDelay(200 / portTICK_PERIOD_MS);
+            }
+            break;
+            case 3:
+            {
+                gpio_set_level(LED_RED, 0);
+                gpio_set_level(LED_BLUE, 0);
+                vTaskDelay(1000 / portTICK_PERIOD_MS);
+                esp_restart();
+            }
+            break;
+        }
+        vTaskDelay(10 / portTICK_PERIOD_MS);
+    }
+}
+
 void long_press_task(void* arg)
 {
     while(1)
@@ -205,16 +253,51 @@ void long_press_task(void* arg)
         uint8_t count =0;
         while(gpio_get_level(SWITCH))
         {
+            sleep_time += PAIRING_MODE;
             if((esp_timer_get_time() - press_time) >= (PAIRING_MODE) && (esp_timer_get_time() - press_time) < (RESET) && count != 1)
             {
-                sleep_time = sleep_time + (PAIRING_TIME);
-                xTaskCreate(pairing_led_task, "pairing_led", 2*2048, NULL, 5, &pairing_task_handle);
                 count = 1;
+                // TRACE_E("I'm IN PAIRINGGGGGGGGGGGGGGGGGG---------------%d",count);
+                gpio_set_level(LED_BLUE, 1);
+                gpio_set_level(LED_RED, 1);
+                xTaskCreate(pairing_led_task, "pairing_led", 2*2048, NULL, 5, &pairing_task_handle);
             }
-            else if((esp_timer_get_time() - press_time) >= (RESET) && count != 2)
+            else if((esp_timer_get_time() - press_time) >= (RESET) && (esp_timer_get_time() - press_time) < (OTA_MODE) && count != 2)
             {
                 count = 2;
                 vTaskDelete(pairing_task_handle);
+                for(size_t i = 0; i < 10; i++)
+                {
+                    gpio_set_level(LED_BLUE, 0);
+                    gpio_set_level(LED_RED, 0);
+                    vTaskDelay(200 / portTICK_PERIOD_MS);
+                    gpio_set_level(LED_BLUE, 1);
+                    gpio_set_level(LED_RED, 1);
+                    vTaskDelay(200 / portTICK_PERIOD_MS);
+                }
+                // TRACE_E("I'm IN RESETTTTTTTTTTTTTTTTTTTTTT---------------%d",count);
+            }
+            else if((esp_timer_get_time() - press_time) >= (OTA_MODE) && count != 3)
+            {
+                count = 3;
+                gpio_set_level(LED_BLUE, 1);
+                gpio_set_level(LED_RED, 1);
+                xTaskCreate(ota_led_task, "ota_led", 2*2048, NULL, 5, NULL);
+                // TRACE_E("I'm IN OTAAAAAAAAAAAAAAAAAAAAAAAA---------------%d",count);
+            }
+            vTaskDelay(10 / portTICK_PERIOD_MS);
+        }
+        switch(count)
+        {
+            case 1:
+            {
+                // TRACE_E("I'm IN PAIRINGGGGGGGGGGGGGGGGGG");
+                sleep_time = sleep_time + (PAIRING_TIME);
+            }
+            break;
+            case 2:
+            {
+                // TRACE_E("I'm IN RESETTTTTTTTTTTTTTTTTTTTTT");
                 if (ESP_OK == esp_partition_erase_range(partition_ctx_v3, EZLOPI_FINFO_OFFSET_HUB_DATA, EZLOPI_FINFO_READ_LEN_4KB))
                 {
                 }
@@ -236,7 +319,30 @@ void long_press_task(void* arg)
                 }
                 esp_restart();
             }
-            vTaskDelay(10 / portTICK_PERIOD_MS);
+            break;
+            case 3:
+            {
+                cJSON *cj_data = cJSON_CreateObject(__FUNCTION__);
+                if (cj_data)
+                {
+                    cJSON_AddStringToObject(__FUNCTION__, cj_data, "method", "hub.firmware.update.start");
+                    cJSON_AddStringToObject(__FUNCTION__, cj_data, "id", "_ID_");
+                    cJSON *params = cJSON_CreateObject(__FUNCTION__);
+                    if (params)
+                    {
+                        cJSON_AddItemToObject(__FUNCTION__, cj_data, "params", params);
+                        if(__send_cjson_data_to_nma_websocket(cj_data) == EZPI_SUCCESS)
+                        {
+                            // TRACE_E("OTA METHOD SENT");
+                        }
+                        else{
+                            // TRACE_E("OTA METHOD NOT SENT");
+                        }
+                    }
+                    cJSON_Delete(__FUNCTION__, cj_data);
+                }
+            }
+            break;
         }
         vTaskDelay(10 / portTICK_PERIOD_MS);
     }
@@ -386,25 +492,33 @@ void timer_task(void* arg)
             {
                 vTaskDelete(NULL);
             }
-            else if((esp_timer_get_time() - start_time) > sleep_time) //50sec
+            else if((esp_timer_get_time() - start_time) > sleep_time) //15sec
             {
-                l_ezlopi_device_t* device_head = EZPI_core_device_get_head();
-                if(device_head)
+                if(gpio_get_level(SWITCH))
                 {
-                    if(item->interface.gpio.gpio_in.value == 1)
+                    // TRACE_E("SLEEP TIMEEEEEEEE");
+                    sleep_time = sleep_time + PAIRING_MODE;
+                }
+                else
+                {
+                    l_ezlopi_device_t* device_head = EZPI_core_device_get_head();
+                    if(device_head)
                     {
-                        esp_sleep_enable_timer_wakeup(WAKEUP_TIME); // 50 seconds
+                        if(item->interface.gpio.gpio_in.value == 1)
+                        {
+                            esp_sleep_enable_timer_wakeup(WAKEUP_TIME); // 50 seconds
+                        }
+                        esp_sleep_enable_ext0_wakeup((item->interface.gpio.gpio_in.gpio_num), !item->interface.gpio.gpio_in.value);
+                        esp_sleep_enable_ext1_wakeup((1ULL << SWITCH), ESP_EXT1_WAKEUP_ANY_HIGH);
+                        gpio_reset_pin(LED_BLUE);
+                        gpio_reset_pin(LED_RED);
+                        gpio_pullup_dis(NEO_BUZZER_PIN);
+                        esp_wifi_stop();
+                        esp_bt_controller_disable();
+                        shtc3_sleep_sensor(&device_head->next->items->interface.i2c_master);
+                        TRACE_I("GOING TO SLEEP");
+                        esp_deep_sleep_start();
                     }
-                    esp_sleep_enable_ext0_wakeup((item->interface.gpio.gpio_in.gpio_num), !item->interface.gpio.gpio_in.value);
-                    esp_sleep_enable_ext1_wakeup((1ULL << SWITCH), ESP_EXT1_WAKEUP_ANY_HIGH);
-                    gpio_reset_pin(LED_BLUE);
-                    gpio_reset_pin(LED_RED);
-                    gpio_pullup_dis(NEO_BUZZER_PIN);
-                    esp_wifi_stop();
-                    esp_bt_controller_disable();
-                    shtc3_sleep_sensor(&device_head->next->items->interface.i2c_master);
-                    TRACE_I("GOING TO SLEEP");
-                    esp_deep_sleep_start();
                 }
             }
             vTaskDelay(10 / portTICK_PERIOD_MS);
