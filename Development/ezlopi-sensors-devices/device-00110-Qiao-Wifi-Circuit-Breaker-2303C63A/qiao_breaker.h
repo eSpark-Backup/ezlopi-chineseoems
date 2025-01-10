@@ -23,5 +23,6 @@ extern values_t Values;
 
 void send_command(int value);
 bool qiao_init(s_ezlopi_uart_t *xuguang_uart_config);
+void paired();
 
 #endif//__DEVICE_00110_QIAO_WIFI_CIRCUIT_BREAKER_H__

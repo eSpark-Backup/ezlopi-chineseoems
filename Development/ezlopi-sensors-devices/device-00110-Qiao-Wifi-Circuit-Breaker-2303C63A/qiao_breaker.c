@@ -11,6 +11,7 @@
 
 
 void lock(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_object_handle_t uart_object_handle);
+uint8_t disconnect[] = {0x55, 0xAA , 0x03, 0x05, 0x00, 0x01, 0x00, 0x08};
 
 values_t Values;
 s_ezlopi_uart_object_handle_t qiao_uart_object_handle;
@@ -60,6 +61,26 @@ void qiao_callback(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_object_ha
     if ((buffer[0]) == HEADER_H && (buffer[1]) == HEADER_L) {
         l_ezlopi_device_t* device = ezlopi_device_get_head();
         if(device) {
+            int ret = 1;
+            for (int i = 2; i < 8; i++)
+            {    
+                if (!(disconnect[i] == buffer[i])) {
+                    ret = 0;
+                }
+            }
+            if (ret)
+            {
+                TRACE_I("Reboot");
+                // uint8_t packet[] = {0x55, 0xAA, 0x00, 0x03, 0x00, 0x01, 0x00, 0x03};
+                // uart_write_bytes(qiao_uart_object_handle->ezlopi_uart.channel, (const char *)packet, sizeof(packet));
+                if (ESP_OK == esp_partition_erase_range(partition_ctx_v3, EZLOPI_FINFO_OFFSET_HUB_DATA, EZLOPI_FINFO_READ_LEN_4KB))
+                {
+                }
+                if(ESP_OK == esp_partition_erase_range(partition_ctx_v3, EZLOPI_FINFO_OFFSET_CONN_DATA, EZLOPI_FINFO_READ_LEN_4KB))
+                {
+                    if(ESP_OK == esp_partition_erase_range(partition_ctx_v3, EZLOPI_FINFO_REL_OFFSET_CA_CERTIFICATE, EZLOPI_FINFO_REL_OFFSET_SSL_SHARED_KEY));
+                }
+            }
             l_ezlopi_item_t* switch_item = device->items;
             l_ezlopi_item_t* mode_item = device->next->items;
             if (switch_item)
@@ -90,20 +111,21 @@ bool qiao_init(s_ezlopi_uart_t *qiao_uart_config)
     if (qiao_uart_config->enable)
     {
         qiao_uart_object_handle = ezlopi_uart_init(qiao_uart_config->baudrate, qiao_uart_config->tx, qiao_uart_config->rx, qiao_callback, NULL);
-        // uint8_t pairing_mode[8] = {0x55, 0xAA, 0x00, 0x03, 0x00, 0x01, 0x02, 0x05};
-        // uint8_t paired[8] = {0x55, 0xAA, 0x00, 0x03, 0x00, 0x01, 0x04, 0x07};
-        uint8_t packet[8] = {0x55, 0xAA, 0x00, 0x03, 0x00, 0x01, 0x02, 0x05};
-        uint8_t length = 8;
-        uart_write_bytes(qiao_uart_object_handle->ezlopi_uart.channel, (const char *)packet, length);
-        packet[6] = 0x04;
-        packet[7] = 0x07;
-        length = 8;
-        uart_write_bytes(qiao_uart_object_handle->ezlopi_uart.channel, (const char *)packet, length);
-        TRACE_I("%d",length);
+        paired();
         return qiao_uart_object_handle;
     }
 
     return false;
+}
+
+void paired() {
+    uint8_t packet[8] = {0x55, 0xAA, 0x00, 0x03, 0x00, 0x01, 0x02, 0x05};
+    uint8_t length = 8;
+    uart_write_bytes(qiao_uart_object_handle->ezlopi_uart.channel, (const char *)packet, length);
+    packet[6] = 0x04; 
+    packet[7] = 0x07;
+    length = 8;
+    uart_write_bytes(qiao_uart_object_handle->ezlopi_uart.channel, (const char *)packet, length);
 }
 
 void send_command(int value) {

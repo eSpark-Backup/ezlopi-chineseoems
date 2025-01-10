@@ -19,11 +19,13 @@ static uint32_t lock_item_id;
 static const char* qiao_mode_switch_states[] = {
     "automatic",
     "manual",
+    "unknown"
 };
 
 static const char* qiao_lock_switch_states[] = {
     "lock_off",
     "lock_on",
+    "unknown"
 };
 
 // const char* breaker_name = 'Breaker Switch';
@@ -66,6 +68,7 @@ int device_00110_Qiao_Wifi_Circuit_Breaker(e_ezlopi_actions_t action, l_ezlopi_i
         case EZLOPI_ACTION_HUB_GET_ITEM:
         {
             ret = _get_item(item,args);
+
         }
         case EZLOPI_ACTION_GET_EZLOPI_VALUE:
         {
@@ -189,28 +192,40 @@ static int __get_value_cjson(l_ezlopi_item_t* item, void* args)
     }
     else if (mode_item_id == item->cloud_properties.item_id)
     {
-        if(qiao_mode_value()) {
+        if (qiao_mode_value() == true) {
             cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_valueFormatted_str, qiao_mode_switch_states[1]);
             cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_value_str, qiao_mode_switch_states[1]);
         }
-        else
+        else if(qiao_mode_value() == false)
         {
             cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_valueFormatted_str, qiao_mode_switch_states[0]);
             cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_value_str, qiao_mode_switch_states[0]);
         }
+        else
+        {
+            cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_valueFormatted_str, qiao_mode_switch_states[2]);
+            cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_value_str, qiao_mode_switch_states[2]);
+        }
+        
         // ezlopi_valueformatter_bool_to_cjson(cj_params, qiao_mode_value(), item->cloud_properties.scale);
     }
     else if (lock_item_id == item->cloud_properties.item_id)
     {
-        if(qiao_lock_value()) {
+        if (qiao_lock_value() == true) {
             cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_valueFormatted_str, qiao_lock_switch_states[1]);
             cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_value_str, qiao_lock_switch_states[1]);
         }
-        else
+        else if(qiao_lock_value() == false)
         {
             cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_valueFormatted_str, qiao_lock_switch_states[0]);
             cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_value_str, qiao_lock_switch_states[0]);
         }
+        else
+        {
+            cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_valueFormatted_str, qiao_lock_switch_states[2]);
+            cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_value_str, qiao_lock_switch_states[2]);
+        }
+        
         // ezlopi_valueformatter_bool_to_cjson(cj_params, qiao_lock_value(), item->cloud_properties.scale);
     }
     
@@ -361,8 +376,8 @@ static void __prepare_switch_item_properties(l_ezlopi_item_t* item, cJSON* cjson
 static void __prepare_mode_device_cloud_properties(l_ezlopi_device_t* device)
 {
     device->cloud_properties.category = category_mode;
-    device->cloud_properties.subcategory = subcategory_manual_auto;
-    device->cloud_properties.device_type = dev_type_device;
+    device->cloud_properties.subcategory = subcategory_mode_selection;
+    device->cloud_properties.device_type = dev_type_sensor;
     device->cloud_properties.info = NULL;
     device->cloud_properties.device_type_id = NULL;
 }
@@ -372,7 +387,7 @@ static void __prepare_mode_item_properties(l_ezlopi_item_t* item, cJSON* cjson_d
     item->cloud_properties.show = true;
     item->cloud_properties.has_getter = true;
     item->cloud_properties.has_setter = false;
-    item->cloud_properties.item_name = ezlopi_item_name_button_state;
+    item->cloud_properties.item_name = ezlopi_item_name_program_mode_selection;
     item->cloud_properties.value_type = value_type_token;
     item->cloud_properties.item_id = ezlopi_cloud_generate_item_id();
     item->cloud_properties.scale = NULL;
@@ -388,8 +403,8 @@ static void __prepare_mode_item_properties(l_ezlopi_item_t* item, cJSON* cjson_d
 static void __prepare_switch_lock_device_cloud_properties(l_ezlopi_device_t* device)
 {
     device->cloud_properties.category = category_switch;
-    device->cloud_properties.subcategory = subcategory_lock;
-    device->cloud_properties.device_type = dev_type_doorlock;
+    device->cloud_properties.subcategory = subcategory_child_lock;
+    device->cloud_properties.device_type = dev_type_sensor;
     device->cloud_properties.info = NULL;
     device->cloud_properties.device_type_id = NULL;
 }
@@ -399,7 +414,7 @@ static void __prepare_switch_lock_item_properties(l_ezlopi_item_t* item, cJSON* 
     item->cloud_properties.show = true;
     item->cloud_properties.has_getter = true;
     item->cloud_properties.has_setter = true;
-    item->cloud_properties.item_name = ezlopi_item_name_lock_operation;
+    item->cloud_properties.item_name = ezlopi_item_name_child_lock;
     item->cloud_properties.value_type = value_type_token;
     item->cloud_properties.item_id = ezlopi_cloud_generate_item_id();
     item->cloud_properties.scale = NULL;
