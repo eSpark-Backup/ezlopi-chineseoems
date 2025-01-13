@@ -131,7 +131,7 @@ void xuguang_callback(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_object
 {
     if ((buffer[0]) == HEADER_H && (buffer[1]) == HEADER_L)
     {
-        l_ezlopi_device_t* device = ezlopi_device_get_head();
+        l_ezlopi_device_t* device = EZPI_core_device_get_head();
         if(device)
         {
             l_ezlopi_item_t* dimmer_item = device->items;
@@ -142,8 +142,8 @@ void xuguang_callback(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_object
                 {
                     power(buffer, output_len, uart_object_handle);
                     intensity(buffer, output_len, uart_object_handle);
-                    ezlopi_device_value_updated_from_device_broadcast(dimmer_item);
-                    ezlopi_device_value_updated_from_device_broadcast(switch_item);
+                    EZPI_core_device_value_updated_from_device_broadcast(dimmer_item);
+                    EZPI_core_device_value_updated_from_device_broadcast(switch_item);
                 }
             }
             else if(buffer[3] == WIFI)
@@ -167,7 +167,7 @@ bool xuguang_init(s_ezlopi_uart_t *xuguang_uart_config)
 {
     if (xuguang_uart_config->enable)
     {
-        xuguang_uart_object_handle = ezlopi_uart_init(xuguang_uart_config->baudrate, xuguang_uart_config->tx, xuguang_uart_config->rx, xuguang_callback, NULL);
+        xuguang_uart_object_handle = EZPI_hal_uart_init(xuguang_uart_config->baudrate, xuguang_uart_config->tx, xuguang_uart_config->rx, xuguang_callback, NULL);
         return xuguang_uart_object_handle;
     }
 
