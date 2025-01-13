@@ -12,6 +12,7 @@ const char *category_generic_sensor = "generic_sensor";
 const  char *category_hvac = "hvac";
 // const  char *category_camera = "camera";
 const char *category_door_lock = "door_lock";
+const char *category_lock = "lock";
 // const  char *category_window_cov = "window_cov";
 // const  char *category_remote_control = "remote_control";
 const char *category_ir_tx = "ir_tx";

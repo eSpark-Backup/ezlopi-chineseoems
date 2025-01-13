@@ -13,6 +13,7 @@ extern const  char *category_hvac;
 extern const char *category_mode;
 // extern const  char *category_camera;
 extern const char *category_door_lock;
+extern const char *category_lock;
 // extern const  char *category_window_cov;
 // extern const  char *category_remote_control;
 extern const char *category_ir_tx;

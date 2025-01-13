@@ -402,7 +402,7 @@ static void __prepare_mode_item_properties(l_ezlopi_item_t* item, cJSON* cjson_d
 
 static void __prepare_switch_lock_device_cloud_properties(l_ezlopi_device_t* device)
 {
-    device->cloud_properties.category = category_switch;
+    device->cloud_properties.category = category_lock;
     device->cloud_properties.subcategory = subcategory_child_lock;
     device->cloud_properties.device_type = dev_type_sensor;
     device->cloud_properties.info = NULL;
