@@ -59,7 +59,7 @@ void lock_update(uint8_t value)
 void qiao_callback(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_object_handle_t uart_object_handle) 
 {
     if ((buffer[0]) == HEADER_H && (buffer[1]) == HEADER_L) {
-        l_ezlopi_device_t* device = ezlopi_device_get_head();
+        l_ezlopi_device_t* device = EZPI_core_device_get_head();
         if(device) {
             int ret = 1;
             for (int i = 2; i < 8; i++)
@@ -88,7 +88,7 @@ void qiao_callback(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_object_ha
                 if (buffer[6] == SWITCH)
                 {
                     lock(buffer, output_len, uart_object_handle);
-                    ezlopi_device_value_updated_from_device_broadcast(switch_item);
+                    EZPI_core_device_value_updated_from_device_broadcast(switch_item);
                 }
                 
             }
@@ -98,7 +98,7 @@ void qiao_callback(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_object_ha
                 {
                     TRACE_I("mode q nhi araha");
                     mode(buffer, output_len, uart_object_handle);
-                    ezlopi_device_value_updated_from_device_broadcast(mode_item);
+                    EZPI_core_device_value_updated_from_device_broadcast(mode_item);
                 }
             }
             
@@ -110,7 +110,7 @@ bool qiao_init(s_ezlopi_uart_t *qiao_uart_config)
 {
     if (qiao_uart_config->enable)
     {
-        qiao_uart_object_handle = ezlopi_uart_init(qiao_uart_config->baudrate, qiao_uart_config->tx, qiao_uart_config->rx, qiao_callback, NULL);
+        qiao_uart_object_handle = EZPI_hal_uart_init(qiao_uart_config->baudrate, qiao_uart_config->tx, qiao_uart_config->rx, qiao_callback, NULL);
         paired();
         return qiao_uart_object_handle;
     }

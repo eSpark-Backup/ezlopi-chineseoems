@@ -1,5 +1,42 @@
-#ifndef __EZLOPI_ITEM_NAME_STR_H__
-#define __EZLOPI_ITEM_NAME_STR_H__
+
+
+/**
+ * @file    ezlopi_cloud_item_name_str.c
+ * @brief
+ * @author
+ * @version
+ * @date
+ */
+/* ===========================================================================
+** Copyright (C) 2022 Ezlo Innovation Inc
+**
+** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
+**
+** Redistribution and use in source and binary forms, with or without
+** modification, are permitted provided that the following conditions are met:
+**
+** 1. Redistributions of source code must retain the above copyright notice,
+**    this list of conditions and the following disclaimer.
+** 2. Redistributions in binary form must reproduce the above copyright
+**    notice, this list of conditions and the following disclaimer in the
+**    documentation and/or other materials provided with the distribution.
+** 3. Neither the name of the copyright holder nor the names of its
+**    contributors may be used to endorse or promote products derived from
+**    this software without specific prior written permission.
+**
+** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+** AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+** IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+** ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+** LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+** CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+** SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+** INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+** CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+** ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+** POSSIBILITY OF SUCH DAMAGE.
+** ===========================================================================
+*/
 
 /// @brief https://api.ezlo.com/devices/items/index.html
 const char *ezlopi_item_name_undefined = "";
@@ -7,7 +44,7 @@ const char *ezlopi_item_name_acceleration_x_axis = "acceleration_x_axis";
 const char *ezlopi_item_name_acceleration_y_axis = "acceleration_y_axis";
 const char *ezlopi_item_name_acceleration_z_axis = "acceleration_z_axis";
 // const  char *ezlopi_item_name_appliance_status = "appliance_status";
-const  char *ezlopi_item_name_lock_operation = "lock_operation";
+// const  char *ezlopi_item_name_lock_operation = "lock_operation";
 // const  char *ezlopi_item_name_user_code_operation = "user_code_operation";
 // const  char *ezlopi_item_name_dw_handle_state = "dw_handle_state";
 const char *ezlopi_item_name_dw_state = "dw_state";
@@ -38,13 +75,13 @@ const char *ezlopi_item_name_heat_alarm = "heat_alarm";
 const char *ezlopi_item_name_light_alarm = "light_alarm";
 // const  char *ezlopi_item_name_light_color_transition = "light_color_transition";
 const char *ezlopi_item_name_temperature_changes = "temperature_changes";
-const char *ezlopi_item_name_intrusion_alarm = "intrusion_alarm";
-const char *ezlopi_item_name_tampering_cover_alarm = "tampering_cover_alarm";
+// const  char *ezlopi_item_name_intrusion_alarm = "intrusion_alarm";
+// const  char *ezlopi_item_name_tampering_cover_alarm = "tampering_cover_alarm";
 // const  char *ezlopi_item_name_glass_breakage_alarm = "glass_breakage_alarm";
 // const  char *ezlopi_item_name_tampering_move_alarm = "tampering_move_alarm";
 // const  char *ezlopi_item_name_tampering_impact_alarm = "tampering_impact_alarm";
 // const  char *ezlopi_item_name_tampering_invalid_code_alarm = "tampering_invalid_code_alarm";
-const char *ezlopi_item_name_smoke_alarm = "smoke_alarm";
+// const  char *ezlopi_item_name_smoke_alarm = "smoke_alarm";
 // const  char *ezlopi_item_name_dust_in_device = "dust_in_device";
 const char *ezlopi_item_name_water_leak_alarm = "water_leak_alarm";
 const char *ezlopi_item_name_water_filter_replacement_alarm = "water_filter_replacement_alarm";
@@ -62,9 +99,6 @@ const char *ezlopi_item_name_water_level_alarm = "water_level_alarm";
 // const  char *ezlopi_item_name_rain_alarm = "rain_alarm";
 // const  char *ezlopi_item_name_moisture_alarm = "moisture_alarm";
 // const  char *ezlopi_item_name_freeze_alarm = "freeze_alarm";
-const  char *ezlopi_item_name_child_lock = "child_lock";
-const  char *ezlopi_item_name_power_mode = "power_mode";
-const  char *ezlopi_item_name_program_mode_selection = "program_mode_selection";
 // const  char *ezlopi_item_name_power_state = "power_state";
 // const  char *ezlopi_item_name_ac_state = "ac_state";
 // const  char *ezlopi_item_name_power_surge_state = "power_surge_state";
@@ -73,7 +107,7 @@ const  char *ezlopi_item_name_program_mode_selection = "program_mode_selection";
 // const  char *ezlopi_item_name_over_voltage_state = "over_voltage_state";
 // const  char *ezlopi_item_name_over_load_state = "over_load_state";
 // const  char *ezlopi_item_name_load_error_state = "load_error_state";
-const  char *ezlopi_item_name_battery_maintenance_state = "battery_maintenance_state";
+// const  char *ezlopi_item_name_battery_maintenance_state = "battery_maintenance_state";
 // const  char *ezlopi_item_name_battery_charging_state = "battery_charging_state";
 // const  char *ezlopi_item_name_battery_backup = "battery_backup";
 const char *ezlopi_item_name_angle_position = "angle_position";
@@ -88,7 +122,7 @@ const char *ezlopi_item_name_atmospheric_pressure = "atmospheric_pressure";
 // const  char *ezlopi_item_name_clock_state = "clock_state";
 // const  char *ezlopi_item_name_remaining_time = "remaining_time";
 const char *ezlopi_item_name_basic = "basic";
-const  char *ezlopi_item_name_battery = "battery";
+// const  char *ezlopi_item_name_battery = "battery";
 const char *ezlopi_item_name_co2_level = "co2_level";
 // const  char *ezlopi_item_name_co_level = "co_level";
 // const  char *ezlopi_item_name_dew_point = "dew_point";
@@ -116,7 +150,7 @@ const char *ezlopi_item_name_distance = "distance";
 // const  char *ezlopi_item_name_heating_meter_energy = "heating_meter_energy";
 // const  char *ezlopi_item_name_cooling_meter_energy = "cooling_meter_energy";
 const char *ezlopi_item_name_humidity = "humidity";
-const char *ezlopi_item_name_loudness = "loudness";
+// const  char *ezlopi_item_name_loudness = "loudness";
 const char *ezlopi_item_name_lux = "lux";
 // const  char *ezlopi_item_name_meter_reset = "meter_reset";
 const char *ezlopi_item_name_moisture = "moisture";
@@ -128,7 +162,7 @@ const char *ezlopi_item_name_rgbcolor = "rgbcolor";
 // const  char *ezlopi_item_name_rgbcolor_stop = "rgbcolor_stop";
 // const  char *ezlopi_item_name_rgbcolor_up = "rgbcolor_up";
 // const  char *ezlopi_item_name_rotation = "rotation";
-const char *ezlopi_item_name_security_threat = "security_threat";
+// const  char *ezlopi_item_name_security_threat = "security_threat";
 // const  char *ezlopi_item_name_seismic_intensity = "seismic_intensity";
 // const  char *ezlopi_item_name_seismic_magnitude = "seismic_magnitude";
 // const  char *ezlopi_item_name_rain_rate = "rain_rate";
@@ -141,11 +175,13 @@ const char *ezlopi_item_name_temp = "temp";
 // const  char *ezlopi_item_name_thermostat_fan_mode = "thermostat_fan_mode";
 // const  char *ezlopi_item_name_thermostat_fan_state = "thermostat_fan_state";
 const  char *ezlopi_item_name_thermostat_mode = "thermostat_mode";
-// const  char *ezlopi_item_name_thermostat_energy_saving_mode = "thermostat_energy_saving_mode";
+const  char *ezlopi_item_name_thermostat_energy_saving_mode = "thermostat_energy_saving_mode";
 // const  char *ezlopi_item_name_thermostat_operating_state = "thermostat_operating_state";
 const  char *ezlopi_item_name_thermostat_setpoint = "thermostat_setpoint";
 // const  char *ezlopi_item_name_thermostat_setpoint_heating = "thermostat_setpoint_heating";
 // const  char *ezlopi_item_name_thermostat_setpoint_cooling = "thermostat_setpoint_cooling";
+const  char *ezlopi_item_name_child_lock = "child_lock";
+const  char *ezlopi_item_name_program_mode_selection = "program_mode_selection";
 // const  char *ezlopi_item_name_tide_level = "tide_level";
 // const  char *ezlopi_item_name_ultraviolet = "ultraviolet";
 // const  char *ezlopi_item_name_user_codes_keypad_mode = "user_codes_keypad_mode";
@@ -181,8 +217,8 @@ const char *ezlopi_item_name_water_flow = "water_flow";
 // const  char *ezlopi_item_name_outside_temperature = "outside_temperature";
 // // const  char *ezlopi_item_name_water_chlorine_level = "water_chlorine_level";
 // const  char *ezlopi_item_name_water_acidity = "water_acidity";
-const  char *ezlopi_item_name_particulate_matter_10 = "particulate_matter_10";
-const  char *ezlopi_item_name_particulate_matter_2_dot_5 = "particulate_matter_2_dot_5";
+const char *ezlopi_item_name_particulate_matter_10 = "particulate_matter_10";
+const char *ezlopi_item_name_particulate_matter_2_dot_5 = "particulate_matter_2_dot_5";
 // const  char *ezlopi_item_name_program_status = "program_status";
 // const  char *ezlopi_item_name_program_failures = "program_failures";
 // const  char *ezlopi_item_name_position = "position";
@@ -223,10 +259,10 @@ const char *ezlopi_item_name_applied_force_on_sensor = "applied_force_on_sensor"
 // const  char *ezlopi_item_name_evaporator_coil_temperature = "evaporator_coil_temperature";
 // const  char *ezlopi_item_name_lead = "lead";
 // const  char *ezlopi_item_name_liquid_line_temperature = "liquid_line_temperature";
-const  char *ezlopi_item_name_motion_direction = "motion_direction";
+const char *ezlopi_item_name_motion_direction = "motion_direction";
 // const  char *ezlopi_item_name_nitrogen_dioxide = "nitrogen_dioxide";
 // const  char *ezlopi_item_name_ozone = "ozone";
-const  char *ezlopi_item_name_particulate_matter_1 = "particulate_matter_1";
+const char *ezlopi_item_name_particulate_matter_1 = "particulate_matter_1";
 // const  char *ezlopi_item_name_return_air_temperature = "return_air_temperature";
 // const  char *ezlopi_item_name_suction_pressure = "suction_pressure";
 // const  char *ezlopi_item_name_sulfur_dioxide = "sulfur_dioxide";
@@ -253,11 +289,7 @@ const char *ezlopi_item_name_particles_1_um = "particles_1_um";
 const char *ezlopi_item_name_particles_2_dot_5_um = "particles_2_dot_5_um";
 const char *ezlopi_item_name_particles_5_um = "particles_5_um";
 const char *ezlopi_item_name_particles_10_um = "particles_10_um";
-const char *ezlopi_item_name_presence = "presence";
-const char *ezlopi_item_name_velocity = "velocity";
-const char *ezlopi_item_name_marijuana = "marijuana";
-const char *ezlopi_item_name_vape = "vape";
-const char *ezlopi_item_name_air_quality = "air_quality";
-const char *ezlopi_item_name_air_quality_grade = "air_quality_grade";
 
-#endif // __EZLOPI_ITEM_NAME_STR_H__
+/*******************************************************************************
+ *                          End of File
+ *******************************************************************************/
