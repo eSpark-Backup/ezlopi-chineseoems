@@ -16,9 +16,9 @@ typedef struct s_ezlopi_shtc3_data
     float humidity;
 } s_ezlopi_shtc3_data_t;
 
-static ezlopi_error_t __0099_prepare(void* arg);
-static ezlopi_error_t __0099_init(l_ezlopi_item_t* item);
-static ezlopi_error_t __0099_get_cjson_value(l_ezlopi_item_t* item, void* arg);
+static ezlopi_error_t __prepare(void* arg);
+static ezlopi_error_t __init(l_ezlopi_item_t* item);
+static ezlopi_error_t __get_cjson_value(l_ezlopi_item_t* item, void* arg);
 static int __shtc3_item_cloud_properties_temp(l_ezlopi_item_t* item, cJSON* cj_device, void* user_arg);
 static int __shtc3_item_cloud_properties_humidity(l_ezlopi_item_t* item, cJSON* cj_device, void* user_arg);
 static ezlopi_error_t __prepare_shtc3_temp_device_item(uint32_t parent_id, cJSON* cj_device, s_ezlopi_shtc3_data_t* user_data);
@@ -31,23 +31,23 @@ int sensor_0099_SHTC3_temp_humidity(e_ezlopi_actions_t action, l_ezlopi_item_t* 
     {
     case EZLOPI_ACTION_PREPARE:
     {
-        error = __0099_prepare(arg);
+        error = __prepare(arg);
         break;
     }
     case EZLOPI_ACTION_INITIALIZE:
     {
-        error = __0099_init(item);
+        error = __init(item);
         break;
     }
     case EZLOPI_ACTION_HUB_GET_ITEM:
     case EZLOPI_ACTION_GET_EZLOPI_VALUE:
     {
-        error = __0099_get_cjson_value(item, arg);
+        error = __get_cjson_value(item, arg);
         break;
     }
     case EZLOPI_ACTION_NOTIFY_1000_MS:
     // {
-    //     error = __0099_notify(item);
+    //     error = __notify(item);
     //     break;
     // }
     default:
@@ -128,7 +128,7 @@ static int __shtc3_item_cloud_properties_humidity(l_ezlopi_item_t* item, cJSON* 
     return error;
 }
 
-static ezlopi_error_t __0099_prepare(void* arg)
+static ezlopi_error_t __prepare(void* arg)
 {
     ezlopi_error_t error = EZPI_ERR_PREP_DEVICE_PREP_FAILED;
     uint32_t parent_id = 0;
@@ -212,9 +212,9 @@ static ezlopi_error_t __prepare_shtc3_humid_device_item(uint32_t parent_id, cJSO
     return error;
 }
 
-static ezlopi_error_t __0099_init(l_ezlopi_item_t* item)
+static ezlopi_error_t __init(l_ezlopi_item_t* item)
 {
-    ezlopi_error_t error = EZPI_ERR_PREP_DEVICE_PREP_FAILED;
+    ezlopi_error_t error = EZPI_ERR_INIT_DEVICE_FAILED;
     if (item)
     {
         s_ezlopi_shtc3_data_t* user_data = (s_ezlopi_shtc3_data_t*)item->user_arg;
@@ -242,9 +242,9 @@ static ezlopi_error_t __0099_init(l_ezlopi_item_t* item)
     return error;
 }
 
-static ezlopi_error_t __0099_get_cjson_value(l_ezlopi_item_t* item, void* arg)
+static ezlopi_error_t __get_cjson_value(l_ezlopi_item_t* item, void* arg)
 {
-    ezlopi_error_t error = EZPI_ERR_PREP_DEVICE_PREP_FAILED;
+    ezlopi_error_t error = EZPI_FAILED;
 
     if (item && arg)
     {
@@ -263,6 +263,7 @@ static ezlopi_error_t __0099_get_cjson_value(l_ezlopi_item_t* item, void* arg)
                 {
                     EZPI_core_valueformatter_float_to_cjson(cj_device, user_data->humidity, item->cloud_properties.scale);
                 }
+                error = EZPI_SUCCESS;
             }
         }
     }
@@ -270,9 +271,9 @@ static ezlopi_error_t __0099_get_cjson_value(l_ezlopi_item_t* item, void* arg)
     return error;
 }
 
-ezlopi_error_t __0099_notify(l_ezlopi_item_t* item)
+ezlopi_error_t __notify(l_ezlopi_item_t* item)
 {
-    ezlopi_error_t error = EZPI_ERR_PREP_DEVICE_PREP_FAILED;
+    ezlopi_error_t error = EZPI_FAILED;
     if (item)
     {
         s_ezlopi_shtc3_data_t* user_data = (s_ezlopi_shtc3_data_t*)item->user_arg;

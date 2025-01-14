@@ -494,7 +494,7 @@ char *EZPI_core_factory_info_v3_get_provisioning_server(void)
 
 const char *EZPI_core_factory_info_v3_get_device_type(void)
 {
-    return ezlopi_d02_type_str;
+    return "ezlopi_neowater_qcd01";
 }
 
 void EZPI_core_factory_info_v3_free_ca_certificate(void)

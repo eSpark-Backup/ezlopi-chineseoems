@@ -173,8 +173,8 @@ void update_task(void* arg)
             {
                 if(EZPI_service_webprov_is_connected())
                 {
-                    __0099_notify(device_head->next->items);
-                    __0099_notify(device_head->next->next->items);
+                    __notify(device_head->next->items);
+                    __notify(device_head->next->next->items);
                     EZPI_core_device_value_updated_from_device_broadcast(item);
                     EZPI_core_device_value_updated_from_device_broadcast(item->next);
                     vTaskDelay(5000 / portTICK_PERIOD_MS);
@@ -395,8 +395,8 @@ static void device_cubic_detector_value_updated_from_device_v3(void* arg)
         l_ezlopi_item_t* item = (l_ezlopi_item_t*)arg;
         if (item)
         {
-            __0099_notify(device_head->next->items);
-            __0099_notify(device_head->next->next->items);
+            __notify(device_head->next->items);
+            __notify(device_head->next->next->items);
             if(EZPI_core_device_value_updated_from_device_broadcast(item) && EZPI_core_device_value_updated_from_device_broadcast(item->next))
             {
                 sleep_time = sleep_time +(PAIRING_MODE);
