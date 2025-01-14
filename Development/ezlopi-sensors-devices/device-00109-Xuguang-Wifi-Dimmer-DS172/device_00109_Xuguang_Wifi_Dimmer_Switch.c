@@ -80,7 +80,7 @@ static ezlopi_error_t __prepare(void* arg)
             if ((NULL == dimmer_item) || (NULL == toggle_item))
             {
                 EZPI_core_device_free_device(device);
-                error = EZPI_FAILED;
+                error = EZPI_ERR_PREP_DEVICE_PREP_FAILED;
             }
         }
     }
@@ -90,7 +90,7 @@ static ezlopi_error_t __prepare(void* arg)
 
 static ezlopi_error_t __init(l_ezlopi_item_t* item)
 {
-    ezlopi_error_t error = EZPI_ERR_PREP_DEVICE_PREP_FAILED;
+    ezlopi_error_t error = EZPI_ERR_INIT_DEVICE_FAILED;
     static bool intitialized = false;
     if(intitialized)
     {
@@ -122,7 +122,7 @@ static ezlopi_error_t __init(l_ezlopi_item_t* item)
 
 static ezlopi_error_t __set_value(l_ezlopi_item_t* item, void* arg)
 {
-    ezlopi_error_t error = EZPI_ERR_PREP_DEVICE_PREP_FAILED;
+    ezlopi_error_t error = EZPI_FAILED;
     if(item && arg)
     {
         cJSON* cjson_params = (cJSON*)arg;
@@ -148,7 +148,7 @@ static ezlopi_error_t __set_value(l_ezlopi_item_t* item, void* arg)
 
 static ezlopi_error_t __get_value_cjson(l_ezlopi_item_t* item, void* args)
 {
-    ezlopi_error_t error = EZPI_ERR_PREP_DEVICE_PREP_FAILED;
+    ezlopi_error_t error = EZPI_FAILED;
 
     cJSON* cj_params = (cJSON*)args;
     if(!cj_params)
