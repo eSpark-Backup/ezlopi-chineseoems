@@ -4,6 +4,164 @@
 
 # RELEASE NOTES
 
+# Version 4.3.11 Build 201
+
+## New
+
+1. Implement Feature Open Telemetry [EZPI-477](https://jira.mios.com/browse/EZPI-477)
+
+## What's Changed
+
+- Feature otel trace by @krishna-ezlo in https://github.com/ezloteam/Ezlo_Pi/pull/211
+- Development by @lomasSE89 in https://github.com/ezloteam/Ezlo_Pi/pull/212
+
+# Version 4.2.10 Build 200
+
+## New
+
+1. Implement API: `hub.mode.entry_delay.skip` - House Modes [EZPI-529](https://jira.mios.com/browse/EZPI-529)
+2. Added house-mode alarm functionality in `house_modes_loop` [EZPI-548](https://jira.mios.com/browse/EZPI-548)
+3. Implement API: `hub.modes.protect.buttons.set` [EZPI-549](https://jira.mios.com/browse/EZPI-549)
+4. Implement API: `hub.modes.protect.devices.add` [EZPI-550](https://jira.mios.com/browse/EZPI-550)
+5. Implement API: `hub.modes.protect.devices.remove` [EZPI-551](https://jira.mios.com/browse/EZPI-551)
+
+## Fixes
+
+1.  Digital LDR causing device to reboot [EZPI-546](https://jira.mios.com/browse/EZPI-546)
+2.  Memory assessment on WSS and optimization [EZPI-543](https://jira.mios.com/browse/EZPI-543)
+3.  Update source and header templates[EZPI-536](https://jira.mios.com/browse/EZPI-536)
+
+## What's Changed
+
+- Inspecting otel by @krishna-ezlo in https://github.com/ezloteam/Ezlo_Pi/pull/205
+- EZPI-536 Update template files by @ezlo-gary in https://github.com/ezloteam/Ezlo_Pi/pull/204
+- Combined ezpi 529 548 549 550 551 by @ezlo-rikenm in https://github.com/ezloteam/Ezlo_Pi/pull/206
+- Development by @lomasSE89 in https://github.com/ezloteam/Ezlo_Pi/pull/207
+
+## New Contributors
+
+- @ezlo-gary made their first contribution in https://github.com/ezloteam/Ezlo_Pi/pull/204
+
+# Version 4.2.9 Build 199
+
+## New
+
+1. Implement API: `hub.modes.notifications.set` - House Modes [EZPI-525](https://jira.mios.com/browse/EZPI-525)
+2. Implement API: `hub.modes.disarmed_default.set` [EZPI-526](https://jira.mios.com/browse/EZPI-526)
+3. Implement API: `hub.modes.notifications.remove` [EZPI-528](https://jira.mios.com/browse/EZPI-528)
+4. Implement API: `hub.modes.bypass_devices.add` - when-method [EZPI-530](https://jira.mios.com/browse/EZPI-530)
+5. Implement API: `hub.modes.bypass_devices.remove` [EZPI-531](https://jira.mios.com/browse/EZPI-531)
+6. Implement API: `hub.modes.disarmed_devices.add` [EZPI-527](https://jira.mios.com/browse/EZPI-527)
+7. Local Auth Token Addition on factory / Provisioning data on BLE [EZPI-533](https://jira.mios.com/browse/EZPI-533)
+8. Added USB CDC Support for S2 and S3 [EZPI-535](https://jira.mios.com/browse/EZPI-535)
+
+## Fixes
+
+1.  Avoid reading non-readable chars from the string stored in flash. [EZPI-534](https://jira.mios.com/browse/EZPI-534)
+2.  EzloPi CMD 4 in different chunks [EZPI-532](https://jira.mios.com/browse/EZPI-532)
+3.  Sunrise/Sunset time generator API (using longitude and latitude parameter) [EZPI-310](https://jira.mios.com/browse/EZPI-310)
+
+# Version 4.2.8 Build 198
+
+## New
+
+1. Implement API: `isItemStateChanged` - when-method [EZPI-518](https://jira.mios.com/browse/EZPI-518)
+2. Implement API: `hub.scenes.clone` [EZPI-515](https://jira.mios.com/browse/EZPI-515)
+3. Implement API: `hub.scenes.trigger.devices.list` [EZPI-516](https://jira.mios.com/browse/EZPI-516)
+4. Implement API: `isGroupState` - when-method [EZPI-517](https://jira.mios.com/browse/EZPI-517)
+5. Implement API: `hub.scenes.time.list` [EZPI-509](https://jira.mios.com/browse/EZPI-509)
+6. Token Addition on factory / Provisioning data [EZPI-523](https://jira.mios.com/browse/EZPI-523)
+7. Validate tokens for incoming connections over local Web Socket [EZPI-503](https://jira.mios.com/browse/EZPI-503)
+
+## Fixes
+
+1. When creating or deleting scenes created using the switchHouseMode method side effects occur - the scene is launched, which is confirmed by the corresponding broadcast. [EZPI-510](https://jira.mios.com/browse/EZPI-510)
+2. EzloPI mdns instance name must include serial number [EZPI-502](https://jira.mios.com/browse/EZPI-502)
+3. DHT11 Reading value 0 [EZPI-511](https://jira.mios.com/browse/EZPI-511)
+4. Multiple scale on broadcast json [EZPI-512](https://jira.mios.com/browse/EZPI-512)
+5. Multiple I2C sensors [513](https://jira.mios.com/browse/EZPI-513)
+6. Remove hard coding of I2C Device address [514](https://jira.mios.com/browse/EZPI-514)
+
+## What's Changed
+
+- Ezpi 509 510 issue fixed by @ezlo-rikenm in https://github.com/ezloteam/Ezlo_Pi/pull/190
+- Ezlopi multiple i2c by @NDJ-EZLO in https://github.com/ezloteam/Ezlo_Pi/pull/191
+- impementation of provisioning UART API completed by @NDJ-EZLO in https://github.com/ezloteam/Ezlo_Pi/pull/192
+- Ezpi 515 516 517 combined by @ezlo-rikenm in https://github.com/ezloteam/Ezlo_Pi/pull/193
+- fix cmd 3 : https://jira.mios.com/browse/EZPI-521 by @lomasSE89 in https://github.com/ezloteam/Ezlo_Pi/pull/194
+- minor fixes and updated the size. by @lomasSE89 in https://github.com/ezloteam/Ezlo_Pi/pull/195
+- Ezpi 503 validating tikens by @NDJ-EZLO in https://github.com/ezloteam/Ezlo_Pi/pull/197
+- Ezpi 518 is item state changed by @ezlo-rikenm in https://github.com/ezloteam/Ezlo_Pi/pull/198
+- Preventing API calls from being processed if not logged in WSS by @lomasSE89 in https://github.com/ezloteam/Ezlo_Pi/pull/199
+- Development by @lomasSE89 in https://github.com/ezloteam/Ezlo_Pi/pull/200
+
+**Full Changelog**: https://github.com/ezloteam/Ezlo_Pi/compare/v4.2.7...v4.2.8
+
+# Version 4.2.7 Build 197
+
+## New
+
+1. Implement API: `hub.scenes.meta.set` [EZPI-479](https://jira.mios.com/browse/EZPI-479)
+2. Implement API : `hub.scenes.block.meta.set` [EZPI-501](https://jira.mios.com/browse/EZPI-501)
+3. Implement API : `hub.scenes.expression.list` [EZPI-493](https://jira.mios.com/browse/EZPI-493)
+4. Implement API: `isHouseModeAlarmPhaseRange` [EZPI-372](https://jira.mios.com/browse/EZPI-372)
+5. Implement API: `isHouseModeSwitchToRange` [EZPI-373](https://jira.mios.com/browse/EZPI-373)
+6. Implement API : `hub.scenes.room.set` [EZPI-505](https://jira.mios.com/browse/EZPI-505)
+7. Implement API : `hub.data.list` [EZPI-487](https://jira.mios.com/browse/EZPI-487)
+8. Implement API : `hub.settings` [EZPI-253](https://jira.mios.com/browse/EZPI-253)
+9. Implement Error Codes [EZPI-414](https://jira.mios.com/browse/EZPI-414)
+10. Implement Provisioning API on Serial interface [EZPI-478](https://jira.mios.com/browse/EZPI-478)
+11. Implement driver for Internal temperature sensor [EZPI-500](https://jira.mios.com/browse/EZPI-500)
+
+## Fixes
+
+1. Missing "value" field in Expressions (variable: false). [EZPI-494](https://jira.mios.com/browse/EZPI-494)
+2. One Wire not working on certain pins [EZPI-432](https://jira.mios.com/browse/EZPI-432)
+3. Empty / Blanks Rooms issues [EZPI-224](https://jira.mios.com/browse/EZPI-224)
+4. Issue with PWM Dimmer [EZPI-494](https://jira.mios.com/browse/EZPI-494)
+5. Check sensor readings and make the value 0 if no valid data [EZPI-498](https://jira.mios.com/browse/EZPI-498)
+6. Incorrect Parent-device initialized [EZPI-506](https://jira.mios.com/browse/EZPI-506)
+
+## What's Changed
+
+- Ezpi 253 hub settings by @NDJ-EZLO in https://github.com/ezloteam/Ezlo_Pi/pull/175
+- Fix: decoding buffer length issue by @AbeereSpark in https://github.com/ezloteam/Ezlo_Pi/pull/176
+- Ezpi 414 error codes by @NDJ-EZLO in https://github.com/ezloteam/Ezlo_Pi/pull/177
+- Fix PWM dimmer issue : https://jira.mios.com/browse/EZPI-496 by @lomasSE89 in https://github.com/ezloteam/Ezlo_Pi/pull/178
+- Ezpi 493 fix missing expression value in broadcast by @ezlo-rikenm in https://github.com/ezloteam/Ezlo_Pi/pull/179
+- Ezpi 479 501 hub scenes meta set by @ezlo-rikenm in https://github.com/ezloteam/Ezlo_Pi/pull/180
+- Dev merge test 372 373 by @ezlo-rikenm in https://github.com/ezloteam/Ezlo_Pi/pull/181
+- Ezpi 500 internal temperature sensor by @NDJ-EZLO in https://github.com/ezloteam/Ezlo_Pi/pull/182
+- Implemented setting set command broadcast by @NDJ-EZLO in https://github.com/ezloteam/Ezlo_Pi/pull/183
+- Added EZPI-505 and EZPI-506 by @ezlo-rikenm in https://github.com/ezloteam/Ezlo_Pi/pull/184
+- code-refactored for parent-id assignation in child-devices by @ezlo-rikenm in https://github.com/ezloteam/Ezlo_Pi/pull/185
+- Pre release by @lomasSE89 in https://github.com/ezloteam/Ezlo_Pi/pull/186
+- Development by @lomasSE89 in https://github.com/ezloteam/Ezlo_Pi/pull/187
+- Setting commands changes by @NDJ-EZLO in https://github.com/ezloteam/Ezlo_Pi/pull/188
+- Development by @lomasSE89 in https://github.com/ezloteam/Ezlo_Pi/pull/189
+
+**Full Changelog**: https://github.com/ezloteam/Ezlo_Pi/compare/v4.1.6...v4.2.7
+
+# Version 4.1.6 Build 196
+
+## New
+
+1. Add remaining 'device/item_group' - comparison features in 'when' & 'then' [EZPI-437](https://jira.mios.com/browse/EZPI-437)
+2. Implement isGroupItem_group : when-method [EZPI-464](https://jira.mios.com/browse/EZPI-464)
+3. add expression-update feature when using 'hub.scenes.expressions.set'. [EZPI-465](https://jira.mios.com/browse/EZPI-465)
+4. Implement Group_set_Item_value then-method [EZPI-456](https://jira.mios.com/browse/EZPI-456)
+5. Implement Group_set_Device_armed then-method [EZPI-457](https://jira.mios.com/browse/EZPI-457)
+6. Implement Group_toggle_value then-method [EZPI-458](https://jira.mios.com/browse/EZPI-458)
+
+## Fixes
+
+1. Avoid HTTP Requests if there is no valid HTTP/S URL [EZPI-474](https://jira.mios.com/browse/EZPI-474)
+2. Issues when distinguishing between 'expression' and 'variable'. [EZPI-476](https://jira.mios.com/browse/EZPI-476)
+3. Duplication of Expression/Variable with same name. [EZPI-475](https://jira.mios.com/browse/EZPI-475)
+4. BLE Onboarding, cJSON incorrect cert length [EZPI-491](https://jira.mios.com/browse/EZPI-491)
+5. Scenes with three or more triggers are not created - broadcasts about the successful creation of the scene are not received. [EZPI-320](https://jira.mios.com/browse/EZPI-320)
+6. Bug found when triggering 'hub.device.room.set' [EZPI-473](https://jira.mios.com/browse/EZPI-473)
+
 # Version 4.1.5 Build 195
 
 ## New
@@ -85,7 +243,7 @@
 
 - Update README.md by @lomasSE89 in https://github.com/ezloteam/Ezlo_Pi/pull/140
 - Combined ezpi 381 400 401 402 403 404 by @ezlo-rikenm in https://github.com/ezloteam/Ezlo_Pi/pull/139
-- 1. bug_fixed in 'firmware_info_get' function by @ezlo-rikenm in https://github.com/ezloteam/Ezlo_Pi/pull/142
+- 1. bug_fixed in 'EZPI_firmware_info_get' function by @ezlo-rikenm in https://github.com/ezloteam/Ezlo_Pi/pull/142
 - Dev merge ezpi 371 411 413 415 417 419 420 by @ezlo-rikenm in https://github.com/ezloteam/Ezlo_Pi/pull/141
 - Development by @krishna-ezlo in https://github.com/ezloteam/Ezlo_Pi/pull/143
 - Ezpi wifi scanner issue by @NDJ-EZLO in https://github.com/ezloteam/Ezlo_Pi/pull/144
@@ -108,7 +266,7 @@
 5. fixed an error in ` cjext : 'isCJSON_NULL'`--> always returns 'null'.
 6. Replaced `CJSON_GET_VALUE_DOUBLE` with `CJSON_GET_VALUE_GPIO` for all gpios
 7. Fixed DHT22 pin issue
-8. Fixed `ezlopi_factory_info_v3_set_ezlopi_config`
+8. Fixed `EZPI_core_factory_info_v3_set_ezlopi_config`
 9. Cleaned multiple occurrence of `\r\n`
 
 ## What's Changed

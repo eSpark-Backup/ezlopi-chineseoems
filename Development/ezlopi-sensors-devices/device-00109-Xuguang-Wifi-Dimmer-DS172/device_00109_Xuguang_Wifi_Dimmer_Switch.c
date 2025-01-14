@@ -6,40 +6,40 @@
 #include "ezlopi_core_device_value_updated.h"
 #include "device_00109_Xuguang_Wifi_Dimmer_Switch.h"
 
-static int __prepare(void* arg);
-static int __init(l_ezlopi_item_t* item);
-static int __set_value(l_ezlopi_item_t* item, void* arg);
-static int __get_value_cjson(l_ezlopi_item_t* item, void* arg);
+static ezlopi_error_t __prepare(void* arg);
+static ezlopi_error_t __init(l_ezlopi_item_t* item);
+static ezlopi_error_t __set_value(l_ezlopi_item_t* item, void* arg);
+static ezlopi_error_t __get_value_cjson(l_ezlopi_item_t* item, void* arg);
 
 static void __prepare_device_cloud_properties(l_ezlopi_device_t* device);
 static void __prepare_dimmer_item_properties(l_ezlopi_item_t* item, cJSON* cjson_device);
 static void __prepare_dimmer_switch_item_properties(l_ezlopi_item_t* item, cJSON* cjson_device);
 
-int device_00109_Xuguang_Wifi_Dimmer_Switch(e_ezlopi_actions_t action, l_ezlopi_item_t* item, void* args, void* user_arg)
+ezlopi_error_t device_00109_Xuguang_Wifi_Dimmer_Switch(e_ezlopi_actions_t action, l_ezlopi_item_t* item, void* args, void* user_arg)
 {
-    int ret = 0;
+    ezlopi_error_t error = 0;
 
     switch (action)
     {
         case EZLOPI_ACTION_PREPARE:
         {
-            ret = __prepare(args);
+            error = __prepare(args);
             break;
         }
         case EZLOPI_ACTION_INITIALIZE:
         {
-            ret = __init(item);
+            error = __init(item);
             break;
         }
         case EZLOPI_ACTION_SET_VALUE:
         {
-            ret = __set_value(item, args);
+            error = __set_value(item, args);
             break;
         }
         case EZLOPI_ACTION_HUB_GET_ITEM:
         case EZLOPI_ACTION_GET_EZLOPI_VALUE:
         {
-            ret = __get_value_cjson(item, args);
+            error = __get_value_cjson(item, args);
             break;
         }
 
@@ -49,29 +49,29 @@ int device_00109_Xuguang_Wifi_Dimmer_Switch(e_ezlopi_actions_t action, l_ezlopi_
         }
     }
 
-    return ret;
+    return error;
 }
 
-static int __prepare(void* arg)
+static ezlopi_error_t __prepare(void* arg)
 {
-    int ret = 0;
+    ezlopi_error_t error = EZPI_ERR_PREP_DEVICE_PREP_FAILED;
     s_ezlopi_prep_arg_t* prep_arg = (s_ezlopi_prep_arg_t*)arg;
     if (prep_arg)
     {
         cJSON* cj_device = prep_arg->cjson_device;
-        l_ezlopi_device_t* device = ezlopi_device_add_device(cj_device, NULL);
+        l_ezlopi_device_t* device = EZPI_core_device_add_device(cj_device, NULL);
         if (device)
         {
-            ret = 1;
+            error = EZPI_SUCCESS;
             __prepare_device_cloud_properties(device);
 
-            l_ezlopi_item_t* dimmer_item = ezlopi_device_add_item_to_device(device, device_00109_Xuguang_Wifi_Dimmer_Switch);
+            l_ezlopi_item_t* dimmer_item = EZPI_core_device_add_item_to_device(device, device_00109_Xuguang_Wifi_Dimmer_Switch);
             if (dimmer_item)
             {
                 __prepare_dimmer_item_properties(dimmer_item, cj_device);
             }
 
-            l_ezlopi_item_t* toggle_item = ezlopi_device_add_item_to_device(device, device_00109_Xuguang_Wifi_Dimmer_Switch);
+            l_ezlopi_item_t* toggle_item = EZPI_core_device_add_item_to_device(device, device_00109_Xuguang_Wifi_Dimmer_Switch);
             if (toggle_item)
             {
                 __prepare_dimmer_switch_item_properties(toggle_item, cj_device);
@@ -79,32 +79,32 @@ static int __prepare(void* arg)
 
             if ((NULL == dimmer_item) || (NULL == toggle_item))
             {
-                ezlopi_device_free_device(device);
-                ret = -1;
+                EZPI_core_device_free_device(device);
+                error = EZPI_FAILED;
             }
         }
     }
 
-    return ret;
+    return error;
 }
 
-static int __init(l_ezlopi_item_t* item)
+static ezlopi_error_t __init(l_ezlopi_item_t* item)
 {
-    int ret = 0;
+    ezlopi_error_t error = EZPI_ERR_PREP_DEVICE_PREP_FAILED;
     static bool intitialized = false;
     if(intitialized)
     {
-        return ret;
+        return error;
     }
 
     if (item)
     {
-        ret = 1;
+        error = EZPI_SUCCESS;
         if (item->interface.uart.enable)
         {
             if (false == xuguang_init(&item->interface.uart))
             {
-                ret = -1;
+                error = EZPI_FAILED;
             }
             else
             {
@@ -115,21 +115,21 @@ static int __init(l_ezlopi_item_t* item)
     }
     else
     {
-        ret = -1;
+        error = EZPI_FAILED;
     }
-    return ret;
+    return error;
 }
 
-static int __set_value(l_ezlopi_item_t* item, void* arg)
+static ezlopi_error_t __set_value(l_ezlopi_item_t* item, void* arg)
 {
-    int ret = 0;
+    ezlopi_error_t error = EZPI_ERR_PREP_DEVICE_PREP_FAILED;
     if(item && arg)
     {
         cJSON* cjson_params = (cJSON*)arg;
         if (NULL != cjson_params)
         {
             cJSON* cj_value = cJSON_GetObjectItem(__FUNCTION__, cjson_params, ezlopi_value_str);
-            ret = 1;
+            error = EZPI_SUCCESS;
             if (ezlopi_item_name_dimmer == item->cloud_properties.item_name)
             {
                 send_command(CMD_INTENSITY, cj_value->valueint);
@@ -140,34 +140,34 @@ static int __set_value(l_ezlopi_item_t* item, void* arg)
                 send_command(CMD_PWR, cj_value->valueint);
                 power_update(cj_value->valueint);
             }
-            ezlopi_device_value_updated_from_device_broadcast(item);
+            EZPI_core_device_value_updated_from_device_broadcast(item);
         }
     }
-    return ret;
+    return error;
 }
 
-static int __get_value_cjson(l_ezlopi_item_t* item, void* args)
+static ezlopi_error_t __get_value_cjson(l_ezlopi_item_t* item, void* args)
 {
-    int ret = 0;
+    ezlopi_error_t error = EZPI_ERR_PREP_DEVICE_PREP_FAILED;
 
     cJSON* cj_params = (cJSON*)args;
     if(!cj_params)
     {
-        return ret;
+        return error;
     }
 
-    ret = 1;
+    error = EZPI_SUCCESS;
 
     if (ezlopi_item_name_dimmer == item->cloud_properties.item_name)
     {
-        ezlopi_valueformatter_uint32_to_cjson(cj_params, xuguang_amb_temp_value(), item->cloud_properties.scale);
+        EZPI_core_valueformatter_uint32_to_cjson(cj_params, xuguang_amb_temp_value(), item->cloud_properties.scale);
     }
     else if (ezlopi_item_name_switch == item->cloud_properties.item_name)
     {
-        ezlopi_valueformatter_bool_to_cjson(cj_params, xuguang_power_value(), item->cloud_properties.scale);
+        EZPI_core_valueformatter_bool_to_cjson(cj_params, xuguang_power_value(), item->cloud_properties.scale);
     }
     
-    return ret;
+    return error;
 }
 
 static void __prepare_device_cloud_properties(l_ezlopi_device_t* device)
@@ -186,7 +186,7 @@ static void __prepare_dimmer_item_properties(l_ezlopi_item_t* item, cJSON* cjson
     item->cloud_properties.has_setter = true;
     item->cloud_properties.item_name = ezlopi_item_name_dimmer;
     item->cloud_properties.value_type = value_type_int;
-    item->cloud_properties.item_id = ezlopi_cloud_generate_item_id();
+    item->cloud_properties.item_id = EZPI_core_cloud_generate_item_id();
     item->cloud_properties.scale = NULL;
 
     item->interface.uart.enable = true;
@@ -203,7 +203,7 @@ static void __prepare_dimmer_switch_item_properties(l_ezlopi_item_t* item, cJSON
     item->cloud_properties.has_setter = true;
     item->cloud_properties.item_name = ezlopi_item_name_switch;
     item->cloud_properties.value_type = value_type_bool;
-    item->cloud_properties.item_id = ezlopi_cloud_generate_item_id();
+    item->cloud_properties.item_id = EZPI_core_cloud_generate_item_id();
     item->cloud_properties.scale = NULL;
 
     item->interface.uart.enable = true;

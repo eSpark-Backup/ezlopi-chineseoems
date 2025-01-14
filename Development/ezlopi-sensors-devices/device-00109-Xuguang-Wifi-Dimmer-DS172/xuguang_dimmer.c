@@ -1,4 +1,6 @@
 #include "xuguang_dimmer.h"
+#include "ezlopi_core_ota.h"
+#include "ezlopi_service_webprov.h"
 #include "ezlopi_core_factory_info.h"
 #include "ezlopi_core_device_value_updated.h"
 
@@ -19,6 +21,8 @@
 #define OUT_MIN         0x01
 #define OUT_MAX         0x64
 
+static uint64_t start_time = 0;
+
 void power(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_object_handle_t uart_object_handle);
 void intensity(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_object_handle_t uart_object_handle);
 
@@ -36,7 +40,7 @@ int map(int x, int in_min, int in_max, int out_min, int out_max) {
 }
 
 void power(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_object_handle_t uart_object_handle)
-{
+{ 
     if(buffer)
     {
         Values.power_value = buffer[10];
@@ -131,7 +135,7 @@ void xuguang_callback(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_object
 {
     if ((buffer[0]) == HEADER_H && (buffer[1]) == HEADER_L)
     {
-        l_ezlopi_device_t* device = ezlopi_device_get_head();
+        l_ezlopi_device_t* device = EZPI_core_device_get_head();
         if(device)
         {
             l_ezlopi_item_t* dimmer_item = device->items;
@@ -140,21 +144,50 @@ void xuguang_callback(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_object
             {
                 if((buffer[5]) == POWER && (buffer[17]) == INTENSITY)
                 {
+                    if(esp_timer_get_time()-start_time < (2.5*1000*1000))
+                    {
+                        send_command(CMD_PAIR, 1);
+                        send_command(CMD_RESET, 1);
+                        cJSON *cj_data = cJSON_CreateObject(__FUNCTION__);
+                        if (cj_data)
+                        {
+                            cJSON_AddStringToObject(__FUNCTION__, cj_data, "method", "hub.firmware.update.start");
+                            cJSON_AddStringToObject(__FUNCTION__, cj_data, "id", "_ID_");
+                            cJSON *params = cJSON_CreateObject(__FUNCTION__);
+                            if (params)
+                            {
+                                cJSON_AddItemToObject(__FUNCTION__, cj_data, "params", params);
+                                if(__send_cjson_data_to_nma_websocket(cj_data) == EZPI_SUCCESS)
+                                {
+                                    TRACE_E("OTA METHOD SENT");
+                                }
+                                else{
+                                    TRACE_E("OTA METHOD NOT SENT");
+                                }
+                            }
+                            cJSON_Delete(__FUNCTION__, cj_data);
+                        }
+                    }
+                    else{
+                        start_time = esp_timer_get_time();
+                    }
                     power(buffer, output_len, uart_object_handle);
                     intensity(buffer, output_len, uart_object_handle);
-                    ezlopi_device_value_updated_from_device_broadcast(dimmer_item);
-                    ezlopi_device_value_updated_from_device_broadcast(switch_item);
+                    EZPI_core_device_value_updated_from_device_broadcast(dimmer_item);
+                    EZPI_core_device_value_updated_from_device_broadcast(switch_item);
                 }
-            }
-            else if(buffer[3] == WIFI)
-            {
-                send_command(CMD_PAIR, 1);
-                if (ESP_OK == esp_partition_erase_range(partition_ctx_v3, EZLOPI_FINFO_OFFSET_HUB_DATA, EZLOPI_FINFO_READ_LEN_4KB))
+                else if(buffer[3] == WIFI)
                 {
-                }
-                if(ESP_OK == esp_partition_erase_range(partition_ctx_v3, EZLOPI_FINFO_OFFSET_CONN_DATA, EZLOPI_FINFO_READ_LEN_4KB))
-                {
-                    if(ESP_OK == esp_partition_erase_range(partition_ctx_v3, EZLOPI_FINFO_REL_OFFSET_CA_CERTIFICATE, EZLOPI_FINFO_REL_OFFSET_SSL_SHARED_KEY));
+                    send_command(CMD_PAIR, 1);
+                    if (ESP_OK == esp_partition_erase_range(partition_ctx_v3, EZLOPI_FINFO_OFFSET_HUB_DATA, EZLOPI_FINFO_READ_LEN_4KB))
+                    {
+                    }
+                    if(ESP_OK == esp_partition_erase_range(partition_ctx_v3, EZLOPI_FINFO_OFFSET_CONN_DATA, EZLOPI_FINFO_READ_LEN_4KB))
+                    {
+                        if(ESP_OK == esp_partition_erase_range(partition_ctx_v3, EZLOPI_FINFO_REL_OFFSET_CA_CERTIFICATE, EZLOPI_FINFO_REL_OFFSET_SSL_SHARED_KEY));
+                    }
+                    send_command(CMD_RESET, 1);
+                    esp_restart();
                 }
             }
         }
@@ -167,7 +200,7 @@ bool xuguang_init(s_ezlopi_uart_t *xuguang_uart_config)
 {
     if (xuguang_uart_config->enable)
     {
-        xuguang_uart_object_handle = ezlopi_uart_init(xuguang_uart_config->baudrate, xuguang_uart_config->tx, xuguang_uart_config->rx, xuguang_callback, NULL);
+        xuguang_uart_object_handle = EZPI_hal_uart_init(xuguang_uart_config->baudrate, xuguang_uart_config->tx, xuguang_uart_config->rx, xuguang_callback, NULL);
         return xuguang_uart_object_handle;
     }
 
