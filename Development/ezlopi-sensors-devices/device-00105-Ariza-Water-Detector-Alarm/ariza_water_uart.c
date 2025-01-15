@@ -58,7 +58,7 @@ void send_packet(uint8_t* packet) {
 
 bool wifi_connection_status()
 {
-    ezlopi_wifi_status_t* wifi_con= ezlopi_wifi_status();
+    ezlopi_wifi_status_t* wifi_con= EZPI_core_wifi_status();
     return wifi_con->wifi_connection;
 }
 
@@ -133,8 +133,8 @@ static void normal_packet(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_ob
         Values.alarm_value = !buffer[17];
         if(item && item->next && item->next->next)
         {
-            ezlopi_device_value_updated_from_device_broadcast(item);
-            ezlopi_device_value_updated_from_device_broadcast(item->next->next);
+            EZPI_core_device_value_updated_from_device_broadcast(item);
+            EZPI_core_device_value_updated_from_device_broadcast(item->next->next);
         }
         TRACE_I("----------ALARM VALUEEEEEEE----------%X",Values.alarm_value);
     }
@@ -143,7 +143,7 @@ static void normal_packet(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_ob
         Values.battery_value = buffer[20];
         if(item && item->next)
         {
-            ezlopi_device_value_updated_from_device_broadcast(item->next);
+            EZPI_core_device_value_updated_from_device_broadcast(item->next);
         }
         battery_nvs_save(Values.battery_value);
         TRACE_I("----------BATTERY VALUEEEEEEE----------%X",Values.battery_value);
@@ -186,7 +186,7 @@ bool water_alarm_init(l_ezlopi_item_t* item)
     {
         if (item->interface.uart.enable)
         {
-            water_alarm_uart_object_handle = ezlopi_uart_init(item->interface.uart.baudrate, item->interface.uart.tx, item->interface.uart.rx, water_alarm_callback, (void *)item);
+            water_alarm_uart_object_handle = EZPI_hal_uart_init(item->interface.uart.baudrate, item->interface.uart.tx, item->interface.uart.rx, water_alarm_callback, (void *)item);
             item->interface.uart.channel = water_alarm_uart_object_handle->ezlopi_uart.channel;
             return water_alarm_uart_object_handle;
         }
