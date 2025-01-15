@@ -1,6 +1,8 @@
 #include "qiao_breaker.h"
 #include "ezlopi_core_factory_info.h"
 #include "ezlopi_core_device_value_updated.h"
+#include "freertos/FreeRTOS.h"
+
 
 #define HEADER_H        0x55
 #define HEADER_L        0xAA
@@ -119,6 +121,7 @@ bool qiao_init(s_ezlopi_uart_t *qiao_uart_config)
 }
 
 void paired() {
+    vTaskDelay(12 / portTICK_RATE_MS);
     uint8_t packet[8] = {0x55, 0xAA, 0x00, 0x03, 0x00, 0x01, 0x02, 0x05};
     uint8_t length = 8;
     uart_write_bytes(qiao_uart_object_handle->ezlopi_uart.channel, (const char *)packet, length);
