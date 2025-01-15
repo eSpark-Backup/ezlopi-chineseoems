@@ -1,7 +1,9 @@
 #include "ezlopi_hal_gpio.h"
 #include "ezlopi_core_wifi.h"
+#include "ezlopi_core_ota.h"
 #include "ezlopi_core_cloud.h"
 #include "ezlopi_cloud_items.h"
+#include "ezlopi_service_webprov.h"
 #include "ezlopi_cloud_constants.h"
 #include "ezlopi_service_gpioisr.h"
 #include "ezlopi_core_factory_info.h"
@@ -15,9 +17,13 @@
 #define INDICATOR2 GPIO_NUM_26
 #define INDICATOR3 GPIO_NUM_22
 
+#define OTA   10*1000*1000
+#define RESET 20*1000*1000
+
 static bool wifi_state =0;
 static uint64_t start_time = 0;
 TaskHandle_t __wifi_handle = NULL;
+TaskHandle_t __led_handle = NULL;
 static uint32_t master_item_id = 0;
 
 static ezlopi_error_t __prepare(void* arg);
@@ -25,9 +31,9 @@ static ezlopi_error_t __init(l_ezlopi_item_t* item);
 static ezlopi_error_t __set_value(l_ezlopi_item_t* item, void* arg);
 static ezlopi_error_t __get_value_cjson(l_ezlopi_item_t* item, void* arg);
 
-static void wifi_status_task(void *args);
+void wifi_status_task(void *args);
 static void __interrupt_upcall(void* arg);
-static void indicator_led_task(void *args);
+void indicator_led_task(void *args);
 static ezlopi_error_t __prepare_master_control_device_item(uint32_t *parent_id, cJSON* cj_device); //parent device
 static ezlopi_error_t __prepare_switch_one_device_item(uint32_t parent_id, cJSON* cj_device);
 static ezlopi_error_t __prepare_switch_two_device_item(uint32_t parent_id, cJSON* cj_device);
@@ -102,7 +108,7 @@ static ezlopi_error_t __prepare(void* arg)
 
 static ezlopi_error_t __init(l_ezlopi_item_t* item)
 {
-    ezlopi_error_t error = EZPI_ERR_PREP_DEVICE_PREP_FAILED;
+    ezlopi_error_t error = EZPI_ERR_INIT_DEVICE_FAILED;
     if (item)
     {
         gpio_set_direction(WiFi_LED  , GPIO_MODE_OUTPUT);
@@ -165,7 +171,10 @@ static ezlopi_error_t __init(l_ezlopi_item_t* item)
 
         gpio_config(&io_conf);
         EZPI_service_gpioisr_register_v3(item, __interrupt_upcall, 350);
-        xTaskCreate(indicator_led_task, "indicator_led", 1024 * 3, NULL, 5, NULL);
+        if(__led_handle == NULL)
+        {
+            xTaskCreate(indicator_led_task, "indicator_led", 1024 * 3, NULL, 5, &__led_handle);
+        }
         error = EZPI_SUCCESS;
     }
 
@@ -174,7 +183,7 @@ static ezlopi_error_t __init(l_ezlopi_item_t* item)
 
 static ezlopi_error_t __set_value(l_ezlopi_item_t* item, void* arg)
 {
-    ezlopi_error_t error = EZPI_ERR_PREP_DEVICE_PREP_FAILED;
+    ezlopi_error_t error = EZPI_FAILED;
     TRACE_I("--------------SET VALUE--------------");
     if (item && arg)
     {
@@ -251,13 +260,13 @@ static ezlopi_error_t __set_value(l_ezlopi_item_t* item, void* arg)
 
 static ezlopi_error_t __get_value_cjson(l_ezlopi_item_t* item, void* arg)
 {
-    ezlopi_error_t error = EZPI_ERR_PREP_DEVICE_PREP_FAILED;
+    ezlopi_error_t error = EZPI_FAILED;
     if (item && arg)
     {
-        cJSON* cj_propertise = (cJSON*)arg;
-        if (cj_propertise)
+        cJSON* cj_properties = (cJSON*)arg;
+        if (cj_properties)
         {
-            EZPI_core_valueformatter_bool_to_cjson(cj_propertise, item->user_arg, item->cloud_properties.scale);
+            EZPI_core_valueformatter_bool_to_cjson(cj_properties, item->user_arg, item->cloud_properties.scale);
             error = EZPI_SUCCESS;
         }
     }
@@ -301,7 +310,7 @@ static void __setup_item_properties(l_ezlopi_item_t* item, cJSON* cjson_device)
     item->interface.gpio.gpio_out.pull = tmp_var ? GPIO_PULLUP_ONLY : GPIO_PULLDOWN_ONLY;
 }
 
-static void indicator_led_task(void *args)
+void indicator_led_task(void *args)
 {
     l_ezlopi_device_t* device_head = EZPI_core_device_get_head();
     if(device_head)
@@ -315,12 +324,12 @@ static void indicator_led_task(void *args)
             gpio_set_level(INDICATOR1, second_item->user_arg);
             gpio_set_level(INDICATOR2,third_item->user_arg);
             gpio_set_level(INDICATOR3,fourth_item->user_arg);
-            vTaskDelay(10 / portTICK_PERIOD_MS);
+            vTaskDelay(50 / portTICK_PERIOD_MS);
         }
     }
 }
 
-static void wifi_status_task(void *args)
+void wifi_status_task(void *args)
 {
     ezlopi_wifi_status_t *wifi_status = (ezlopi_wifi_status_t *) args;
     while (1)
@@ -340,16 +349,130 @@ static void wifi_status_task(void *args)
     }
 }
 
-static void factory_reset_task(void *arg)
+void ota_led_task(void* arg)
+{
+    while(1)
+    {
+        switch(EPZI_core_ota_get_state())
+        {
+            case 0: // All blue blink
+            {
+                gpio_set_level(CTRL_LED, 0);
+                vTaskDelay(100 / portTICK_PERIOD_MS);
+                gpio_set_level(CTRL_LED, 1);
+                vTaskDelay(100 / portTICK_PERIOD_MS);
+            }
+            break;
+            case 1: // Red Blue blink
+            {
+                gpio_set_level(CTRL_LED, 1);
+                gpio_set_level(INDICATOR1, 0);
+                gpio_set_level(INDICATOR2, 0);
+                gpio_set_level(INDICATOR3, 0);
+                vTaskDelay(100 / portTICK_PERIOD_MS);
+                gpio_set_level(CTRL_LED, 0);
+                gpio_set_level(INDICATOR1, 1);
+                gpio_set_level(INDICATOR2, 1);
+                gpio_set_level(INDICATOR3, 1);
+                vTaskDelay(100 / portTICK_PERIOD_MS);
+            }
+            break;
+            case 2: // Red Blue blink
+            {
+                gpio_set_level(CTRL_LED, 1);
+                gpio_set_level(INDICATOR1, 0);
+                gpio_set_level(INDICATOR2, 0);
+                gpio_set_level(INDICATOR3, 0);
+                vTaskDelay(100 / portTICK_PERIOD_MS);
+                gpio_set_level(CTRL_LED, 0);
+                gpio_set_level(INDICATOR1, 1);
+                gpio_set_level(INDICATOR2, 1);
+                gpio_set_level(INDICATOR3, 1);
+                vTaskDelay(100 / portTICK_PERIOD_MS);
+            }
+            break;
+            case 3: //Red Blink
+            {
+                gpio_set_level(CTRL_LED, 0);
+                for (size_t i = 0; i < 10; i++)
+                {
+                    gpio_set_level(INDICATOR1, 0);
+                    gpio_set_level(INDICATOR2, 0);
+                    gpio_set_level(INDICATOR3, 0);
+                    vTaskDelay(100 / portTICK_PERIOD_MS);
+                    gpio_set_level(INDICATOR1, 1);
+                    gpio_set_level(INDICATOR2, 1);
+                    gpio_set_level(INDICATOR3, 1);
+                    vTaskDelay(100 / portTICK_PERIOD_MS);
+                }
+                esp_restart();
+            }
+            break;
+        }
+        vTaskDelay(10 / portTICK_PERIOD_MS);
+    }
+}
+
+void factory_reset_task(void *arg)
 {
     l_ezlopi_item_t* item = (l_ezlopi_item_t*)arg;
     while(1)
     {
+        uint8_t count = 0;
         if(item)
         {
-            if(((esp_timer_get_time() - start_time) > (20*1000*1000)) && (!gpio_get_level(item->interface.gpio.gpio_in.gpio_num)))
+            while(!gpio_get_level(item->interface.gpio.gpio_in.gpio_num))
             {
-                TRACE_I("FACTORY RESET");
+                if(((esp_timer_get_time() - start_time) > (RESET)))
+                {
+                    TRACE_I("FACTORY RESET");
+                    count = 1;
+                    gpio_set_level(CTRL_LED, 0);
+                    gpio_set_level(INDICATOR1, 0);
+                    gpio_set_level(INDICATOR2, 0);
+                    gpio_set_level(INDICATOR3, 0);
+                    if(__wifi_handle != NULL)
+                    {
+                        vTaskDelete(__wifi_handle);
+                    }
+                    for (size_t i = 0; i < 10; i++)
+                    {
+                        gpio_set_level(WiFi_LED,0);
+                        vTaskDelay(100 / portTICK_PERIOD_MS);
+                        gpio_set_level(WiFi_LED,1);
+                        vTaskDelay(100 / portTICK_PERIOD_MS);
+                    }
+                }
+                else if(((esp_timer_get_time() - start_time) > (OTA)) && ((esp_timer_get_time() - start_time) < (RESET)))
+                {
+                    TRACE_I("OTA START");
+                    if(__wifi_handle != NULL)
+                    {
+                        vTaskDelete(__wifi_handle);
+                        __wifi_handle = NULL;
+                    }
+                    if(__led_handle != NULL)
+                    {
+                        vTaskDelete(__led_handle);
+                        __led_handle = NULL;
+                    }
+                    gpio_set_level(CTRL_LED, 1);
+                    gpio_set_level(INDICATOR1, 1);
+                    gpio_set_level(INDICATOR2, 1);
+                    gpio_set_level(INDICATOR3, 1);
+                    vTaskDelay(100 / portTICK_PERIOD_MS);
+                    gpio_set_level(CTRL_LED, 0);
+                    gpio_set_level(INDICATOR1, 0);
+                    gpio_set_level(INDICATOR2, 0);
+                    gpio_set_level(INDICATOR3, 0);
+                    vTaskDelay(100 / portTICK_PERIOD_MS);
+                    count = 2;
+                }
+                vTaskDelay(10 / portTICK_PERIOD_MS);
+            }
+            switch (count)
+            {
+            case 1:
                 if (ESP_OK == esp_partition_erase_range(partition_ctx_v3, EZLOPI_FINFO_OFFSET_HUB_DATA, EZLOPI_FINFO_READ_LEN_4KB))
                 {
                 }
@@ -357,25 +480,37 @@ static void factory_reset_task(void *arg)
                 {
                     if(ESP_OK == esp_partition_erase_range(partition_ctx_v3, EZLOPI_FINFO_REL_OFFSET_CA_CERTIFICATE, EZLOPI_FINFO_REL_OFFSET_SSL_SHARED_KEY));
                 }
-                vTaskDelete(__wifi_handle);
-                for (size_t i = 0; i < 10; i++)
-                {
-                    gpio_set_level(WiFi_LED,0);
-                    vTaskDelay(100 / portTICK_PERIOD_MS);
-                    gpio_set_level(WiFi_LED,1);
-                    vTaskDelay(100 / portTICK_PERIOD_MS);
-                }
-                
                 esp_restart();
-            }
-            else if(gpio_get_level(item->interface.gpio.gpio_in.gpio_num))
+            break;
+            case 2:
             {
-                TRACE_I("NO RESET-------------%d",item->interface.gpio.gpio_in.gpio_num);
+                cJSON *cj_data = cJSON_CreateObject(__FUNCTION__);
+                if (cj_data)
+                {
+                    cJSON_AddStringToObject(__FUNCTION__, cj_data, "method", "hub.firmware.update.start");
+                    cJSON_AddStringToObject(__FUNCTION__, cj_data, "id", "_ID_");
+                    cJSON *params = cJSON_CreateObject(__FUNCTION__);
+                    if (params)
+                    {
+                        cJSON_AddItemToObject(__FUNCTION__, cj_data, "params", params);
+                        if(__send_cjson_data_to_nma_websocket(cj_data) == EZPI_SUCCESS)
+                        {
+                            TRACE_E("OTA METHOD SENT");
+                            xTaskCreate(ota_led_task, "ota_led", 2*2048, NULL, 5, NULL);
+                        }
+                        else{
+                            TRACE_E("OTA METHOD NOT SENT");
+                        }
+                    }
+                    cJSON_Delete(__FUNCTION__, cj_data);
+                    vTaskDelete(NULL);
+                }
+            }
+            break;
+            
+            default:
                 vTaskDelete(NULL);
-            }
-            else
-            {
-                vTaskDelay(10 / portTICK_PERIOD_MS);
+                break;
             }
         }
     }

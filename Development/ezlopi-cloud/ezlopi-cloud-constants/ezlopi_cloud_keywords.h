@@ -215,6 +215,12 @@ extern "C"
     extern const char *ezlopi_true_str;
     extern const char *ezlopi_gpio_out_str;
     extern const char *ezlopi_gpio_in_str;
+    extern const char *ezlopi_gpio_out_1_str;
+    extern const char *ezlopi_gpio_out_2_str;
+    extern const char *ezlopi_gpio_out_3_str;
+    extern const char *ezlopi_gpio_in_1_str;
+    extern const char *ezlopi_gpio_in_2_str;
+    extern const char *ezlopi_gpio_in_3_str;
     extern const char *ezlopi_dev_detail_str;
     extern const char *ezlopi_id_item_str;
     extern const char *ezlopi_showCode_str;
