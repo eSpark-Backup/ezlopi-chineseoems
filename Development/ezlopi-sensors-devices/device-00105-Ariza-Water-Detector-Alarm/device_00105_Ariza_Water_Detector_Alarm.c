@@ -171,7 +171,7 @@ static ezlopi_error_t __init(l_ezlopi_item_t* item)
             }
             else
             {
-                xTaskCreate(uart_task, "uart_task", 2048, item, 10, NULL);
+                xTaskCreate(uart_task, "uart_task", 2*2048, item, 10, NULL);
                 battery_nvs_read();
                 intitialized = true;
             }
