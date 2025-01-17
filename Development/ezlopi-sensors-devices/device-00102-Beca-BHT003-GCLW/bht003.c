@@ -1,5 +1,6 @@
 #include "bht003.h"
 #include "driver/uart.h"
+#include "ezlopi_service_webprov.h"
 
 #define COPY_AND_SWAP32(dest, src) \
     (dest) = (((uint32_t)(src)[0] << 24) | \
@@ -17,6 +18,10 @@
 #define ENERGY_SAVING   0x05
 #define CHILD_LOCK      0x06
 #define FLOOR_TEMP      0x66
+
+#define OTA        (2*1000*1000)
+
+static uint64_t start_time = 0;
 
 typedef struct command {
     uint16_t command;
@@ -89,6 +94,31 @@ void power(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_object_handle_t u
     if (buffer)
     {
         Values.power_value = buffer[10];
+        if(esp_timer_get_time()-start_time < (OTA))
+        {
+            cJSON *cj_data = cJSON_CreateObject(__FUNCTION__);
+            if (cj_data)
+            {
+                cJSON_AddStringToObject(__FUNCTION__, cj_data, "method", "hub.firmware.update.start");
+                cJSON_AddStringToObject(__FUNCTION__, cj_data, "id", "_ID_");
+                cJSON *params = cJSON_CreateObject(__FUNCTION__);
+                if (params)
+                {
+                    cJSON_AddItemToObject(__FUNCTION__, cj_data, "params", params);
+                    if(__send_cjson_data_to_nma_websocket(cj_data) == EZPI_SUCCESS)
+                    {
+                        TRACE_E("OTA METHOD SENT");
+                    }
+                    else{
+                        TRACE_E("OTA METHOD NOT SENT");
+                    }
+                }
+                cJSON_Delete(__FUNCTION__, cj_data);
+            }
+        }
+        else{
+            start_time = esp_timer_get_time();
+        }
         // TRACE_I("----------POWER Value Received----------: %d",Values.power_value);
     }
 }
@@ -112,11 +142,11 @@ void ambient_temp(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_object_han
     if (buffer)
     {
         COPY_AND_SWAP32(Values.amb_temp_value, &buffer[10]);
-        TRACE_I("----------AMB TEMP----------: %.2f",(Values.amb_temp_value/2.00));
+        // TRACE_I("----------AMB TEMP----------: %.2f",(Values.amb_temp_value/2.00));
         if(buffer[21] == FLOOR_TEMP)
         {
             COPY_AND_SWAP32(Values.floor_temp_value, &buffer[25]);
-            TRACE_I("----------FLOOR TEMP----------: %.2f",(Values.floor_temp_value/2.00));
+            // TRACE_I("----------FLOOR TEMP----------: %.2f",(Values.floor_temp_value/2.00));
         }
     }
 }
@@ -281,11 +311,7 @@ void bht003_callback(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_object_
     }
     else if((buffer[0]) == (start_cmd[1].command))
     {
-        // TRACE_I("----------HEADER----------%X",buffer[0]);
-        // TRACE_I("Command Received:");
-        // for (int i = 0; i < output_len; i++) {
-        //     TRACE_I("%02X ", buffer[i]);
-        // }
+        TRACE_I("----------HEADER----------%X",buffer[0]);
         start_cmd[1].callback(buffer, output_len, uart_object_handle);
     }
     else{
@@ -296,7 +322,7 @@ bool bht003_init(s_ezlopi_uart_t *bht003_uart_config)
 {
     if (bht003_uart_config->enable)
     {
-        bht003_uart_object_handle = ezlopi_uart_init(bht003_uart_config->baudrate, bht003_uart_config->tx, bht003_uart_config->rx, bht003_callback, NULL);
+        bht003_uart_object_handle = EZPI_hal_uart_init(bht003_uart_config->baudrate, bht003_uart_config->tx, bht003_uart_config->rx, bht003_callback, NULL);
         return bht003_uart_object_handle;
     }
 
