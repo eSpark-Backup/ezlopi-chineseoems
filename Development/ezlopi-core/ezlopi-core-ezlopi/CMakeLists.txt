@@ -1,5 +1,3 @@
-# set(config_src "config.cpp")
-
 file(GLOB_RECURSE config_src "*.c")
 
 set(EZLOPI_CORE_COMPONENTS 
@@ -12,6 +10,7 @@ set(EZLOPI_CORE_COMPONENTS
         ezlopi-core-scenes    
         ezlopi-core-buffer
         ezlopi-core-log
+        ezlopi-core-errors
 )
 
 set(EZLOPI_CLOUD_COMPONENTS
@@ -32,12 +31,14 @@ set(EZLOPI_CLOUD_COMPONENTS
         ezlopi-cloud-coordinates
         ezlopi-cloud-offline-login
         ezlopi-cloud-status
+        ezlopi-core-setting-commands
 )
 
-idf_component_register(SRCS "ezlopi_core_broadcast.c" "ezlopi_core_ezlopi.c" "${config_src}"
+idf_component_register(SRCS  "${config_src}"
     INCLUDE_DIRS "."
     REQUIRES    freertos
                 ${EZLOPI_CORE_COMPONENTS}
                 ${EZLOPI_CLOUD_COMPONENTS}
+                ezlopi-service-system-temperature-sensor
 )
 
