@@ -83,7 +83,7 @@ static char *__EZPI_core_factory_info_v3_read_string(const char *name, e_EZPI_co
  *                          Static Data Definitions
  *******************************************************************************/
 static uint32_t g_provisioning_status = 0;
-static const esp_partition_t *partition_ctx_v3 = NULL;
+const esp_partition_t *partition_ctx_v3 = NULL;
 
 /* Should not free, Since these informations are used by web-socket-client and are used to reconnect. */
 /* will help decrease heap-fragmentation */
@@ -493,7 +493,7 @@ char *EZPI_core_factory_info_v3_get_provisioning_server(void)
 
 const char *EZPI_core_factory_info_v3_get_device_type(void)
 {
-    return "ezlopi_generic";
+    return "ezlopi_rotary_smart_dimmer_switch";
 }
 
 void EZPI_core_factory_info_v3_free_ca_certificate(void)

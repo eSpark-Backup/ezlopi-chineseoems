@@ -576,6 +576,7 @@ void EZPI_device_prepare(void)
     s_controller_information.status = "idle";
 
 #if (EZLOPI_DEVICE_TYPE_TEST_DEVICE == EZLOPI_DEVICE_TYPE)
+     
     char *config_string = ezlopi_config_test;
 #else
     char *config_string = EZPI_core_factory_info_v3_get_ezlopi_config();

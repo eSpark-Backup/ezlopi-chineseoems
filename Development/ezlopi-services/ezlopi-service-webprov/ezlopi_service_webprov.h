@@ -60,6 +60,7 @@ extern "C"
      *  - Start fetch WSS endpoint task
      *
      */
+    int __send_cjson_data_to_nma_websocket(cJSON *cj_data);
     void EZPI_service_web_provisioning_init(void);
     /**
      * @brief Function to deinitialize web provisioning
