@@ -57,7 +57,7 @@
 #include "ezlopi_core_ble_profile.h"
 #include "ezlopi_core_factory_info.h"
 #include "ezlopi_core_reset.h"
-#include "rotary_dimmer.h"
+#include "moes_dimmer.h"
 
 #include "ezlopi_cloud_constants.h"
 

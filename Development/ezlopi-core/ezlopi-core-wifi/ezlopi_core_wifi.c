@@ -47,7 +47,7 @@
 #include "esp_event.h"
 #include "esp_system.h"
 #include "esp_event_base.h"
-#include "rotary_dimmer.h"
+#include "moes_dimmer.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"

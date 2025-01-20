@@ -1,10 +1,10 @@
-#include "rotary_dimmer.h"
+#include "Moes_dimmer.h"
 #include "ezlopi_core_wifi.h"
 #include "ezlopi_cloud_items.h"
 #include "ezlopi_cloud_constants.h"
 #include "ezlopi_core_valueformatter.h"
 #include "ezlopi_core_device_value_updated.h"
-#include "device_00111_Rotary_Smart_Dimmer_Switch.h"
+#include "device_00111_Moes_Rotary_Smart_Dimmer_Switch.h"
 
 static ezlopi_error_t __prepare(void* arg);
 static ezlopi_error_t __init(l_ezlopi_item_t* item);
@@ -15,7 +15,7 @@ static void __prepare_device_cloud_properties(l_ezlopi_device_t* device);
 static void __prepare_dimmer_item_properties(l_ezlopi_item_t* item, cJSON* cjson_device);
 static void __prepare_dimmer_switch_item_properties(l_ezlopi_item_t* item, cJSON* cjson_device);
 
-ezlopi_error_t device_00111_Rotary_Smart_Dimmer_Switch(e_ezlopi_actions_t action, l_ezlopi_item_t* item, void* args, void* user_arg)
+ezlopi_error_t device_00111_Moes_Rotary_Smart_Dimmer_Switch(e_ezlopi_actions_t action, l_ezlopi_item_t* item, void* args, void* user_arg)
 {
     ezlopi_error_t error = 0;
     
@@ -67,13 +67,13 @@ static ezlopi_error_t __prepare(void* arg)
             // TRACE_I(error);
             __prepare_device_cloud_properties(device);
 
-            l_ezlopi_item_t* dimmer_item = EZPI_core_device_add_item_to_device(device, device_00111_Rotary_Smart_Dimmer_Switch);
+            l_ezlopi_item_t* dimmer_item = EZPI_core_device_add_item_to_device(device, device_00111_Moes_Rotary_Smart_Dimmer_Switch);
             if (dimmer_item)
             {
                 __prepare_dimmer_item_properties(dimmer_item, cj_device);
             }
 
-            l_ezlopi_item_t* toggle_item = EZPI_core_device_add_item_to_device(device, device_00111_Rotary_Smart_Dimmer_Switch);
+            l_ezlopi_item_t* toggle_item = EZPI_core_device_add_item_to_device(device, device_00111_Moes_Rotary_Smart_Dimmer_Switch);
             if (toggle_item)
             {
                 __prepare_dimmer_switch_item_properties(toggle_item, cj_device);
@@ -104,7 +104,7 @@ static ezlopi_error_t __init(l_ezlopi_item_t* item)
         error = EZPI_SUCCESS;
         if (item->interface.uart.enable)
         {
-            if (false == rotary_init(&item->interface.uart))
+            if (false == Moes_init(&item->interface.uart))
             {
                 error = EZPI_FAILED;
             }
@@ -162,11 +162,11 @@ static ezlopi_error_t __get_value_cjson(l_ezlopi_item_t* item, void* args)
 
     if (ezlopi_item_name_dimmer == item->cloud_properties.item_name)
     {
-        EZPI_core_valueformatter_uint32_to_cjson(cj_params, rotary_amb_temp_value(), item->cloud_properties.scale);
+        EZPI_core_valueformatter_uint32_to_cjson(cj_params, Moes_amb_temp_value(), item->cloud_properties.scale);
     }
     else if (ezlopi_item_name_switch == item->cloud_properties.item_name)
     {
-        EZPI_core_valueformatter_bool_to_cjson(cj_params, rotary_power_value(), item->cloud_properties.scale);
+        EZPI_core_valueformatter_bool_to_cjson(cj_params, Moes_power_value(), item->cloud_properties.scale);
     }
     
     return error;

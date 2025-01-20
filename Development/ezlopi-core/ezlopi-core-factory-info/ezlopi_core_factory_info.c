@@ -493,7 +493,7 @@ char *EZPI_core_factory_info_v3_get_provisioning_server(void)
 
 const char *EZPI_core_factory_info_v3_get_device_type(void)
 {
-    return "ezlopi_rotary_smart_dimmer_switch";
+    return "ezlopi_moes_rotary_smart_dimmer_switch";
 }
 
 void EZPI_core_factory_info_v3_free_ca_certificate(void)

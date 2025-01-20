@@ -56,7 +56,7 @@ extern "C"
     *                          Type & Macro Declarations
     *******************************************************************************/
 
-#define DEVICE_00111_ROTARY_SMART_DIMMER_SWITCH               1
+#define DEVICE_00111_MOESY_SMART_DIMMER_SWITCH               1
 
 
     /*******************************************************************************

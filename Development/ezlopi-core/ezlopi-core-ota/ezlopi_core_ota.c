@@ -212,6 +212,7 @@ static void ezlopi_ota_process(void *pv)
     {
         __ota_in_process = EZLOPI_OTA_STATE_FAILED;
         TRACE_E("Firmware upgrade failed");
+        EZPI_core_reset_reboot();
     }
 
 #if defined(CONFIG_FREERTOS_USE_TRACE_FACILITY)

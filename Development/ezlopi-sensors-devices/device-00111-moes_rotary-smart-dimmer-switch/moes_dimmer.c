@@ -1,4 +1,4 @@
-#include "rotary_dimmer.h"
+#include "Moes_dimmer.h"
 #include "ezlopi_core_ota.h"
 #include "ezlopi_service_webprov.h"
 #include "ezlopi_core_factory_info.h"
@@ -34,7 +34,7 @@ typedef struct values
 }values_t;
 
 values_t Values;
-s_ezlopi_uart_object_handle_t rotary_uart_object_handle;
+s_ezlopi_uart_object_handle_t Moes_uart_object_handle;
 
 int map(int x, int in_min, int in_max, int out_min, int out_max) {
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
@@ -66,13 +66,13 @@ void intensity_update(uint8_t value)
     Values.intensity_value = value;
 }
 
-bool rotary_power_value()
+bool Moes_power_value()
 {
     // TRACE_I("----------POWER----------: %d",Values.power_value);
     return Values.power_value;
 }
 
-uint16_t rotary_amb_temp_value()
+uint16_t Moes_amb_temp_value()
 {
     // TRACE_I("----------BRIGHTNESS----------: %d",(Values.intensity_value));
     return (Values.intensity_value);
@@ -132,7 +132,7 @@ void create_packet(uint8_t cmd, uint8_t *packet, uint8_t *length, int value)
     }
 }
 
-void rotary_callback(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_object_handle_t uart_object_handle)
+void Moes_callback(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_object_handle_t uart_object_handle)
 {
     if ((buffer[0]) == HEADER_H && (buffer[1]) == HEADER_L)
     {
@@ -167,9 +167,8 @@ void rotary_callback(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_object_
                             }
                             cJSON_Delete(__FUNCTION__, cj_data);
                         }
-                        send_command(CMD_RESET, 1);
-                        send_command(CMD_PAIR,1);
-                        esp_restart();
+                        // send_command(CMD_RESET, 1);
+                        // send_command(CMD_PAIR,1);
                     }
                     else
                     {
@@ -201,6 +200,7 @@ void rotary_callback(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_object_
                 }
                 send_command(CMD_RESET, 1);
                 send_command(CMD_PAIR,1);
+                TRACE_I("-----------------------REBOOT!");
                 esp_restart();
             }
 
@@ -208,12 +208,12 @@ void rotary_callback(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_object_
     }
 }
 
-bool rotary_init(s_ezlopi_uart_t *rotary_uart_config)
+bool Moes_init(s_ezlopi_uart_t *Moes_uart_config)
 {
-    if (rotary_uart_config->enable)
+    if (Moes_uart_config->enable)
     {
-        rotary_uart_object_handle = EZPI_hal_uart_init(rotary_uart_config->baudrate, rotary_uart_config->tx, rotary_uart_config->rx, rotary_callback, NULL);
-        return rotary_uart_object_handle;
+        Moes_uart_object_handle = EZPI_hal_uart_init(Moes_uart_config->baudrate, Moes_uart_config->tx, Moes_uart_config->rx, Moes_callback, NULL);
+        return Moes_uart_object_handle;
     }
 
     return false;
@@ -224,30 +224,6 @@ void send_command(uint8_t cmd, int value) {
     uint8_t length = 0;
     memset(packet, 0, sizeof(packet));
     create_packet(cmd, packet, &length, value);
-    uart_write_bytes(rotary_uart_object_handle->ezlopi_uart.channel, (const char *)packet, length);
+    uart_write_bytes(Moes_uart_object_handle->ezlopi_uart.channel, (const char *)packet, length);
     
-    // vTaskDelay(50 / portTICK_PERIOD_MS);
-    // TRACE_I("Command sent:");
-    // for (int i = 0; i < length; i++) {
-    //     TRACE_I("%02X ", packet[i]);
-    // }
 }
-
-// {
-//     "cmd":3,
-//     "dev_detail":[
-//         {
-//             "dev_type":111,
-//             "dev_name":"Rotary",
-//             "id_room":"",
-//             "id_item":111,
-//             "gpio_tx":18,
-//             "gpio_rx":5,
-//             "baud":115200
-//         }
-//                 ],
-//     "config_id":"2578723617",
-//     "config_time":1722960582,
-//     "config_name":"Rotary",
-//     "chipset":"ESP32"
-//     }

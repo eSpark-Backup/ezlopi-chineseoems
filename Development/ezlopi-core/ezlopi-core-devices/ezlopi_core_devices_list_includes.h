@@ -58,7 +58,7 @@ extern "C"
     /*******************************************************************************
     *                          Extern Data Declarations
     *******************************************************************************/
-#include "device_00111_Rotary_Smart_Dimmer_Switch.h"
+#include "device_00111_Moes_Rotary_Smart_Dimmer_Switch.h"
 
     /*******************************************************************************
     *                          Extern Function Prototypes
