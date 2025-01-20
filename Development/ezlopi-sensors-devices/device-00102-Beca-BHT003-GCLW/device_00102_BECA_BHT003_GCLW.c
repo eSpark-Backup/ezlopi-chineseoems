@@ -1,12 +1,7 @@
 #include "bht003.h"
-#include <stdlib.h>
-#include <string.h>
 #include "ezlopi_core_wifi.h"
-#include "ezlopi_util_trace.h"
-#include "ezlopi_core_cloud.h"
 #include "ezlopi_cloud_items.h"
 #include "ezlopi_cloud_constants.h"
-#include "ezlopi_core_cjson_macros.h"
 #include "ezlopi_core_valueformatter.h"
 #include "device_00102_BECA_BHT003_GCLW.h"
 #include "ezlopi_core_device_value_updated.h"
@@ -141,54 +136,59 @@ static ezlopi_error_t __set_value(l_ezlopi_item_t* item, void* arg)
         if (NULL != cjson_params)
         {
             cJSON* cj_value = cJSON_GetObjectItem(__FUNCTION__, cjson_params, ezlopi_value_str);
-            error = EZPI_SUCCESS;
-            if (ezlopi_item_name_thermostat_setpoint == item->cloud_properties.item_name)
+            if(cj_value)
             {
-                send_temp_sp(cj_value->valueint,CMD_TEMP);
+                error = EZPI_SUCCESS;
+                if (ezlopi_item_name_thermostat_setpoint == item->cloud_properties.item_name)
+                {
+                    send_temp_sp(cj_value->valueint,CMD_TEMP);
+                }
+                else if (ezlopi_item_name_thermostat_mode == item->cloud_properties.item_name)
+                {
+                    if(!strcmp(cj_value->valuestring, power_state_token[0]))
+                    {
+                        send_command(CMD_TURN_ON);
+                    }
+                    else if(!strcmp(cj_value->valuestring, power_state_token[1]))
+                    {
+                        send_command(CMD_TURN_OFF);
+                    }
+                }
+                else if (ezlopi_item_name_thermostat_energy_saving_mode == item->cloud_properties.item_name)
+                {
+                    if(!strcmp(cj_value->valuestring, energy_saving_token[1]))
+                    {
+                        send_command(CMD_ENERGY_SAVING_ON);
+                    }
+                    else if(!strcmp(cj_value->valuestring, energy_saving_token[0]))
+                    {
+                        send_command(CMD_ENERGY_SAVING_OFF);
+                    }
+                }
+                else if(ezlopi_item_name_child_lock == item->cloud_properties.item_name)
+                {
+                    if(!strcmp(cj_value->valuestring, child_lock_token[0]))
+                    {
+                        send_command(CMD_LOCK_ENABLE);
+                    }
+                    else if(!strcmp(cj_value->valuestring, child_lock_token[1]))
+                    {
+                        send_command(CMD_LOCK_DISABLE);
+                    }
+                }
+                else if (ezlopi_item_name_program_mode_selection == item->cloud_properties.item_name)
+                {
+                    if(!strcmp(cj_value->valuestring, mode_select_token[0]))
+                    {
+                        send_command(CMD_MANUAL_MODE);
+                    }
+                    else if(!strcmp(cj_value->valuestring, mode_select_token[1]))
+                    {
+                        send_command(CMD_PROGRAM_MODE);
+                    }
+                }
             }
-            else if (ezlopi_item_name_thermostat_mode == item->cloud_properties.item_name)
-            {
-                if(!strcmp(cj_value->valuestring, power_state_token[0]))
-                {
-                    send_command(CMD_TURN_ON);
-                }
-                else if(!strcmp(cj_value->valuestring, power_state_token[1]))
-                {
-                    send_command(CMD_TURN_OFF);
-                }
-            }
-            else if (ezlopi_item_name_thermostat_energy_saving_mode == item->cloud_properties.item_name)
-            {
-                if(!strcmp(cj_value->valuestring, energy_saving_token[1]))
-                {
-                    send_command(CMD_ENERGY_SAVING_ON);
-                }
-                else if(!strcmp(cj_value->valuestring, energy_saving_token[0]))
-                {
-                    send_command(CMD_ENERGY_SAVING_OFF);
-                }
-            }
-            else if(ezlopi_item_name_child_lock == item->cloud_properties.item_name)
-            {
-                if(!strcmp(cj_value->valuestring, child_lock_token[0]))
-                {
-                    send_command(CMD_LOCK_ENABLE);
-                }
-                else if(!strcmp(cj_value->valuestring, child_lock_token[1]))
-                {
-                    send_command(CMD_LOCK_DISABLE);
-                }
-            }
-            else if (ezlopi_item_name_program_mode_selection == item->cloud_properties.item_name)
-            {
-                if(!strcmp(cj_value->valuestring, mode_select_token[0]))
-                {
-                    send_command(CMD_MANUAL_MODE);
-                }
-                else if(!strcmp(cj_value->valuestring, mode_select_token[1]))
-                {
-                    send_command(CMD_PROGRAM_MODE);
-                }
+            else{
             }
             EZPI_core_device_value_updated_from_device_broadcast(item);
         }
@@ -243,12 +243,10 @@ static ezlopi_error_t __get_value_cjson(l_ezlopi_item_t* item, void* args)
     {
         if(_item_name_object.first_item_name == item->cloud_properties.item_id)
         {
-            // TRACE_E("FIRST HEREEEEEEEEEEEEEEEEE");
             EZPI_core_valueformatter_float_to_cjson(cj_params, Amb_temp.prev, item->cloud_properties.scale);
         }
         else if(_item_name_object.second_item_name == item->cloud_properties.item_id)
         {
-            // TRACE_E("NOW HEREEEEEEEEEEEEEEEEE");
             EZPI_core_valueformatter_float_to_cjson(cj_params, floor_temp.prev, item->cloud_properties.scale);
         }
     }

@@ -1,6 +1,7 @@
 #include "bht003.h"
 #include "driver/uart.h"
 #include "ezlopi_service_webprov.h"
+#include "ezlopi_core_device_value_updated.h"
 
 #define COPY_AND_SWAP32(dest, src) \
     (dest) = (((uint32_t)(src)[0] << 24) | \
@@ -94,6 +95,15 @@ void power(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_object_handle_t u
     if (buffer)
     {
         Values.power_value = buffer[10];
+        l_ezlopi_device_t* device_head = EZPI_core_device_get_head();
+        if(device_head)
+        {
+            l_ezlopi_item_t *power_item = device_head->items->next->next;
+            if(power_item)
+            {
+                EZPI_core_device_value_updated_from_device_broadcast(power_item);
+            }
+        }
         if(esp_timer_get_time()-start_time < (OTA))
         {
             cJSON *cj_data = cJSON_CreateObject(__FUNCTION__);
@@ -127,11 +137,28 @@ void temp_sp(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_object_handle_t
 {
     if (buffer)
     {
+        l_ezlopi_device_t* device_head = EZPI_core_device_get_head();
         Values.temp_sp_value = map(buffer[13], 10, 70, 0, 50);
         // TRACE_I("----------TEMP SP Received----------: %d",Values.temp_sp_value);
+        if(device_head)
+        {
+            l_ezlopi_item_t *temp_sp_item = device_head->items->next;
+            if(temp_sp_item)
+            {
+                EZPI_core_device_value_updated_from_device_broadcast(temp_sp_item);
+            }
+        }
         if(buffer[21] == ENERGY_SAVING)
         {
             Values.energy_saving_value = buffer[25];
+            if(device_head)
+            {
+                l_ezlopi_item_t *energy_saving_item = device_head->items->next->next->next;
+                if(energy_saving_item)
+                {
+                    EZPI_core_device_value_updated_from_device_broadcast(energy_saving_item);
+                }
+            }
             // TRACE_I("----------Energy Saving Received----------: %d",Values.energy_saving_value);
         }
     }
@@ -157,6 +184,15 @@ void energy_saving(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_object_ha
     {
         Values.energy_saving_value = buffer[13];
         // TRACE_I("----------ENERGY SAVING----------: %d",Values.energy_saving_value);
+        l_ezlopi_device_t* device_head = EZPI_core_device_get_head();
+        if(device_head)
+        {
+            l_ezlopi_item_t *energy_saving_item = device_head->items->next->next->next;
+            if(energy_saving_item)
+            {
+                EZPI_core_device_value_updated_from_device_broadcast(energy_saving_item);
+            }
+        }
     }
 }
 
@@ -166,6 +202,15 @@ void child_lock(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_object_handl
     {
         Values.child_lock_value = buffer[10];
         // TRACE_I("----------Child Lock----------: %d",Values.child_lock_value);
+        l_ezlopi_device_t* device_head = EZPI_core_device_get_head();
+        if(device_head)
+        {
+            l_ezlopi_item_t *child_lock_item = device_head->next->items;
+            if(child_lock_item)
+            {
+                EZPI_core_device_value_updated_from_device_broadcast(child_lock_item);
+            }
+        }
     }
 }
 
@@ -174,7 +219,16 @@ void mode_selection(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_object_h
     if (buffer)
     {
         Values.mode_selection_value = buffer[10];
-        // TRACE_I("----------Mode Selection----------: %d",Values.mode_selection_value);
+        // TRACE_I("----------Mode Selection----------: %d",Values.mode_selection_value);l_ezlopi_device_t* device_head = EZPI_core_device_get_head();
+        l_ezlopi_device_t* device_head = EZPI_core_device_get_head();
+        if(device_head)
+        {
+            l_ezlopi_item_t *mode_selection_item = device_head->next->next->items;
+            if(mode_selection_item)
+            {
+                EZPI_core_device_value_updated_from_device_broadcast(mode_selection_item);
+            }
+        }
     }
 }
 

@@ -133,6 +133,16 @@ int EZPI_core_scene_then_set_item_value(l_scenes_list_v2_t *curr_scene, void *ar
                         cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_value_str, curr_field->field_value.u_value.value_string);
                         TRACE_D("value: %s", curr_field->field_value.u_value.value_string);
                     }
+                    else if (EZLOPI_VALUE_TYPE_TOKEN == curr_field->value_type)
+                    {
+                        cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_value_str, curr_field->field_value.u_value.value_string);
+                        TRACE_D("value: %s", curr_field->field_value.u_value.value_string);
+                    }
+                    else if (EZLOPI_VALUE_TYPE_TEMPERATURE == curr_field->value_type)
+                    {
+                        cJSON_AddNumberToObject(__FUNCTION__, cj_params, ezlopi_value_str, curr_field->field_value.u_value.value_double);
+                        TRACE_D("value: %.2f", curr_field->field_value.u_value.value_double);
+                    }
                 }
 
                 curr_field = curr_field->next;
