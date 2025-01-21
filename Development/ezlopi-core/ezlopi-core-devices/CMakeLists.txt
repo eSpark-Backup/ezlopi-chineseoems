@@ -24,7 +24,7 @@ set(EZLOPI_CLOUD_COMPONENTS
         ezlopi-cloud-items
 )
 set(EZLOPI_SENSOR_DEVICE_COMPONENTS 
-        device-00111-moes_rotary-smart-dimmer-switch
+        device-00111-moes-rotary-dimmer-switch
 )
 
 

@@ -22,6 +22,7 @@
 #define OUT_MIN         0x01
 #define OUT_MAX         0x64
 
+#define OTA             (0.5 * 1000 * 1000)
 static uint64_t start_time = 0;
 
 void power(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_object_handle_t uart_object_handle);
@@ -145,7 +146,7 @@ void Moes_callback(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_object_ha
             {
                 if (buffer[5] == POWER)
                 {
-                    if (esp_timer_get_time() - start_time < (2 * 1000 * 1000))
+                    if (esp_timer_get_time() - start_time < OTA)
                     {
                         cJSON *cj_data = cJSON_CreateObject(__FUNCTION__);
                         if (cj_data)

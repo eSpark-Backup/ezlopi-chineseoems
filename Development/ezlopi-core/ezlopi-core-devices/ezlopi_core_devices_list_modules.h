@@ -53,9 +53,9 @@ extern "C"
         *                          Type & Macro Declarations
         *******************************************************************************/
 
-#if (1 == DEVICE_00111_MOESY_SMART_DIMMER_SWITCH)
-        EZLOPI_DEVICE_LIST("device-moes_rotary-smart-dimmer-switch         ", 111, device_00111_Moes_Rotary_Smart_Dimmer_Switch)
-#endif // DEVICE_00111_MOESY_SMART_DIMMER_SWITCH
+#if (1 == DEVICE_00111_MOES_ROTARY_DIMMER_SWITCH)
+        EZLOPI_DEVICE_LIST("device-moes-rotary-dimmer-switch         ", 111, device_00111_Moes_Rotary_Dimmer_Switch)
+#endif // DEVICE_00111_MOES_ROTARY_DIMMER_SWITCH
 
                 //////// End of sensor/device list
                 EZLOPI_DEVICE_LIST(NULL, 0, NULL)

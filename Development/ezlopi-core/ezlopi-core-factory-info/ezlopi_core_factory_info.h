@@ -173,7 +173,7 @@ extern "C"
 
 #elif (EZLOPI_DEVICE_TYPE_TEST_DEVICE == EZLOPI_DEVICE_TYPE)
 #if defined(CONFIG_IDF_TARGET_ESP32)
-    static const char* ezlopi_config_test = "{\"cmd\":3,\"dev_detail\":[{\"dev_type\":111,\"dev_name\":\"Moes\",\"id_room\":\"\",\"id_item\":111,\"gpio_tx\":18,\"gpio_rx\":5,\"baud\":115200}],\"config_id\":\"2578723617\",\"config_time\":1722960582,\"config_name\":\"Moes\",\"chipset\":\"ESP32\"}";//
+        static const char* ezlopi_config_test = "{\"cmd\":3,\"dev_detail\":[{\"dev_type\":111,\"dev_name\":\"Moes\",\"id_room\":\"\",\"id_item\":111,\"gpio_tx\":18,\"gpio_rx\":5,\"baud\":115200}],\"config_id\":\"2578723617\",\"config_time\":1722960582,\"config_name\":\"Moes\",\"chipset\":\"ESP32\"}";//
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
     static const char *ezlopi_config_test =
         "{\
