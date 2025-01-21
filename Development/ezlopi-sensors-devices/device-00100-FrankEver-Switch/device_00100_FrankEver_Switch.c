@@ -12,40 +12,40 @@
 #define RGB_GREEN GPIO_NUM_23
 #define WiFi_LED GPIO_NUM_27
 
-static int __prepare(void* arg);
-static int __init(l_ezlopi_item_t* item);
-static int __set_value(l_ezlopi_item_t* item, void* arg);
-static int __get_value_cjson(l_ezlopi_item_t* item, void* arg);
+static ezlopi_error_t __prepare(void* arg);
+static ezlopi_error_t __init(l_ezlopi_item_t* item);
+static ezlopi_error_t __set_value(l_ezlopi_item_t* item, void* arg);
+static ezlopi_error_t __get_value_cjson(l_ezlopi_item_t* item, void* arg);
 
 static void __interrupt_call(void* arg);
 static void __toggle_gpio(l_ezlopi_item_t* item);
 static void __write_gpio_value(l_ezlopi_item_t* item);
 static void __set_gpio_value(l_ezlopi_item_t* item, int value);
 
-int device_00100_FrankEver_Switch(e_ezlopi_actions_t action, l_ezlopi_item_t* item, void* arg, void* user_arg)
+ezlopi_error_t device_00100_FrankEver_Switch(e_ezlopi_actions_t action, l_ezlopi_item_t* item, void* arg, void* user_arg)
 {
-    int ret = 0;
+    ezlopi_error_t error = 0;
     switch (action)
     {
     case EZLOPI_ACTION_PREPARE:
     {
-        ret = __prepare(arg);
+        error = __prepare(arg);
         break;
     }
     case EZLOPI_ACTION_INITIALIZE:
     {
-        ret = __init(item);
+        error = __init(item);
         break;
     }
     case EZLOPI_ACTION_SET_VALUE:
     {
-        ret = __set_value(item, arg);
+        error = __set_value(item, arg);
         break;
     }
     case EZLOPI_ACTION_HUB_GET_ITEM:
     case EZLOPI_ACTION_GET_EZLOPI_VALUE:
     {
-        ret = __get_value_cjson(item, arg);
+        error = __get_value_cjson(item, arg);
         break;
     }
 
@@ -55,7 +55,7 @@ int device_00100_FrankEver_Switch(e_ezlopi_actions_t action, l_ezlopi_item_t* it
     }
     }
 
-    return ret;
+    return error;
 }
 
 static void __setup_device_cloud_properties(l_ezlopi_device_t* device, cJSON* cjson_device)
@@ -76,7 +76,7 @@ static void __setup_item_properties(l_ezlopi_item_t* item, cJSON* cjson_device)
     item->cloud_properties.value_type = value_type_bool;
     item->cloud_properties.show = true;
     item->cloud_properties.scale = NULL;
-    item->cloud_properties.item_id = ezlopi_cloud_generate_item_id();
+    item->cloud_properties.item_id = EZPI_core_cloud_generate_item_id();
 
     CJSON_GET_VALUE_DOUBLE(cjson_device, ezlopi_dev_type_str, item->interface_type);
 
@@ -105,7 +105,7 @@ void wifi_status_task(void *args)
     ezlopi_wifi_status_t *wifi_status = (ezlopi_wifi_status_t *) args;
     while (1)
     {
-        int wifi_connection_stat = ezlopi_wifi_got_ip();
+        int wifi_connection_stat = EZPI_core_wifi_got_ip();
         if(wifi_connection_stat)
         {    
             // TRACE_I("---------------WIFI----------%d",wifi_connection_stat);
@@ -120,9 +120,9 @@ void wifi_status_task(void *args)
     }
 }
 
-static int __prepare(void* arg)
+static ezlopi_error_t __prepare(void* arg)
 {
-    int ret = 0;
+    ezlopi_error_t error = EZPI_ERR_PREP_DEVICE_PREP_FAILED;
     s_ezlopi_prep_arg_t* prep_arg = (s_ezlopi_prep_arg_t*)arg;
     s_AC_power_delay_t* power_delay = ezlopi_malloc(__FUNCTION__, sizeof(s_AC_power_delay_t));
     xTaskCreate(wifi_status_task,"wifi_status",1024 * 3,NULL,5,NULL);
@@ -132,32 +132,32 @@ static int __prepare(void* arg)
         cJSON* cjson_device = prep_arg->cjson_device;
         if (cjson_device)
         {
-            l_ezlopi_device_t* device = ezlopi_device_add_device(cjson_device, NULL);
+            l_ezlopi_device_t* device = EZPI_core_device_add_device(cjson_device, NULL);
             if (device)
             {
                 __setup_device_cloud_properties(device, cjson_device);
-                l_ezlopi_item_t* item = ezlopi_device_add_item_to_device(device, device_00100_FrankEver_Switch);
+                l_ezlopi_item_t* item = EZPI_core_device_add_item_to_device(device, device_00100_FrankEver_Switch);
                 if (item)
                 {
                     __setup_item_properties(item, cjson_device);
                     item->user_arg = power_delay;
-                    ret = 1;
+                    error = EZPI_SUCCESS;
                 }
                 else
                 {
-                    ezlopi_device_free_device(device);
-                    ret = -1;
+                    EZPI_core_device_free_device(device);
+                    error = EZPI_FAILED;
                 }
             }
         }
     }
 
-    return ret;
+    return error;
 }
 
-static int __init(l_ezlopi_item_t* item)
+static ezlopi_error_t __init(l_ezlopi_item_t* item)
 {
-    int ret = 0;
+    ezlopi_error_t error = EZPI_ERR_INIT_DEVICE_FAILED;
     if (item)
     {
         gpio_set_direction(BLUE_LED1,GPIO_MODE_OUTPUT);
@@ -186,11 +186,11 @@ static int __init(l_ezlopi_item_t* item)
             if (0 == gpio_config(&io_conf))
             {
                 __write_gpio_value(item);
-                ret = 1;
+                error = EZPI_SUCCESS;
             }
             else
             {
-                ret = -1;
+                error = EZPI_FAILED;
             }
         }
     }
@@ -218,13 +218,13 @@ static int __init(l_ezlopi_item_t* item)
         TRACE_D("enabling interrup for pin: %d", item->interface.gpio.gpio_in.gpio_num);
 
         gpio_config(&io_conf);
-        ezlopi_service_gpioisr_register_v3(item, __interrupt_call, 350);
-        ret = 1;
+        EZPI_service_gpioisr_register_v3(item, __interrupt_call, 350);
+        error = EZPI_SUCCESS;
     }
 
-    if (0 == ret)
+    if (0 == error)
     {
-        ret = -1;
+        error = EZPI_FAILED;
         if (item->user_arg)
         {
             const gpio_config_t io_conf = {
@@ -245,36 +245,36 @@ static int __init(l_ezlopi_item_t* item)
 
             if (0 == gpio_config(&io_conf))
             {
-                ezlopi_service_gpioisr_register_v3(item, __interrupt_call, 1000);
-                ret = 1;
+                EZPI_service_gpioisr_register_v3(item, __interrupt_call, 1000);
+                error = EZPI_SUCCESS;
             }
             else
             {
-                ret = -1;
+                error = EZPI_FAILED;
             }
         }
         else
         {
-            ret = -1;
+            error = EZPI_FAILED;
         }
     }
 
-    return ret;
+    return error;
 }
 
-static int __get_value_cjson(l_ezlopi_item_t* item, void* arg)
+static ezlopi_error_t __get_value_cjson(l_ezlopi_item_t* item, void* arg)
 {
-    int ret = 0;
+    ezlopi_error_t error = EZPI_FAILED;
     if (item && arg)
     {
         cJSON* cj_propertise = (cJSON*)arg;
         if (cj_propertise)
         {
-            ezlopi_valueformatter_bool_to_cjson(cj_propertise, item->interface.gpio.gpio_out.value, item->cloud_properties.scale);
-            ret = 1;
+            EZPI_core_valueformatter_bool_to_cjson(cj_propertise, item->interface.gpio.gpio_out.value, item->cloud_properties.scale);
+            error = EZPI_SUCCESS;
         }
     }
-    return ret;
+    return error;
 }
 
 static void __set_gpio_value(l_ezlopi_item_t* item, int value)
@@ -287,9 +287,9 @@ static void __set_gpio_value(l_ezlopi_item_t* item, int value)
     item->interface.gpio.gpio_out.value = value;
 }
 
-static int __set_value(l_ezlopi_item_t* item, void* arg)
+static ezlopi_error_t __set_value(l_ezlopi_item_t* item, void* arg)
 {
-    int ret = 0;
+    ezlopi_error_t error = EZPI_FAILED;
     ((s_AC_power_delay_t*) item->user_arg)->time_delay = esp_timer_get_time();
     TRACE_I("--------------SET VALUE--------------%lld",((s_AC_power_delay_t*) item->user_arg)->time_delay);
     if (item && arg)
@@ -328,13 +328,13 @@ static int __set_value(l_ezlopi_item_t* item, void* arg)
                 if (GPIO_IS_VALID_GPIO(item->interface.gpio.gpio_out.gpio_num))
                 {
                     __set_gpio_value(item, value);
-                    ezlopi_device_value_updated_from_device_broadcast(item);
-                    ret = 1;
+                    EZPI_core_device_value_updated_from_device_broadcast(item);
+                    error = EZPI_SUCCESS;
                 }
             }
             else
             {
-                l_ezlopi_device_t* curr_device = ezlopi_device_get_head();
+                l_ezlopi_device_t* curr_device = EZPI_core_device_get_head();
                 while (curr_device)
                 {
                     l_ezlopi_item_t* curr_item = curr_device->items;
@@ -345,19 +345,19 @@ static int __set_value(l_ezlopi_item_t* item, void* arg)
                             TRACE_D("GPIO-pin: %d", curr_item->interface.gpio.gpio_out.gpio_num);
                             TRACE_D("value: %d", value);
                             __set_gpio_value(curr_item, value);
-                            ezlopi_device_value_updated_from_device_broadcast(curr_item);
-                            ret = 1;
+                            EZPI_core_device_value_updated_from_device_broadcast(curr_item);
+                            error = EZPI_SUCCESS;
                         }
                         curr_item = curr_item->next;
                     }
                     curr_device = curr_device->next;
                 }
                 item->interface.gpio.gpio_out.value = value;
-                ezlopi_device_value_updated_from_device_broadcast(item);
+                EZPI_core_device_value_updated_from_device_broadcast(item);
             }
         }
     }
-    return ret;
+    return error;
 }
 
 static void __write_gpio_value(l_ezlopi_item_t* item)

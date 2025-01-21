@@ -3,4 +3,4 @@
 ## Version Table
 | S.No | Device Type | Product code | Ezlopi Core Version | Firmware revision | iOS Test Version | Android Test Version |  
 | -------- | ------- |------- |------- | ------- | ------- | ------- |
-| 1 | Smart Switch (WiFi) | ssms118-01ai | v4.1.6 | v1.0.0 | v1.7 (5) | Nil |
+| 1 | Smart Switch (WiFi) | ssms118-01ai | v4.4.12 | v1.0.0 | v1.7 (5) | Nil |

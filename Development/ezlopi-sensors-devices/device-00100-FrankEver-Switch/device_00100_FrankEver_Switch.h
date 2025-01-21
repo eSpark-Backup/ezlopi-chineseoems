@@ -18,7 +18,7 @@ typedef struct s_AC_power_delay
     int64_t interrupttime;
 } s_AC_power_delay_t;
 
-int device_00100_FrankEver_Switch(e_ezlopi_actions_t action, l_ezlopi_item_t *item, void *arg, void *user_arg);
+ezlopi_error_t device_00100_FrankEver_Switch(e_ezlopi_actions_t action, l_ezlopi_item_t *item, void *arg, void *user_arg);
 
 #endif
 
