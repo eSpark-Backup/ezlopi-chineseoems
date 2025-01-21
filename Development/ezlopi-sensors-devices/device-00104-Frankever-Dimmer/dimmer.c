@@ -47,7 +47,7 @@ bool dimmer_init(s_ezlopi_uart_t *dimmer)
 {
     if (dimmer->enable)
     {
-        dimmer_uart_object_handle = ezlopi_uart_init(dimmer->baudrate, dimmer->tx, dimmer->rx, dimmer_callback, NULL);
+        dimmer_uart_object_handle = EZPI_hal_uart_init(dimmer->baudrate, dimmer->tx, dimmer->rx, dimmer_callback, NULL);
         TRACE_I("I2C CONFIGURATIONSSSSSSSSSSSSSS %d %d %d %d",dimmer->baudrate, dimmer->tx, dimmer->rx, dimmer_uart_object_handle);
         return dimmer_uart_object_handle;
     }

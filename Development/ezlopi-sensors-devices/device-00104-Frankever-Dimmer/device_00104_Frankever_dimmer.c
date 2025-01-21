@@ -1,13 +1,9 @@
-#include <stdlib.h>
-#include <string.h>
 #include "dimmer.h"
 #include "freertos/queue.h"
 #include "ezlopi_core_wifi.h"
 #include "ezlopi_core_cloud.h"
-#include "ezlopi_util_trace.h"
 #include "ezlopi_service_gpioisr.h"
 #include "ezlopi_cloud_constants.h"
-#include "ezlopi_core_cjson_macros.h"
 #include "ezlopi_core_factory_info.h"
 #include "ezlopi_core_valueformatter.h"
 #include "device_00104_Frankever_dimmer.h"
@@ -22,7 +18,7 @@
 #define INCREASE GPIO_NUM_26
 #define DECREASE GPIO_NUM_16
 
-#define FACTORY_RESET 20*1000*1000
+#define FACTORY_RESET (20*1000*1000)
 
 typedef struct dimmer_data{
     bool switch_value;
@@ -42,10 +38,10 @@ typedef struct {
     event_type_t event_type;
 } event_t;
 
-static int __prepare(void* arg);
-static int __init(l_ezlopi_item_t* item);
-static int __set_value(l_ezlopi_item_t* item, void* arg);
-static int __get_value_cjson(l_ezlopi_item_t* item, void* arg);
+static ezlopi_error_t __prepare(void* arg);
+static ezlopi_error_t __init(l_ezlopi_item_t* item);
+static ezlopi_error_t __set_value(l_ezlopi_item_t* item, void* arg);
+static ezlopi_error_t __get_value_cjson(l_ezlopi_item_t* item, void* arg);
 
 static void __set_led_value(bool value);
 static void wifi_status_task(void *args);
@@ -53,31 +49,31 @@ static void __interrupt_call(void *arg);
 static void task_handler(void* arg);
 static void process_dimmer_event(event_type_t event_type);
 
-int device_00104_Frankever_dimmer(e_ezlopi_actions_t action, l_ezlopi_item_t* item, void* args, void* user_arg)
+ezlopi_error_t device_00104_Frankever_dimmer(e_ezlopi_actions_t action, l_ezlopi_item_t* item, void* args, void* user_arg)
 {
-    int ret = 0;
+    ezlopi_error_t error = 0;
 
     switch (action)
     {
         case EZLOPI_ACTION_PREPARE:
         {
-            ret = __prepare(args);
+            error = __prepare(args);
             break;
         }
         case EZLOPI_ACTION_INITIALIZE:
         {
-            ret = __init(item);
+            error = __init(item);
             break;
         }
         case EZLOPI_ACTION_SET_VALUE:
         {
-            ret = __set_value(item, args);
+            error = __set_value(item, args);
             break;
         }
         case EZLOPI_ACTION_HUB_GET_ITEM:
         case EZLOPI_ACTION_GET_EZLOPI_VALUE:
         {
-            ret = __get_value_cjson(item, args);
+            error = __get_value_cjson(item, args);
             break;
         }
 
@@ -87,16 +83,16 @@ int device_00104_Frankever_dimmer(e_ezlopi_actions_t action, l_ezlopi_item_t* it
         }
     }
 
-    return ret;
+    return error;
 }
 
 void wifi_status_task(void *args)
 {
     while (1)
     {
-        int wifi_connection_stat = ezlopi_wifi_got_ip();
+        int wifi_connection_stat = EZPI_core_wifi_got_ip();
         if(wifi_connection_stat)
-        {    
+        {
             gpio_set_level(CONTROL,!wifi_connection_stat); 
             gpio_set_level(GREEN,wifi_connection_stat);
         }
@@ -114,19 +110,19 @@ void __set_led_value(bool value)
     gpio_set_level(RED,!value);
 }
 
-static int __set_value(l_ezlopi_item_t* item, void* arg)
+static ezlopi_error_t __set_value(l_ezlopi_item_t* item, void* arg)
 {
-    int ret = 0;
+    int error = 0;
     if(item && arg)
     {
         cJSON* cjson_params = (cJSON*)arg;
         if (NULL != cjson_params)
         {
-            l_ezlopi_device_t* device = ezlopi_device_get_head();
+            l_ezlopi_device_t* device = EZPI_core_device_get_head();
             l_ezlopi_item_t* dimmer_item = device->items;
             l_ezlopi_item_t* switch_item = dimmer_item->next;
             cJSON* cj_value = cJSON_GetObjectItem(__FUNCTION__, cjson_params, ezlopi_value_str);
-            ret = 1;
+            error = EZPI_SUCCESS;
             if (ezlopi_item_name_dimmer == item->cloud_properties.item_name)
             {
                 send_command_dimmer(cj_value->valueint);
@@ -141,34 +137,34 @@ static int __set_value(l_ezlopi_item_t* item, void* arg)
                 Dimmer_data.dimmer_value = Dimmer_data.switch_value ? fetch_packet() : 0x00;
                 __set_led_value(Dimmer_data.switch_value);
             }
-            ezlopi_device_value_updated_from_device_broadcast(dimmer_item);
-            ezlopi_device_value_updated_from_device_broadcast(switch_item);
+            EZPI_core_device_value_updated_from_device_broadcast(dimmer_item);
+            EZPI_core_device_value_updated_from_device_broadcast(switch_item);
         }
     }
-    return ret;
+    return error;
 }
 
-static int __get_value_cjson(l_ezlopi_item_t* item, void* args)
+static ezlopi_error_t __get_value_cjson(l_ezlopi_item_t* item, void* args)
 {
-    int ret = 0;
+    int error = 0;
 
     cJSON* cj_params = (cJSON*)args;
     if(!cj_params)
     {
-        return ret;
+        return error;
     }
 
-    ret = 1;
+    error = EZPI_SUCCESS;
     if (ezlopi_item_name_dimmer == item->cloud_properties.item_name)
     {
-        ezlopi_valueformatter_uint32_to_cjson(cj_params, Dimmer_data.dimmer_value, item->cloud_properties.scale);
+        EZPI_core_valueformatter_uint32_to_cjson(cj_params, Dimmer_data.dimmer_value, item->cloud_properties.scale);
     }
     else if (ezlopi_item_name_switch == item->cloud_properties.item_name)
     {
-        ezlopi_valueformatter_bool_to_cjson(cj_params, Dimmer_data.switch_value, item->cloud_properties.scale);
+        EZPI_core_valueformatter_bool_to_cjson(cj_params, Dimmer_data.switch_value, item->cloud_properties.scale);
     }
     
-    return ret;
+    return error;
 }
 
 static void __interrupt_call(void *arg)
@@ -176,7 +172,7 @@ static void __interrupt_call(void *arg)
     uint64_t difference = 0;
     uint64_t interrupttime = esp_timer_get_time();
     l_ezlopi_item_t* item = (l_ezlopi_item_t*)arg;
-    l_ezlopi_device_t* device = ezlopi_device_get_head();
+    l_ezlopi_device_t* device = EZPI_core_device_get_head();
     l_ezlopi_item_t* dimmer_item = device->items;
     l_ezlopi_item_t* switch_item = dimmer_item->next;
     while(!gpio_get_level(item->interface.gpio.gpio_in.gpio_num) && difference < (FACTORY_RESET)) 
@@ -204,13 +200,13 @@ static void __interrupt_call(void *arg)
         __set_led_value(!toggle_status);
         toggle_status = !toggle_status;
     }
-    ezlopi_device_value_updated_from_device_broadcast(dimmer_item);
-    ezlopi_device_value_updated_from_device_broadcast(switch_item);
+    EZPI_core_device_value_updated_from_device_broadcast(dimmer_item);
+    EZPI_core_device_value_updated_from_device_broadcast(switch_item);
 }
 
 static void process_dimmer_event(event_type_t event_type)
 {
-    l_ezlopi_device_t* device = ezlopi_device_get_head();
+    l_ezlopi_device_t* device = EZPI_core_device_get_head();
     l_ezlopi_item_t* dimmer_item = device->items;
     l_ezlopi_item_t* switch_item = dimmer_item->next;
 
@@ -227,8 +223,8 @@ static void process_dimmer_event(event_type_t event_type)
     Dimmer_data.switch_value = Dimmer_data.dimmer_value;
     send_command_dimmer(Dimmer_data.dimmer_value);
     __set_led_value(Dimmer_data.dimmer_value);
-    ezlopi_device_value_updated_from_device_broadcast(dimmer_item);
-    ezlopi_device_value_updated_from_device_broadcast(switch_item);
+    EZPI_core_device_value_updated_from_device_broadcast(dimmer_item);
+    EZPI_core_device_value_updated_from_device_broadcast(switch_item);
 }
 
 static void task_handler(void* arg)
@@ -256,13 +252,13 @@ void IRAM_ATTR gpio_isr_dec_handler(void* arg)
     xQueueSendFromISR(event_queue, &event, NULL);
 }
 
-static int __init(l_ezlopi_item_t* item)
+static ezlopi_error_t __init(l_ezlopi_item_t* item)
 {
-    int ret = 0;
+    ezlopi_error_t error = EZPI_ERR_INIT_DEVICE_FAILED;
 
     if (ezlopi_item_name_dimmer == item->cloud_properties.item_name)
     {
-        ret = 1;
+        error = EZPI_SUCCESS;
         gpio_set_direction(CONTROL,GPIO_MODE_OUTPUT);
         gpio_set_direction(GREEN,GPIO_MODE_OUTPUT);
         gpio_set_direction(RED,GPIO_MODE_OUTPUT);
@@ -271,7 +267,7 @@ static int __init(l_ezlopi_item_t* item)
         {
             if (false == dimmer_init(&item->interface.uart))
             {
-                ret = -1;
+                error = EZPI_FAILED;
             }
             else
             {
@@ -306,12 +302,12 @@ static int __init(l_ezlopi_item_t* item)
             TRACE_D("enabling interrup for pin: %d", item->interface.gpio.gpio_in.gpio_num);
 
             gpio_config(&io_conf);
-            ezlopi_service_gpioisr_register_v3(item, __interrupt_call, 350);
-            ret = 1;
+            EZPI_service_gpioisr_register_v3(item, __interrupt_call, 350);
+            error = EZPI_SUCCESS;
         }
         else
         {
-            ret = -1;
+            error = EZPI_FAILED;
         }
         event_queue = xQueueCreate(20, sizeof(event_t));
         if (event_queue == NULL) {
@@ -339,7 +335,7 @@ static int __init(l_ezlopi_item_t* item)
         gpio_isr_handler_add(DECREASE, gpio_isr_dec_handler, (void*) DECREASE);
         xTaskCreatePinnedToCore(task_handler, "dimmer_task", 2048, NULL, 10, NULL, 1);
     }
-    return ret;
+    return error;
 }
 
 static void __prepare_device_cloud_properties(l_ezlopi_device_t* device, cJSON* cj_device)
@@ -360,7 +356,7 @@ static void __prepare_dimmer_item_properties(l_ezlopi_item_t* item, cJSON* cj_de
     item->cloud_properties.has_setter = true;
     item->cloud_properties.item_name = ezlopi_item_name_dimmer;
     item->cloud_properties.value_type = value_type_int;
-    item->cloud_properties.item_id = ezlopi_cloud_generate_item_id();
+    item->cloud_properties.item_id = EZPI_core_cloud_generate_item_id();
 
     item->interface_type = EZLOPI_DEVICE_INTERFACE_UART;
     item->interface.uart.enable = true;
@@ -378,7 +374,7 @@ static void __prepare_dimmer_switch_item_properties(l_ezlopi_item_t* item, cJSON
     item->cloud_properties.show = true;
     item->cloud_properties.item_name = ezlopi_item_name_switch;
     item->cloud_properties.value_type = value_type_bool;
-    item->cloud_properties.item_id = ezlopi_cloud_generate_item_id();
+    item->cloud_properties.item_id = EZPI_core_cloud_generate_item_id();
     item->cloud_properties.scale = NULL;
 
     CJSON_GET_VALUE_GPIO(cjson_device, ezlopi_gpio1_str, item->interface.gpio.gpio_in.gpio_num);
@@ -390,27 +386,27 @@ static void __prepare_dimmer_switch_item_properties(l_ezlopi_item_t* item, cJSON
     item->interface.gpio.gpio_in.interrupt = GPIO_INTR_DISABLE;
 }
 
-static int __prepare(void* arg)
+static ezlopi_error_t __prepare(void* arg)
 {
-    int ret = 0;
+    ezlopi_error_t error = EZPI_ERR_PREP_DEVICE_PREP_FAILED;
     s_ezlopi_prep_arg_t* prep_arg = (s_ezlopi_prep_arg_t*)arg;
     xTaskCreate(wifi_status_task,"wifi_status",1024 * 3,NULL,5,NULL);
     if (prep_arg)
     {
         cJSON* cj_device = prep_arg->cjson_device;
-        l_ezlopi_device_t* device = ezlopi_device_add_device(cj_device, NULL);
+        l_ezlopi_device_t* device = EZPI_core_device_add_device(cj_device, NULL);
         if (device)
         {
-            ret = 1;
+            error = EZPI_SUCCESS;
             __prepare_device_cloud_properties(device, cj_device);
 
-            l_ezlopi_item_t* dimmer_item = ezlopi_device_add_item_to_device(device, device_00104_Frankever_dimmer);
+            l_ezlopi_item_t* dimmer_item = EZPI_core_device_add_item_to_device(device, device_00104_Frankever_dimmer);
             if (dimmer_item)
             {
                 __prepare_dimmer_item_properties(dimmer_item, cj_device);
             }
 
-            l_ezlopi_item_t* toggle_item = ezlopi_device_add_item_to_device(device, device_00104_Frankever_dimmer);
+            l_ezlopi_item_t* toggle_item = EZPI_core_device_add_item_to_device(device, device_00104_Frankever_dimmer);
             if (toggle_item)
             {
                 __prepare_dimmer_switch_item_properties(toggle_item, cj_device);
@@ -418,11 +414,11 @@ static int __prepare(void* arg)
 
             if ((NULL == dimmer_item) || (NULL == toggle_item))
             {
-                ezlopi_device_free_device(device);
-                ret = -1;
+                EZPI_core_device_free_device(device);
+                error = EZPI_FAILED;
             }
         }
     }
 
-    return ret;
+    return error;
 }
