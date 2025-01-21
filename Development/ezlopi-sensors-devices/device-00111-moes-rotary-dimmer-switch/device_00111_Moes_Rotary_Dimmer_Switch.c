@@ -4,7 +4,7 @@
 #include "ezlopi_cloud_constants.h"
 #include "ezlopi_core_valueformatter.h"
 #include "ezlopi_core_device_value_updated.h"
-#include "device_00111_Moes_Rotary_Smart_Dimmer_Switch.h"
+#include "device_00111_Moes_Rotary_Dimmer_Switch.h"
 
 static ezlopi_error_t __prepare(void* arg);
 static ezlopi_error_t __init(l_ezlopi_item_t* item);
@@ -15,7 +15,7 @@ static void __prepare_device_cloud_properties(l_ezlopi_device_t* device);
 static void __prepare_dimmer_item_properties(l_ezlopi_item_t* item, cJSON* cjson_device);
 static void __prepare_dimmer_switch_item_properties(l_ezlopi_item_t* item, cJSON* cjson_device);
 
-ezlopi_error_t device_00111_Moes_Rotary_Smart_Dimmer_Switch(e_ezlopi_actions_t action, l_ezlopi_item_t* item, void* args, void* user_arg)
+ezlopi_error_t device_00111_Moes_Rotary_Dimmer_Switch(e_ezlopi_actions_t action, l_ezlopi_item_t* item, void* args, void* user_arg)
 {
     ezlopi_error_t error = 0;
     
@@ -67,13 +67,13 @@ static ezlopi_error_t __prepare(void* arg)
             // TRACE_I(error);
             __prepare_device_cloud_properties(device);
 
-            l_ezlopi_item_t* dimmer_item = EZPI_core_device_add_item_to_device(device, device_00111_Moes_Rotary_Smart_Dimmer_Switch);
+            l_ezlopi_item_t* dimmer_item = EZPI_core_device_add_item_to_device(device, device_00111_Moes_Rotary_Dimmer_Switch);
             if (dimmer_item)
             {
                 __prepare_dimmer_item_properties(dimmer_item, cj_device);
             }
 
-            l_ezlopi_item_t* toggle_item = EZPI_core_device_add_item_to_device(device, device_00111_Moes_Rotary_Smart_Dimmer_Switch);
+            l_ezlopi_item_t* toggle_item = EZPI_core_device_add_item_to_device(device, device_00111_Moes_Rotary_Dimmer_Switch);
             if (toggle_item)
             {
                 __prepare_dimmer_switch_item_properties(toggle_item, cj_device);
@@ -92,7 +92,7 @@ static ezlopi_error_t __prepare(void* arg)
 
 static ezlopi_error_t __init(l_ezlopi_item_t* item)
 {
-    ezlopi_error_t error = EZPI_ERR_PREP_DEVICE_PREP_FAILED;
+    ezlopi_error_t error = EZPI_ERR_INIT_DEVICE_FAILED;
     static bool intitialized = false;
     if(intitialized)
     {
@@ -124,7 +124,7 @@ static ezlopi_error_t __init(l_ezlopi_item_t* item)
 
 static ezlopi_error_t __set_value(l_ezlopi_item_t* item, void* arg)
 {
-    ezlopi_error_t error = EZPI_ERR_PREP_DEVICE_PREP_FAILED;
+    ezlopi_error_t error = EZPI_FAILED;
     if(item && arg)
     {
         cJSON* cjson_params = (cJSON*)arg;
@@ -150,7 +150,7 @@ static ezlopi_error_t __set_value(l_ezlopi_item_t* item, void* arg)
 
 static ezlopi_error_t __get_value_cjson(l_ezlopi_item_t* item, void* args)
 {
-    ezlopi_error_t error = EZPI_ERR_PREP_DEVICE_PREP_FAILED;
+    ezlopi_error_t error = EZPI_FAILED;
 
     cJSON* cj_params = (cJSON*)args;
     if(!cj_params)

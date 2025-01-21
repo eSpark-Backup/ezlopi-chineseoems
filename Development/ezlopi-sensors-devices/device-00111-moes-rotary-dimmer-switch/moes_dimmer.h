@@ -1,5 +1,5 @@
-#ifndef __DEVICE_00111_MOES_ROTARY_SMART_DIMMER_SWITCH_H__
-#define __DEVICE_00111_MOES_ROTARY_SMART_DIMMER_SWITCH_H__
+#ifndef __DEVICE_00111_MOES_ROTARY_DIMMER_SWITCH_H__
+#define __DEVICE_00111_MOES_ROTARY_DIMMER_SWITCH_H__
 
 #include "esp_log.h"
 #include "driver/uart.h"
@@ -23,4 +23,4 @@ void send_command(uint8_t cmd, int value);
 void create_packet(uint8_t cmd, uint8_t *packet, uint8_t *length, int data);
 bool Moes_init(s_ezlopi_uart_t *Moes_uart_config);
 
-#endif//__DEVICE_00111_MOES_ROTARY_SMART_DIMMER_SWITCH_H__
+#endif//__DEVICE_00111_MOES_ROTARY_DIMMER_SWITCH_H__
