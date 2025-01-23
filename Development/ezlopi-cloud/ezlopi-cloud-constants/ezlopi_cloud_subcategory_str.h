@@ -68,7 +68,7 @@ extern "C"
     extern const char *subcategory_heat;
     // extern const  char *subcategory_hvac;
     // extern const  char *subcategory_heater;
-    // extern const  char *subcategory_cooler;
+    extern const  char *subcategory_cooler;
     extern const  char *subcategory_custom_hvac;
     extern const char *subcategory_child_lock;
     extern const char *subcategory_mode_selection;
@@ -88,7 +88,7 @@ extern "C"
     // extern const  char *subcategory_rain;
     extern const char *subcategory_moisture;
     // extern const  char *subcategory_freeze;
-    // extern const  char *subcategory_power;
+    extern const  char *subcategory_power;
     // extern const  char *subcategory_activity;
     // extern const  char *subcategory_current;
     // extern const  char *subcategory_velocity;

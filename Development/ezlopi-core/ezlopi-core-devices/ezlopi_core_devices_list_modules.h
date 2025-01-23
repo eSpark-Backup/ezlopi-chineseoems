@@ -313,9 +313,9 @@ extern "C"
                 EZLOPI_DEVICE_LIST("sensor-dummy-potentiometer-ADC      ", 70, SENSOR_0070_adc_dummy_potentiometer)
 #endif // SENSOR_0070_ADC_DUMMY_POTENTIOMETER
 
-#if (1 == DEVICE_00102_BECA_BHT003_GCLW)
-                EZLOPI_DEVICE_LIST("device-beca-bht003                  ", 102, device_00102_BECA_BHT003_GCLW)
-#endif // DEVICE_00102_BECA_BHT003_GCLW
+#if (1 == DEVICE_00108_DADB_SCENT_DIFFUSER)
+                EZLOPI_DEVICE_LIST("device-DADB-smart-scent-diffuser                  ", 108, device_00108_DADB_smart_scent_diffuser)
+#endif // DEVICE_00108_DADB_SCENT_DIFFUSER
 
                 //////// End of sensor/device list
                 EZLOPI_DEVICE_LIST(NULL, 0, NULL)

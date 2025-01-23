@@ -157,7 +157,7 @@ extern "C"
   // extern const  char *ezlopi_item_name_rain_alarm;
   // extern const  char *ezlopi_item_name_moisture_alarm;
   // extern const  char *ezlopi_item_name_freeze_alarm;
-  // extern const  char *ezlopi_item_name_power_state;
+  extern const  char *ezlopi_item_name_power_state;
   // extern const  char *ezlopi_item_name_ac_state;
   // extern const  char *ezlopi_item_name_power_surge_state;
   // extern const  char *ezlopi_item_name_voltage_drop_drift_state;
