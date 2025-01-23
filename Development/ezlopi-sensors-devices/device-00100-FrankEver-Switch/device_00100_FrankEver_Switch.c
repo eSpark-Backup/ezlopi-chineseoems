@@ -400,6 +400,7 @@ void some_task(void *arg)
                     gpio_set_level(RGB_GREEN, 1);
                 }
             }
+            EZPI_core_device_value_updated_from_device_broadcast(item);
         break;
         case 2:
             power_delay.count = 0;
@@ -536,7 +537,6 @@ static void __interrupt_call(void *arg)
             {
                 power_delay.count = 1;
                 power_delay.time_first = esp_timer_get_time();
-                EZPI_core_device_value_updated_from_device_broadcast(item);
                 xTaskCreate(push_button_task, "push_button", (3*1024), item, 5, NULL);
             }
         }
