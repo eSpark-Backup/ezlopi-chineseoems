@@ -8,17 +8,7 @@
 #include "ezlopi_core_actions.h"
 #include "ezlopi_core_devices.h"
 
-typedef struct s_AC_power_delay
-{
-    bool state;
-    uint8_t count;
-    bool load_state;
-    int64_t time_delay;
-    uint32_t time_first;
-    int64_t interrupttime;
-} s_AC_power_delay_t;
-
-int device_00100_FrankEver_Switch(e_ezlopi_actions_t action, l_ezlopi_item_t *item, void *arg, void *user_arg);
+ezlopi_error_t device_00100_FrankEver_Switch(e_ezlopi_actions_t action, l_ezlopi_item_t *item, void *arg, void *user_arg);
 
 #endif
 
