@@ -107,25 +107,26 @@ void create_packet(CommandType cmd, uint8_t *packet, uint8_t *length)
         break;
     case CMD_TURN_ON:
         *length = 11;
-        packet[2] = 0x50; packet[3] = 0x00; packet[4] = 0x02; packet[5] = 0x07; packet[6] = POWER; packet[7] = ON;
+        packet[2] = 0x05; packet[3] = 0x00; packet[4] = 0x02; packet[5] = 0x07; packet[6] = POWER; packet[7] = ON;
         packet[8] = 0x00; packet[9] = 0xE0; packet[10] = CLOSE;
         
         break;
     case CMD_TURN_OFF:
         *length = 11;
-        packet[2] = 0x50; packet[3] = 0x00; packet[4] = 0x02; packet[5] = 0x07; packet[6] = POWER; packet[7] = OFF;
+        packet[2] = 0x05; packet[3] = 0x00; packet[4] = 0x02; packet[5] = 0x07; packet[6] = POWER; packet[7] = OFF;
         packet[8] = 0x00; packet[9] = 0xE1; packet[10] = CLOSE;
+        TRACE_I("------------------------------Packet created");
 
         break;
     case CMD_FAN_ON:
         *length = 11;
-        packet[2] = 0x50; packet[3] = 0x00; packet[4] = 0x02; packet[5] = 0x07; packet[6] = FAN; packet[7] = ON;
+        packet[2] = 0x05; packet[3] = 0x00; packet[4] = 0x02; packet[5] = 0x07; packet[6] = FAN; packet[7] = ON;
         packet[8] = 0x00; packet[9] = 0xE2; packet[10] = CLOSE;
 
         break;
     case CMD_FAN_OFF:
         *length = 11;
-        packet[2] = 0x50; packet[3] = 0x00; packet[4] = 0x02; packet[5] = 0x07; packet[6] = FAN; packet[7] = OFF;
+        packet[2] = 0x05; packet[3] = 0x00; packet[4] = 0x02; packet[5] = 0x07; packet[6] = FAN; packet[7] = OFF;
         packet[8] = 0x00; packet[9] = 0xE3; packet[10] = CLOSE;
 
         break;

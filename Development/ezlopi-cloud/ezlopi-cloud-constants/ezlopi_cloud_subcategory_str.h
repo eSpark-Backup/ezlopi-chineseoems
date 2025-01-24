@@ -104,7 +104,7 @@ extern "C"
     extern const char *subcategory_sound;
     extern const char *subcategory_navigation;
     // extern const  char *subcategory_seismicity;
-    // extern const  char *subcategory_time;
+    extern const  char *subcategory_time;
 
 #ifdef __cplusplus
 }

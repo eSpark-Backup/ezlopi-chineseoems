@@ -97,7 +97,7 @@ const char *subcategory_electricity = "electricity";
 const char *subcategory_sound = "sound";
 const char *subcategory_navigation = "navigation";
 // const  char *subcategory_seismicity = "seismicity";
-// const  char *subcategory_time = "time";
+const  char *subcategory_time = "time";
 
 /*******************************************************************************
  *                          End of File
