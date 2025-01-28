@@ -58,11 +58,6 @@ ezlopi_error_t device_00108_DADB_smart_scent_diffuser(e_ezlopi_actions_t action,
             error = __get_value_cjson_v3(item, args);
             break;
         }
-        case EZLOPI_ACTION_NOTIFY_1000_MS:
-        {
-            error = __notify_v3(item);
-            break;
-        }
 
         default:
         {
@@ -188,6 +183,7 @@ static void __add_enums_to_json(cJSON* cj_result, const char** enums, uint8_t si
 static ezlopi_error_t __set_value(l_ezlopi_item_t* item, void* arg)
 {
     ezlopi_error_t error = EZPI_FAILED;
+    uint8_t value; 
     if(item && arg)
     {
         cJSON* cjson_params = (cJSON*)arg;
@@ -196,25 +192,71 @@ static ezlopi_error_t __set_value(l_ezlopi_item_t* item, void* arg)
             l_ezlopi_device_t* device = EZPI_core_device_get_head();
             // l_ezlopi_item_t* parent_item = device->items;
             l_ezlopi_item_t* power_item = device->items;
-            l_ezlopi_item_t* fan_item = power_item->next;
+            l_ezlopi_item_t* fan_item = device->next->items;
             cJSON* cj_value = cJSON_GetObjectItem(__FUNCTION__, cjson_params, ezlopi_value_str);
-            error = EZPI_SUCCESS;
-            if (ezlopi_item_name_power_state == item->cloud_properties.item_name)
+            CJSON_TRACE("------------------",cj_value);
+            if(cj_value)
             {
-                CommandType cmd = (cj_value->valueint) ?  CMD_TURN_ON: CMD_TURN_OFF;
-                send_command(cmd);
-                TRACE_I("power main masti");
-                TRACE_I("-----------------------------------------------%d",cj_value->valueint);
+                // CJSON_TRACE("------------------",cj_value->type);
+                if (cj_value->type)
+                {
+                    switch (cj_value->type)
+                    {
+                        case cJSON_False:
+                        {
+                            value = 0;
+                            TRACE_I("-----------------------------------------------False main aya");
+                            break;
+                        }
+                        case cJSON_True:
+                        {
+                            value = 1;
+                            TRACE_I("-----------------------------------------------True main aya");
+                            break;
+                        }
+                        case cJSON_Number:
+                        {
+                            value = cj_value->valueint;
+                            TRACE_I("-----------------------------------------------Number aya");
+                            break;
+                        }
+                        default:
+                        {
+                            value = cJSON_NULL;
+                            TRACE_E("------------------Unknown value");
+                            break;
+                        }
+                    }
+                } else
+                {
+                    TRACE_E("------------------No value->type");
+                    value = cJSON_NULL;
+                }
+                
+                // CJSON_TRACE("------------------",value);
+                error = EZPI_SUCCESS;
+                if (power_item_id == item->cloud_properties.item_id)
+                {
+                    CommandType cmd = (value) ?  CMD_TURN_ON: CMD_TURN_OFF;
+                    send_command(cmd);
+                    Diffuser_data.power_value = value;
+                    TRACE_I("power main masti");
+                    TRACE_I("-----------------------------------------------%d",value);
+                }
+                else if (fan_item_id == item->cloud_properties.item_id)
+                {
+                    CommandType cmd = (value) ?  CMD_FAN_ON: CMD_FAN_OFF;
+                    send_command(cmd);
+                    Diffuser_data.fan_value = value;
+                    TRACE_I("fan main masti");
+                    TRACE_I("-----------------------------------------------%d",value);
+                }
+                EZPI_core_device_value_updated_from_device_broadcast(power_item);
+                EZPI_core_device_value_updated_from_device_broadcast(fan_item);
             }
-            else if (ezlopi_item_name_switch == item->cloud_properties.item_name)
-            {
-                CommandType cmd = (cj_value->valueint) ?  CMD_FAN_ON: CMD_FAN_OFF;
-                send_command(cmd);
-                TRACE_I("fan main masti");
-                TRACE_I("-----------------------------------------------%d",cj_value->valueint);
+            else{
+                TRACE_E("CJSON VALUE EMPTYYYYYYYYYYYYYYYYYYYYYYYYYYY");
             }
-            EZPI_core_device_value_updated_from_device_broadcast(power_item);
-            EZPI_core_device_value_updated_from_device_broadcast(fan_item);
         }
     }
     return error;

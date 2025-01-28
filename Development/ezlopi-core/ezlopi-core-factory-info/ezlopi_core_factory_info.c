@@ -493,7 +493,7 @@ char *EZPI_core_factory_info_v3_get_provisioning_server(void)
 
 const char *EZPI_core_factory_info_v3_get_device_type(void)
 {
-    return "ezlopi_generic";
+    return "ezlopi_dadb_smart_scent_diffuser";
 }
 
 void EZPI_core_factory_info_v3_free_ca_certificate(void)

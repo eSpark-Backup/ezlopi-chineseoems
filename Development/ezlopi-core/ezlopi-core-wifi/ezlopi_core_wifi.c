@@ -71,6 +71,7 @@
 #include "ezlopi_core_cjson_macros.h"
 #include "ezlopi_core_wifi_err_reason.h"
 #include "ezlopi_core_device_value_updated.h"
+#include "scent_diffuser.h"
 // #include "ezlopi_core_errors.h"
 
 #include "ezlopi_cloud_constants.h"
@@ -483,6 +484,7 @@ static void __event_handler(void *arg, esp_event_base_t event_base, int32_t even
         case WIFI_EVENT_STA_CONNECTED:
         {
             TRACE_D("wifi-connected!");
+            // send_command(CMD_CONNECTION_START);
             break;
         }
         default:
