@@ -1,9 +1,9 @@
+#include "scent_diffuser.h"
 #include "ezlopi_core_wifi.h"
 #include "ezlopi_cloud_items.h"
 #include "ezlopi_cloud_constants.h"
 #include "ezlopi_core_valueformatter.h"
 #include "ezlopi_core_device_value_updated.h"
-#include "scent_diffuser.h"
 #include "device_00108_DADB_smart_scent_diffuser.h"
 
 static uint32_t power_item_id;
@@ -18,15 +18,11 @@ diffuser_data_t Diffuser_data;
 
 static ezlopi_error_t __prepare_v3(void* arg);
 static ezlopi_error_t __init_v3(l_ezlopi_item_t* item);
-static ezlopi_error_t __notify_v3(l_ezlopi_item_t* item);
 static ezlopi_error_t __set_value(l_ezlopi_item_t* item, void* arg);
-static ezlopi_error_t __get_item(l_ezlopi_item_t* item, void* arg);
 static ezlopi_error_t __get_value_cjson_v3(l_ezlopi_item_t* item, void* arg);
 
-// static ezlopi_error_t __prepare_dadb_smart_scent_diffuser_device_item(uint32_t *parent_id, cJSON* cj_device);// parent device
 static ezlopi_error_t __prepare_dadb_smart_scent_diffuser_fan_device_item(uint32_t parent_id, cJSON* cj_device); 
 static ezlopi_error_t __prepare_dadb_smart_scent_diffuser_power_device_item(uint32_t *parent_id, cJSON* cj_device);
-// static ezlopi_error_t __prepare_dadb_smart_scent_diffuser_timing_schedule_device_item(uint32_t parent_id, cJSON* cj_device);
 
 ezlopi_error_t device_00108_DADB_smart_scent_diffuser(e_ezlopi_actions_t action, l_ezlopi_item_t* item, void* args, void* user_arg)
 {
@@ -50,9 +46,6 @@ ezlopi_error_t device_00108_DADB_smart_scent_diffuser(e_ezlopi_actions_t action,
             break;
         }
         case EZLOPI_ACTION_HUB_GET_ITEM:
-        {
-            error =  __get_item(item,args);
-        }
         case EZLOPI_ACTION_GET_EZLOPI_VALUE:
         {
             error = __get_value_cjson_v3(item, args);
@@ -75,23 +68,16 @@ void comm_start_task(void *arg)
     // start_packet();
     send_command(CMD_CONNECTION_START);
     TRACE_I("Comm started!");
-    //         while(1)
-    // {
-    //         send_command(CMD_HEARTBEAT);
-    //         vTaskDelay(10 / portTICK_PERIOD_MS);
-    // }
     vTaskDelete(NULL);
 }
 
 void heartBeat_task(void *arg)
 {
-    // l_ezlopi_item_t* item = (l_ezlopi_item_t*) arg;
     while(1)
     {
-            send_command(CMD_HEARTBEAT);
-            // heart_beat_packet();
-            TRACE_I("Heart_beat sent");
-            vTaskDelay(10000 / portTICK_PERIOD_MS);
+        send_command(CMD_HEARTBEAT);
+        TRACE_I("Heart_beat sent");
+        vTaskDelay(10000 / portTICK_PERIOD_MS);
     }
     vTaskDelete(NULL);
 }
@@ -104,10 +90,6 @@ static ezlopi_error_t __prepare_v3(void* arg)
     s_ezlopi_prep_arg_t *prep_arg = (s_ezlopi_prep_arg_t *)arg;
     if (prep_arg)
     {
-        // if (-1 == (error = __prepare_dadb_smart_scent_diffuser_device_item(&parent_id, prep_arg->cjson_device)))
-        // {
-        //     TRACE_E("UNABLE TO PREPARE PARENT DEVICE");
-        // }
         if (-1 == (error = __prepare_dadb_smart_scent_diffuser_power_device_item(&parent_id, prep_arg->cjson_device)))
         {
             TRACE_E("UNABLE TO PREPARE POWER DEVICE");
@@ -116,10 +98,6 @@ static ezlopi_error_t __prepare_v3(void* arg)
         {
             TRACE_E("UNABLE TO PREPARE FAN DEVICE");
         }
-        // if (-1 == (error = __prepare_dadb_smart_scent_diffuser_timing_schedule_device_item(parent_id, prep_arg->cjson_device)))
-        // {
-        //     TRACE_E("UNABLE TO PREPARE TIME SCHEDULE DEVICE");
-        // }
     }
 
     return error;
@@ -147,7 +125,7 @@ static ezlopi_error_t __init_v3(l_ezlopi_item_t* item)
             {
                 intitialized = true;
                 xTaskCreate(comm_start_task,"com_start_task: ",2*2048,NULL,2,NULL);
-                xTaskCreate(heartBeat_task,"Heart_beat_task: ",2*2048,NULL,1,NULL);
+                xTaskCreate(heartBeat_task,"Heart_beat_task: ",3*1024,NULL,1,NULL);
             }
             
         }
@@ -190,7 +168,6 @@ static ezlopi_error_t __set_value(l_ezlopi_item_t* item, void* arg)
         if (NULL != cjson_params)
         {
             l_ezlopi_device_t* device = EZPI_core_device_get_head();
-            // l_ezlopi_item_t* parent_item = device->items;
             l_ezlopi_item_t* power_item = device->items;
             l_ezlopi_item_t* fan_item = device->next->items;
             cJSON* cj_value = cJSON_GetObjectItem(__FUNCTION__, cjson_params, ezlopi_value_str);
@@ -240,15 +217,15 @@ static ezlopi_error_t __set_value(l_ezlopi_item_t* item, void* arg)
                     CommandType cmd = (value) ?  CMD_TURN_ON: CMD_TURN_OFF;
                     send_command(cmd);
                     Diffuser_data.power_value = value;
-                    TRACE_I("power main masti");
+                    TRACE_I("power active");
                     TRACE_I("-----------------------------------------------%d",value);
                 }
-                else if (fan_item_id == item->cloud_properties.item_id)
+                else if ((fan_item_id == item->cloud_properties.item_id) && Diffuser_data.power_value)
                 {
                     CommandType cmd = (value) ?  CMD_FAN_ON: CMD_FAN_OFF;
                     send_command(cmd);
                     Diffuser_data.fan_value = value;
-                    TRACE_I("fan main masti");
+                    TRACE_I("fan active");
                     TRACE_I("-----------------------------------------------%d",value);
                 }
                 EZPI_core_device_value_updated_from_device_broadcast(power_item);
@@ -259,13 +236,6 @@ static ezlopi_error_t __set_value(l_ezlopi_item_t* item, void* arg)
             }
         }
     }
-    return error;
-}
-
-static ezlopi_error_t __get_item(l_ezlopi_item_t* item, void* arg)
-{
-    ezlopi_error_t error = EZPI_FAILED;
-
     return error;
 }
 
@@ -292,41 +262,6 @@ static ezlopi_error_t __get_value_cjson_v3(l_ezlopi_item_t* item, void* args)
     
     return error;
 }
-
-static ezlopi_error_t __notify_v3(l_ezlopi_item_t* item)
-{
-    ezlopi_error_t error = EZPI_SUCCESS;
-    // if(item)
-    //     ezlopi_device_value_updated_from_device_broadcast(item);
-    return error;
-}
-
-
-// static void __prepare_scent_diffuser_device_cloud_properties(l_ezlopi_device_t* device)
-// {
-//     device->cloud_properties.category = category_not_defined;
-//     device->cloud_properties.subcategory = subcategory_not_defined;
-//     device->cloud_properties.device_type = dev_type_sensor;
-//     device->cloud_properties.device_type_id = NULL;
-//     device->cloud_properties.info = NULL;
-// }
-
-// static void __prepare_scent_diffuser_item_cloud_properties(l_ezlopi_item_t* item, cJSON* cj_device)
-// {
-//     item->interface_type = EZLOPI_DEVICE_INTERFACE_UART;
-//     item->cloud_properties.show = true;
-//     item->cloud_properties.has_setter = true;
-//     item->cloud_properties.has_getter = true;
-//     item->cloud_properties.item_id = EZPI_core_cloud_generate_item_id();
-//     item->cloud_properties.item_name = ezlopi_item_name_switch;
-//     item->cloud_properties.value_type = value_type_bool;
-//     item->cloud_properties.scale = NULL;
-
-//     CJSON_GET_VALUE_GPIO(cj_device, ezlopi_gpio_tx_str, item->interface.uart.tx);
-//     CJSON_GET_VALUE_GPIO(cj_device, ezlopi_gpio_rx_str, item->interface.uart.rx);
-//     CJSON_GET_VALUE_DOUBLE(cj_device, ezlopi_baud_str, item->interface.uart.baudrate);
-//     item->interface.uart.enable = true;
-// }
 
 static void __prepare_fan_device_cloud_properties(l_ezlopi_device_t* device)
 {
@@ -382,59 +317,6 @@ static void __prepare_power_item_cloud_properties(l_ezlopi_item_t* item, cJSON* 
     item->interface.uart.enable = true;
 }
 
-// static void __prepare_timing_schedule_device_cloud_properties(l_ezlopi_device_t* device)
-// {
-//     device->cloud_properties.category = category_hvac;
-//     device->cloud_properties.subcategory = subcategory_time;
-//     device->cloud_properties.device_type = dev_type_sensor;
-//     device->cloud_properties.device_type_id = NULL;
-//     device->cloud_properties.info = NULL;
-// }
-
-// static void __prepare_timing_schedule_item_cloud_properties(l_ezlopi_item_t* item, cJSON* cj_device)
-// {
-//     item->interface_type = EZLOPI_DEVICE_INTERFACE_UART;
-//     item->cloud_properties.show = true;
-//     item->cloud_properties.has_setter = true;
-//     item->cloud_properties.has_getter = true;
-//     item->cloud_properties.item_id = EZPI_core_cloud_generate_item_id();
-//     item->cloud_properties.item_name = ezlopi_item_name_child_lock;
-//     item->cloud_properties.value_type = value_type_token;
-//     item->cloud_properties.scale = NULL;
-
-//     CJSON_GET_VALUE_GPIO(cj_device, ezlopi_gpio_tx_str, item->interface.uart.tx);
-//     CJSON_GET_VALUE_GPIO(cj_device, ezlopi_gpio_rx_str, item->interface.uart.rx);
-//     CJSON_GET_VALUE_DOUBLE(cj_device, ezlopi_baud_str, item->interface.uart.baudrate);
-//     item->interface.uart.enable = true;
-// }
-
-
-// static ezlopi_error_t __prepare_dadb_smart_scent_diffuser_device_item(uint32_t *parent_id, cJSON* cj_device) // parent device
-// {
-//     ezlopi_error_t error = EZPI_ERR_PREP_DEVICE_PREP_FAILED;
-
-//     l_ezlopi_device_t *device= EZPI_core_device_add_device(cj_device, "smart scent diffuser");
-//     if (device)
-//     {
-//         error = EZPI_SUCCESS;
-//          __prepare_scent_diffuser_device_cloud_properties(device);
-//         *parent_id = device->cloud_properties.device_id;
-//         l_ezlopi_item_t *item = EZPI_core_device_add_item_to_device(device, device_00108_DADB_smart_scent_diffuser);
-//         if (item)
-//         {
-//             __prepare_scent_diffuser_item_cloud_properties(item, cj_device);
-//         }
-//         else
-//         {
-//             error = EZPI_FAILED;
-//             EZPI_core_device_free_device(device);
-//         }
-//     }
-
-//     return error;
-// }
-
-
 static ezlopi_error_t __prepare_dadb_smart_scent_diffuser_fan_device_item(uint32_t parent_id, cJSON* cj_device)
 {
     ezlopi_error_t error = EZPI_ERR_PREP_DEVICE_PREP_FAILED;
@@ -486,28 +368,3 @@ static ezlopi_error_t __prepare_dadb_smart_scent_diffuser_power_device_item(uint
 
     return error;
 }
-
-// static ezlopi_error_t __prepare_dadb_smart_scent_diffuser_timing_schedule_device_item(uint32_t parent_id, cJSON* cj_device)
-// {
-//     ezlopi_error_t error = EZPI_ERR_PREP_DEVICE_PREP_FAILED;
-    
-//     l_ezlopi_device_t *device = EZPI_core_device_add_device(cj_device, "Timing schedule");
-//     if (device)
-//     {
-//         error = EZPI_SUCCESS;
-//         __prepare_timing_schedule_device_cloud_properties(device);
-//         device->cloud_properties.parent_device_id = parent_id;
-//         l_ezlopi_item_t *item = EZPI_core_device_add_item_to_device(device, device_00108_DADB_smart_scent_diffuser);
-//         if (item)
-//         {
-//             __prepare_timing_schedule_item_cloud_properties(item, cj_device);
-//         }
-//         else
-//         {
-//             error = EZPI_FAILED;
-//             EZPI_core_device_free_device(device);
-//         }
-//     }
-
-//     return error;
-// }
