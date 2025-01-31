@@ -190,6 +190,7 @@ static ezlopi_error_t __set_value(l_ezlopi_item_t* item, void* arg)
                 CJSON_TRACE("------------------",cj_value);
                 if(cj_value)
                 {
+                    // CJSON_TRACE("------------------",cj_value->type);
                     if (cj_value->type)
                     {
                         switch (cj_value->type)
@@ -240,6 +241,9 @@ static ezlopi_error_t __get_value_cjson_v3(l_ezlopi_item_t* item, void* args)
     {
         return error;
     }
+    // l_ezlopi_device_t* device = EZPI_core_device_get_head();
+    // l_ezlopi_item_t* power_item = device->items;
+    // l_ezlopi_item_t* fan_item = device->next->items;
 
     error = EZPI_SUCCESS;
     if (power_item_id == item->cloud_properties.item_id)
@@ -248,7 +252,14 @@ static ezlopi_error_t __get_value_cjson_v3(l_ezlopi_item_t* item, void* args)
     }
     else if (fan_item_id == item->cloud_properties.item_id)
     {
-        EZPI_core_valueformatter_bool_to_cjson(cj_params, Diffuser_data.fan_value, item->cloud_properties.scale);
+        if (Diffuser_data.power_value)
+        {
+            EZPI_core_valueformatter_bool_to_cjson(cj_params, Diffuser_data.fan_value, item->cloud_properties.scale);
+        }
+        else
+        {
+            EZPI_core_valueformatter_bool_to_cjson(cj_params, Diffuser_data.power_value, item->cloud_properties.scale);
+        }
     }
     
     
@@ -374,6 +385,8 @@ static ezlopi_error_t item_update(uint8_t value, l_ezlopi_item_t* item,l_ezlopi_
         TRACE_I("power active");
         TRACE_I("-----------------------------------------------%d", value);
         EZPI_core_device_value_updated_from_device_broadcast(power_item);
+        EZPI_core_device_value_updated_from_device_broadcast(fan_item);
+        
         error = EZPI_SUCCESS;
     }
     else if ((fan_item_id == item->cloud_properties.item_id) && (Diffuser_data.power_value)) 

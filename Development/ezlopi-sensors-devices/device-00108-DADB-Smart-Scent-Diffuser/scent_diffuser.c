@@ -130,10 +130,6 @@ void create_packet(CommandType cmd, uint8_t *packet, uint8_t *length)
         packet[8] = 0x00; packet[9] = 0xE3; packet[10] = CLOSE;
 
         break;
-    // case CMD_WIFI:
-    //     packet[3] = 0x03; packet[4] = 0x00; packet[5] = 0x01; packet[6] = 0x05; packet[7] = 0x08;
-    //     *length = 8;
-    //     break;
     default:
         TRACE_E("Unknown command type");
         break;

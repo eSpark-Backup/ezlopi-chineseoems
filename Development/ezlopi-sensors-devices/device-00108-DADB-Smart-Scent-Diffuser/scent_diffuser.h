@@ -17,7 +17,6 @@ typedef enum
     CMD_FAN_OFF,
     CMD_SEQUENCE_ON,
     CMD_SEQUENCE_OFF,
-    CMD_WIFI,
 } CommandType;
 
 bool scent_diffuser_init(s_ezlopi_uart_t *scent_diffuser_uart_config);
