@@ -6,6 +6,8 @@
 #include "ezlopi_core_device_value_updated.h"
 #include "device_00108_DADB_smart_scent_diffuser.h"
 
+#define millis() esp_timer_get_time() / 1000
+
 static uint32_t power_item_id;
 static uint32_t fan_item_id;
 
@@ -20,6 +22,7 @@ static ezlopi_error_t __prepare_v3(void* arg);
 static ezlopi_error_t __init_v3(l_ezlopi_item_t* item);
 static ezlopi_error_t __set_value(l_ezlopi_item_t* item, void* arg);
 static ezlopi_error_t __get_value_cjson_v3(l_ezlopi_item_t* item, void* arg);
+static ezlopi_error_t item_update(uint8_t value, l_ezlopi_item_t* item,l_ezlopi_device_t* device);
 
 static ezlopi_error_t __prepare_dadb_smart_scent_diffuser_fan_device_item(uint32_t parent_id, cJSON* cj_device); 
 static ezlopi_error_t __prepare_dadb_smart_scent_diffuser_power_device_item(uint32_t *parent_id, cJSON* cj_device);
@@ -61,24 +64,36 @@ ezlopi_error_t device_00108_DADB_smart_scent_diffuser(e_ezlopi_actions_t action,
     return error;
 }
 
-void comm_start_task(void *arg)
-{
-    // l_ezlopi_item_t* item = (l_ezlopi_item_t*) arg;
-    vTaskDelay(7000 / portTICK_PERIOD_MS);
-    // start_packet();
-    send_command(CMD_CONNECTION_START);
-    TRACE_I("Comm started!");
-    vTaskDelete(NULL);
-}
-
 void heartBeat_task(void *arg)
 {
+    TRACE_I("-------hb task main aagaya");
     while(1)
     {
+        TRACE_I("-------while main aagaya");
         send_command(CMD_HEARTBEAT);
         TRACE_I("Heart_beat sent");
         vTaskDelay(10000 / portTICK_PERIOD_MS);
     }
+    vTaskDelete(NULL);
+}
+
+void comm_start_task(void *arg)
+{
+    // l_ezlopi_item_t* item = (l_ezlopi_item_t*) arg;
+    while (true)
+    {
+        if (millis() == 7000)
+        {
+            TRACE_I("--------------Bahar aagaya");
+            break;
+        }
+        vTaskDelay(1 / portTICK_PERIOD_MS);
+    }
+    
+    // start_packet();
+    send_command(CMD_CONNECTION_START);
+    TRACE_I("Comm started!");
+    xTaskCreate(heartBeat_task,"Heart_beat_task: ",4*1024,NULL,1,NULL);
     vTaskDelete(NULL);
 }
 
@@ -124,8 +139,9 @@ static ezlopi_error_t __init_v3(l_ezlopi_item_t* item)
             else
             {
                 intitialized = true;
-                xTaskCreate(comm_start_task,"com_start_task: ",2*2048,NULL,2,NULL);
-                xTaskCreate(heartBeat_task,"Heart_beat_task: ",3*1024,NULL,1,NULL);
+                xTaskCreate(comm_start_task,"com_start_task: ",6*1024,NULL,1,NULL);
+                TRACE_I("-------comm delete krkay bahir aagaya");
+                
             }
             
         }
@@ -168,71 +184,47 @@ static ezlopi_error_t __set_value(l_ezlopi_item_t* item, void* arg)
         if (NULL != cjson_params)
         {
             l_ezlopi_device_t* device = EZPI_core_device_get_head();
-            l_ezlopi_item_t* power_item = device->items;
-            l_ezlopi_item_t* fan_item = device->next->items;
-            cJSON* cj_value = cJSON_GetObjectItem(__FUNCTION__, cjson_params, ezlopi_value_str);
-            CJSON_TRACE("------------------",cj_value);
-            if(cj_value)
+            if (device != NULL)
             {
-                // CJSON_TRACE("------------------",cj_value->type);
-                if (cj_value->type)
+                cJSON* cj_value = cJSON_GetObjectItem(__FUNCTION__, cjson_params, ezlopi_value_str);
+                CJSON_TRACE("------------------",cj_value);
+                if(cj_value)
                 {
-                    switch (cj_value->type)
+                    if (cj_value->type)
                     {
-                        case cJSON_False:
+                        switch (cj_value->type)
                         {
-                            value = 0;
-                            TRACE_I("-----------------------------------------------False main aya");
-                            break;
+                            case cJSON_False:
+                            {
+                                value = 0;
+                                TRACE_I("-----------------------------------------------False main aya");
+                                error = item_update(value,item,device);
+                                break;
+                            }
+                            case cJSON_True:
+                            {
+                                value = 1;
+                                TRACE_I("-----------------------------------------------True main aya");
+                                error = item_update(value,item,device);
+                                break;
+                            }
+                            case cJSON_Number:
+                            {
+                                value = cj_value->valueint;
+                                TRACE_I("-----------------------------------------------Number aya");
+                                error = item_update(value,item,device);
+                                break;
+                            }
+                            default:
+                            {
+                                break;
+                            }
                         }
-                        case cJSON_True:
-                        {
-                            value = 1;
-                            TRACE_I("-----------------------------------------------True main aya");
-                            break;
-                        }
-                        case cJSON_Number:
-                        {
-                            value = cj_value->valueint;
-                            TRACE_I("-----------------------------------------------Number aya");
-                            break;
-                        }
-                        default:
-                        {
-                            value = cJSON_NULL;
-                            TRACE_E("------------------Unknown value");
-                            break;
-                        }
-                    }
-                } else
-                {
-                    TRACE_E("------------------No value->type");
-                    value = cJSON_NULL;
+                    } 
                 }
-                
-                // CJSON_TRACE("------------------",value);
-                error = EZPI_SUCCESS;
-                if (power_item_id == item->cloud_properties.item_id)
-                {
-                    CommandType cmd = (value) ?  CMD_TURN_ON: CMD_TURN_OFF;
-                    send_command(cmd);
-                    Diffuser_data.power_value = value;
-                    TRACE_I("power active");
-                    TRACE_I("-----------------------------------------------%d",value);
+                else{
+                    TRACE_E("CJSON VALUE EMPTYYYYYYYYYYYYYYYYYYYYYYYYYYY");
                 }
-                else if ((fan_item_id == item->cloud_properties.item_id) && Diffuser_data.power_value)
-                {
-                    CommandType cmd = (value) ?  CMD_FAN_ON: CMD_FAN_OFF;
-                    send_command(cmd);
-                    Diffuser_data.fan_value = value;
-                    TRACE_I("fan active");
-                    TRACE_I("-----------------------------------------------%d",value);
-                }
-                EZPI_core_device_value_updated_from_device_broadcast(power_item);
-                EZPI_core_device_value_updated_from_device_broadcast(fan_item);
-            }
-            else{
-                TRACE_E("CJSON VALUE EMPTYYYYYYYYYYYYYYYYYYYYYYYYYYY");
             }
         }
     }
@@ -366,5 +358,33 @@ static ezlopi_error_t __prepare_dadb_smart_scent_diffuser_power_device_item(uint
         }
     }
 
+    return error;
+}
+
+static ezlopi_error_t item_update(uint8_t value, l_ezlopi_item_t* item,l_ezlopi_device_t* device)
+{
+    ezlopi_error_t error = EZPI_FAILED;
+    l_ezlopi_item_t* power_item = device->items;
+    l_ezlopi_item_t* fan_item = device->next->items;
+    if (power_item_id == item->cloud_properties.item_id)
+    {
+        CommandType cmd = (value) ? CMD_TURN_ON : CMD_TURN_OFF;
+        send_command(cmd);
+        Diffuser_data.power_value = value;
+        TRACE_I("power active");
+        TRACE_I("-----------------------------------------------%d", value);
+        EZPI_core_device_value_updated_from_device_broadcast(power_item);
+        error = EZPI_SUCCESS;
+    }
+    else if ((fan_item_id == item->cloud_properties.item_id) && (Diffuser_data.power_value)) 
+    {
+        CommandType cmd = (value) ? CMD_FAN_ON : CMD_FAN_OFF;
+        send_command(cmd);
+        Diffuser_data.fan_value = value;
+        TRACE_I("fan active");
+        TRACE_I("-----------------------------------------------%d", value);
+        EZPI_core_device_value_updated_from_device_broadcast(fan_item);
+        error = EZPI_SUCCESS;
+    }
     return error;
 }
