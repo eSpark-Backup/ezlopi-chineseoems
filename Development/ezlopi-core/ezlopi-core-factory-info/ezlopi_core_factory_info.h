@@ -173,7 +173,7 @@ extern "C"
 
 #elif (EZLOPI_DEVICE_TYPE_TEST_DEVICE == EZLOPI_DEVICE_TYPE)
 #if defined(CONFIG_IDF_TARGET_ESP32)
-    static const char* ezlopi_config_test = "{\"cmd\":3,\"dev_detail\":[{\"dev_type\":112,\"dev_name\":\"Corunsmart\",\"id_room\":\"\",\"id_item\":112,\"gpio1\":22,\"gpio2\":23,\"gpio3\":19,\"gpio4\":18,\"gpio5\":5,\"gpio6\":19,\"gpio7\":4,\"pullup_ip\":true,\"pullup_op\":false,\"is_ip\":true,\"ip_inv\":false,\"op_inv\":false,\"val_ip\":false,\"val_op\":false}],\"config_id\":\"1234567\",\"config_time\":1696508363,\"config_name\":\"Corunsmart\",\"chipset\":\"ESP32\"}";//
+    static const char* ezlopi_config_test = "{\"cmd\":3,\"dev_detail\":[{\"dev_type\":112,\"dev_name\":\"Corunsmart\",\"id_room\":\"\",\"id_item\":112,\"gpio1\":12,\"gpio2\":13,\"gpio3\":19,\"gpio4\":18,\"gpio5\":5,\"gpio6\":19,\"gpio7\":4,\"pullup_ip\":true,\"pullup_op\":false,\"is_ip\":true,\"ip_inv\":false,\"op_inv\":false,\"val_ip\":false,\"val_op\":false}],\"config_id\":\"1234567\",\"config_time\":1696508363,\"config_name\":\"Corunsmart\",\"chipset\":\"ESP32\"}";//
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
     static const char *ezlopi_config_test =
         "{\

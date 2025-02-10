@@ -1,7 +1,7 @@
 
 
 
-idf_component_register(SRCS "device_00112_Corunsmart_Wifi_Charger_Socket.c" "xuguang_dimmer.c"
+idf_component_register(SRCS "device_00112_Corunsmart_Wifi_Charger_Socket.c"
                         INCLUDE_DIRS .
                         REQUIRES    ezlopi-util-trace 
                                     # ezlopi-core-timer 
