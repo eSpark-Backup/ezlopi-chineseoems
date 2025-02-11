@@ -119,11 +119,8 @@ static ezlopi_error_t __init(l_ezlopi_item_t* item)
                                     : GPIO_PULLDOWN_DISABLE,
                 .intr_type = GPIO_INTR_DISABLE,
             };
-
-            xTaskCreate(button_task, "button_task", 1024 * 3, NULL, 1, NULL);
             if (0 == gpio_config(&io_conf))
             {
-                item->user_arg = 0;
                 gpio_set_level(item->interface.gpio.gpio_out.gpio_num,item->user_arg);
                 error = EZPI_SUCCESS;
             }
@@ -173,7 +170,11 @@ static ezlopi_error_t __init(l_ezlopi_item_t* item)
         // }
         error = EZPI_SUCCESS;
     }
-
+    if (item->cloud_properties.item_id == master_item_id)
+    {
+        xTaskCreate(button_task, "button_task", 1024 * 3, NULL, 1, NULL);
+    }
+    
     return error;
 }
 
@@ -311,7 +312,7 @@ static void __setup_item_properties(l_ezlopi_item_t* item, cJSON* cjson_device)
     CJSON_GET_VALUE_DOUBLE(cjson_device, ezlopi_is_ip_str, item->interface.gpio.gpio_in.enable);
     CJSON_GET_VALUE_DOUBLE(cjson_device, ezlopi_ip_inv_str, item->interface.gpio.gpio_in.invert);
     CJSON_GET_VALUE_DOUBLE(cjson_device, ezlopi_val_ip_str, item->interface.gpio.gpio_in.value);
-    CJSON_GET_VALUE_DOUBLE(cjson_device, ezlopi_pullup_ip_str, tmp_var);
+    CJSON_GET_VALUE_BOOL(cjson_device, ezlopi_pullup_ip_str, tmp_var);
     item->interface.gpio.gpio_in.pull = tmp_var ? GPIO_PULLUP_ONLY : GPIO_PULLDOWN_ONLY;
     TRACE_I("%u",item->interface.gpio.gpio_in.pull);
     item->interface.gpio.gpio_in.interrupt = GPIO_INTR_DISABLE;
@@ -389,6 +390,7 @@ static ezlopi_error_t __prepare_master_control_device_item(uint32_t *parent_id, 
             master_item_id = item->cloud_properties.item_id;
             item->interface.gpio.gpio_in.gpio_num  = 14;
             item->interface.gpio.gpio_out.gpio_num = 21;
+            item->user_arg = 1;
         }
         else
         {
@@ -419,6 +421,7 @@ static ezlopi_error_t __prepare_switch_one_device_item(uint32_t parent_id, cJSON
         {
             item->user_arg = malloc(sizeof(bool));
             __setup_item_properties(item, cjson_device);
+            item->user_arg = 0;
             CJSON_GET_VALUE_GPIO(cjson_device, ezlopi_gpio1_str, item->interface.gpio.gpio_in.gpio_num);
             CJSON_GET_VALUE_GPIO(cjson_device, ezlopi_gpio3_str, item->interface.gpio.gpio_out.gpio_num);
             // TRACE_D("item->interface.gpio.gpio_in.gpio_num:  %u", item->interface.gpio.gpio_in.gpio_num);
@@ -452,6 +455,7 @@ static ezlopi_error_t __prepare_switch_two_device_item(uint32_t parent_id, cJSON
         {
             item->user_arg = malloc(sizeof(bool));
             __setup_item_properties(item, cjson_device);
+            item->user_arg = 0;
             CJSON_GET_VALUE_GPIO(cjson_device, ezlopi_gpio2_str, item->interface.gpio.gpio_in.gpio_num);
             CJSON_GET_VALUE_GPIO(cjson_device, ezlopi_gpio4_str, item->interface.gpio.gpio_out.gpio_num);
             // TRACE_D("item->interface.gpio.gpio_in.gpio_num:  %u", item->interface.gpio.gpio_in.gpio_num);
@@ -496,6 +500,7 @@ void button_task(void *args) {
         l_ezlopi_item_t* third_item  = device_head->next->next->items;
         while(1)
         {
+            uint8_t count=0;
             if (gpio_get_level(second_item->interface.gpio.gpio_in.gpio_num) == 0) {
                 second_item->user_arg = !(second_item->user_arg);
                 EZPI_core_device_value_updated_from_device_broadcast(second_item);
@@ -504,8 +509,8 @@ void button_task(void *args) {
                 third_item->user_arg = !(third_item->user_arg);
                 EZPI_core_device_value_updated_from_device_broadcast(third_item);
             }
-            
-            vTaskDelay(3000 / portTICK_PERIOD_MS);
+            vTaskDelay(1000 / portTICK_PERIOD_MS);
+            // TRACE_D("Task Running %d" ,count++);
         }
     }
     vTaskDelete(NULL);
