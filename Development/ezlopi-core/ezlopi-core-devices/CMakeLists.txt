@@ -28,7 +28,7 @@ set(EZLOPI_SENSOR_DEVICE_COMPONENTS
 )
 
 
-idf_component_register(SRCS "ezlopi_core_device_value_updated.c" "${config_src}"
+idf_component_register(SRCS "ezlopi_core_devices.c" "ezlopi_core_device_value_updated.c" "${config_src}"
                         INCLUDE_DIRS "."
                         REQUIRES        ${EZLOPI_IDF_COMPONENTS}
                                         ${EZLOPI_CORE_COMPONENTS}

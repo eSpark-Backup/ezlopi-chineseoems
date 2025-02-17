@@ -5,6 +5,14 @@
 #include "ezlopi_core_device_value_updated.h"
 #include "device_00112_Corunsmart_Wifi_Charger_Socket.h"
 
+#include "ezlopi_core_ota.h"
+#include "ezlopi_service_webprov.h"
+#include "ezlopi_core_factory_info.h"
+
+// extern bool reset;
+
+#define FACTORY_RESET   (5 * 1000 * 1000)
+
 #define ALL_ON      0
 #define ON_ON       1
 #define ON_OFF      2
@@ -16,11 +24,15 @@
 static uint32_t master_item_id = 0;
 static uint32_t pattern_item_id = 0;
 
+
 static ezlopi_error_t __prepare(void* arg);
 static ezlopi_error_t __init(l_ezlopi_item_t* item);
 static ezlopi_error_t __set_value(l_ezlopi_item_t* item, void* arg);
 static ezlopi_error_t __get_value_cjson(l_ezlopi_item_t* item, void* arg);
 void button_task(void *args);
+static void reset_led_task(void *args);
+static void factory_reset();
+uint8_t is_reset();
 
 static ezlopi_error_t __prepare_master_control_device_item(uint32_t *parent_id, cJSON* cjson_device);
 static ezlopi_error_t __prepare_switch_one_device_item(uint32_t parent_id, cJSON* cjson_device);
@@ -177,16 +189,20 @@ static ezlopi_error_t __init(l_ezlopi_item_t* item)
         TRACE_D("Pull for pin: %d", item->interface.gpio.gpio_in.pull);
 
         gpio_config(&io_conf);
-        // EZPI_service_gpioisr_register_v3(item, __interrupt_upcall, 350);
-        // if(__led_handle == NULL)
-        // {
-        //     xTaskCreate(indicator_led_task, "indicator_led", 1024 * 3, NULL, 5, &__led_handle);
-        // }
         error = EZPI_SUCCESS;
     }
     if (item->cloud_properties.item_id == master_item_id)
     {
         xTaskCreate(button_task, "button_task", 1024 * 3, NULL, 1 , NULL);
+        xTaskCreate(reset_led_task, "reset_led_task", 1024, NULL, 1 , NULL);
+        const gpio_config_t io_conf = {
+            .pin_bit_mask = (1ULL << BLUE_LEFT) | (1ULL << BLUE_RIGHT),
+            .mode = GPIO_MODE_OUTPUT,//};
+            .pull_up_en = GPIO_PULLUP_DISABLE,
+            .pull_down_en = GPIO_PULLDOWN_ENABLE,
+            .intr_type = GPIO_INTR_POSEDGE,
+        };
+        gpio_config(&io_conf);
     }
     
     return error;
@@ -230,6 +246,7 @@ static ezlopi_error_t __set_value(l_ezlopi_item_t* item, void* arg)
                     l_ezlopi_item_t* master_item = device_head->items;
                     l_ezlopi_item_t* second_item = device_head->next->items;
                     l_ezlopi_item_t* third_item  = device_head->next->next->items;
+                    l_ezlopi_item_t* pattern_item  = device_head->next->next->next->items;
                     if(second_item && third_item)
                     {
                         if(item->cloud_properties.item_id == master_item_id)
@@ -239,16 +256,23 @@ static ezlopi_error_t __set_value(l_ezlopi_item_t* item, void* arg)
                             {
                                 gpio_set_level(second_item->interface.gpio.gpio_out.gpio_num, second_item->user_arg);
                                 gpio_set_level(third_item->interface.gpio.gpio_out.gpio_num,  third_item->user_arg);
+                                gpio_set_level(pattern_item->interface.gpio.gpio_out.gpio_num,  pattern_item->user_arg);
                                 // second_item->user_arg = item->user_arg;
                                 // third_item->user_arg  = item->user_arg;
                                 EZPI_core_device_value_updated_from_device_broadcast(item);
                                 EZPI_core_device_value_updated_from_device_broadcast(third_item);
                                 EZPI_core_device_value_updated_from_device_broadcast(second_item);
+                                EZPI_core_device_value_updated_from_device_broadcast(pattern_item);
+                                
                             } 
                             else
                             {
                                 gpio_set_level(second_item->interface.gpio.gpio_out.gpio_num, item->user_arg);
                                 gpio_set_level(third_item->interface.gpio.gpio_out.gpio_num,  item->user_arg);
+                                gpio_set_level(pattern_item->interface.gpio.gpio_out.gpio_num,  item->user_arg);
+                                gpio_set_level(BLUE_LEFT, 0);
+                                gpio_set_level(BLUE_RIGHT, 0);
+
                                 // second_item->user_arg = item->user_arg;
                                 // third_item->user_arg  = item->user_arg;
                                 EZPI_core_device_value_updated_from_device_broadcast(item);
@@ -261,36 +285,28 @@ static ezlopi_error_t __set_value(l_ezlopi_item_t* item, void* arg)
                         {
                             item->user_arg = value;
                             gpio_set_level(item->interface.gpio.gpio_out.gpio_num, 0);
+                            TRACE_I("------------------------------------------------ %d",value);
                             
-                            
-                            if (value == ALL_ON) {
-                                gpio_set_level(item->interface.gpio.gpio_out.gpio_num, 1);
-                            }
-                            else if (value == ON_ON)
-                            {
-                                gpio_set_level(BLUE_LEFT, second_item->user_arg);
-                                gpio_set_level(BLUE_RIGHT, third_item->user_arg);
-                            }
-                            else if (value == ON_OFF)
-                            {
-                                gpio_set_level(BLUE_LEFT, !(second_item->user_arg));
-                                gpio_set_level(BLUE_RIGHT, !(third_item->user_arg));
-                            }
-                            else if (value == NONE_ON)
-                            {
-                                gpio_set_level(BLUE_LEFT, 0);
-                                gpio_set_level(BLUE_RIGHT, 0);
-                            }
-
                             error = EZPI_SUCCESS;
                             EZPI_core_device_value_updated_from_device_broadcast(item);
-
+                            
                         }
                         else if (master_item->user_arg)
                         {   
                             item->user_arg = value;
                             gpio_set_level(item->interface.gpio.gpio_out.gpio_num,item->user_arg);
                             error = EZPI_SUCCESS;
+                            if (pattern_item == NULL)
+                            {
+                               TRACE_I("pattern item null");
+                            }
+                            else
+                            {
+                                TRACE_I("pattern item not null");
+                            }
+                            
+                            
+                            EZPI_core_device_value_updated_from_device_broadcast(pattern_item);
                             EZPI_core_device_value_updated_from_device_broadcast(item);
                             // if(second_item->user_arg && third_item->user_arg)
                             // {
@@ -299,9 +315,9 @@ static ezlopi_error_t __set_value(l_ezlopi_item_t* item, void* arg)
                             // }
                             // else
                             // {
-                            //     device_head->items->user_arg = 0;
-                            //     EZPI_core_device_value_updated_from_device_broadcast(device_head->items);
-                            // }
+                                //     device_head->items->user_arg = 0;
+                                //     EZPI_core_device_value_updated_from_device_broadcast(device_head->items);
+                                // }
                         }
                         
                     }
@@ -320,9 +336,36 @@ static ezlopi_error_t __get_value_cjson(l_ezlopi_item_t* item, void* args)
         cJSON* cj_properties = (cJSON*)args;
         l_ezlopi_device_t* device_head = EZPI_core_device_get_head();
         l_ezlopi_item_t* master_item = device_head->items;
+        l_ezlopi_item_t* second_item = device_head->next->items;
+        l_ezlopi_item_t* third_item  = device_head->next->next->items;
+        l_ezlopi_item_t* pattern_item  = device_head->next->next->next->items;
 
         if (item->cloud_properties.item_id == pattern_item_id)
         {
+            if (master_item->user_arg)
+            {
+                TRACE_I("----------yahan aya?");
+                if (item->user_arg == ALL_ON)
+                {
+                    gpio_set_level(item->interface.gpio.gpio_out.gpio_num, 1);
+                }
+                else if (item->user_arg == ON_ON)
+                {
+                    gpio_set_level(BLUE_LEFT, second_item->user_arg);
+                    gpio_set_level(BLUE_RIGHT, third_item->user_arg);
+                }
+                else if (item->user_arg == ON_OFF)
+                {
+                    gpio_set_level(BLUE_LEFT, !(second_item->user_arg));
+                    gpio_set_level(BLUE_RIGHT, !(third_item->user_arg));
+                }
+                else if (item->user_arg == NONE_ON)
+                {
+                    gpio_set_level(BLUE_LEFT, 0);
+                    gpio_set_level(BLUE_RIGHT, 0);
+                }
+            }
+            
             EZPI_core_valueformatter_int32_to_cjson(cj_properties, item->user_arg, item->cloud_properties.scale);
             error = EZPI_SUCCESS;
         }
@@ -331,6 +374,7 @@ static ezlopi_error_t __get_value_cjson(l_ezlopi_item_t* item, void* args)
             if (master_item->user_arg)
             {
                 gpio_set_level(item->interface.gpio.gpio_out.gpio_num,item->user_arg);
+                EZPI_core_device_value_updated_from_device_broadcast(pattern_item);
             }
             if (cj_properties)
             {
@@ -346,15 +390,15 @@ static void __setup_device_cloud_properties(l_ezlopi_device_t* device)
 {
     device->cloud_properties.category = category_switch;
     device->cloud_properties.subcategory = subcategory_in_wall;
-    device->cloud_properties.device_type = dev_type_device;
+    device->cloud_properties.device_type = dev_type_light_controller;
     device->cloud_properties.info = NULL;
     device->cloud_properties.device_type_id = NULL;
 }
 
 static void __led_pattern_device_cloud_properties(l_ezlopi_device_t* device)
 {
-    device->cloud_properties.category = category_dimmable_light;
-    device->cloud_properties.subcategory = subcategory_dimmable_colored;
+    device->cloud_properties.category = category_switch;
+    device->cloud_properties.subcategory = subcategory_dimmable_bulb;
     device->cloud_properties.device_type = dev_type_switch_outlet;
     device->cloud_properties.info = NULL;
     device->cloud_properties.device_type_id = NULL;
@@ -394,7 +438,7 @@ static void __led_pattern_item_properties(l_ezlopi_item_t* item, cJSON* cjson_de
     int tmp_var = 0;
     item->cloud_properties.has_getter = true;
     item->cloud_properties.has_setter = true;
-    item->cloud_properties.item_name = ezlopi_item_name_dimmer;
+    item->cloud_properties.item_name = ezlopi_item_name_rgbcolor;
     item->cloud_properties.value_type = value_type_int;
     item->cloud_properties.show = true;
     item->cloud_properties.scale = NULL;
@@ -417,53 +461,6 @@ static void __led_pattern_item_properties(l_ezlopi_item_t* item, cJSON* cjson_de
     item->interface.gpio.gpio_out.interrupt = GPIO_INTR_DISABLE;
     item->interface.gpio.gpio_out.pull = tmp_var ? GPIO_PULLUP_ONLY : GPIO_PULLDOWN_ONLY;
 }
-
-// static void __prepare_device_cloud_properties(l_ezlopi_device_t* device)
-// {
-//     device->cloud_properties.category = category_dimmable_light;
-//     device->cloud_properties.subcategory = subcategory_dimmable_bulb;
-//     device->cloud_properties.device_type = dev_type_dimmer_outlet;
-//     device->cloud_properties.info = NULL;
-//     device->cloud_properties.device_type_id = NULL;
-// }
-
-// static void __prepare_dimmer_item_properties(l_ezlopi_item_t* item, cJSON* cjson_device)
-// {
-//     int tmp_var = 0;
-//     item->cloud_properties.show = true;
-//     item->cloud_properties.has_getter = true;
-//     item->cloud_properties.has_setter = true;
-//     item->cloud_properties.item_name = ezlopi_item_name_dimmer;
-//     item->cloud_properties.value_type = value_type_int;
-//     item->cloud_properties.item_id = EZPI_core_cloud_generate_item_id();
-//     item->cloud_properties.scale = NULL;
-
-//     item->interface_type = EZLOPI_DEVICE_INTERFACE_DIGITAL_OUTPUT;
-//     CJSON_GET_VALUE_GPIO(cjson_device, ezlopi_gpio1_str, item->interface.gpio.gpio_in.gpio_num);
-//     CJSON_GET_VALUE_BOOL(cjson_device, ezlopi_is_ip_str, item->interface.gpio.gpio_in.enable);
-//     CJSON_GET_VALUE_BOOL(cjson_device, ezlopi_ip_inv_str, item->interface.gpio.gpio_in.invert);
-//     CJSON_GET_VALUE_BOOL(cjson_device, ezlopi_val_ip_str, item->interface.gpio.gpio_in.value);
-//     CJSON_GET_VALUE_BOOL(cjson_device, ezlopi_pullup_ip_str, tmp_var);
-//     item->interface.gpio.gpio_in.pull = tmp_var ? GPIO_PULLUP_ONLY : GPIO_PULLDOWN_ONLY;
-//     item->interface.gpio.gpio_in.interrupt = GPIO_INTR_DISABLE;
-// }
-
-// static void __prepare_dimmer_switch_item_properties(l_ezlopi_item_t* item, cJSON* cjson_device)
-// {
-//     item->cloud_properties.show = true;
-//     item->cloud_properties.has_getter = true;
-//     item->cloud_properties.has_setter = true;
-//     item->cloud_properties.item_name = ezlopi_item_name_switch;
-//     item->cloud_properties.value_type = value_type_bool;
-//     item->cloud_properties.item_id = EZPI_core_cloud_generate_item_id();
-//     item->cloud_properties.scale = NULL;
-
-//     item->interface.uart.enable = false;
-//     item->interface_type = EZLOPI_DEVICE_INTERFACE_DIGITAL_OUTPUT;
-//     CJSON_GET_VALUE_GPIO(cjson_device, ezlopi_gpio2_str, item->interface.gpio.gpio_out.gpio_num); //GPIO_NUM_18
-// //     CJSON_GET_VALUE_GPIO(cjson_device, ezlopi_gpio_rx_str, item->interface.uart.rx); //GPIO_NUM_5
-// //     CJSON_GET_VALUE_DOUBLE(cjson_device, ezlopi_baud_str, item->interface.uart.baudrate); //9600
-// }
 
 static ezlopi_error_t __prepare_master_control_device_item(uint32_t *parent_id, cJSON* cjson_device) // parent device
 {
@@ -584,7 +581,7 @@ static ezlopi_error_t __prepare_led_pattern_item(uint32_t parent_id, cJSON* cjso
             pattern_item_id = item->cloud_properties.item_id;
             item->interface.gpio.gpio_in.gpio_num  = 15;
             item->interface.gpio.gpio_out.gpio_num = 5;
-            item->user_arg = 0;
+            item->user_arg = 1;
             gpio_set_level(item->interface.gpio.gpio_out.gpio_num, 1);
             TRACE_I("prep krlia pattern ko!!");
         }
@@ -601,43 +598,115 @@ static ezlopi_error_t __prepare_led_pattern_item(uint32_t parent_id, cJSON* cjso
 
     return error;
 }
-// void indicator_led_task(void *args)
-// {
-//     l_ezlopi_device_t* device_head = EZPI_core_device_get_head();
-//     if(device_head)
-//     {
-//         l_ezlopi_item_t* second_item = device_head->next->items;
-//         l_ezlopi_item_t* third_item  = device_head->next->next->items;
-//         while(1)
-//         {
-//             gpio_set_level(CTRL_LED, 1);
-//             gpio_set_level(INDICATOR1, second_item->user_arg);
-//             gpio_set_level(INDICATOR2,third_item->user_arg);
-//             vTaskDelay(50 / portTICK_PERIOD_MS);
-//         }
-//     }
-// }
+
+uint8_t is_reset() {
+    char *wifi_ssid = EZPI_core_factory_info_v3_get_ssid();
+    char *wifi_password = EZPI_core_factory_info_v3_get_password();
+    char *ca_certificate = EZPI_core_factory_info_v3_get_ca_certificate();
+    char *ssl_private_key = EZPI_core_factory_info_v3_get_ssl_private_key();
+    char *ssl_shared_key = EZPI_core_factory_info_v3_get_ssl_shared_key();
+    if(wifi_ssid != NULL && wifi_password != NULL && ca_certificate != NULL && ssl_private_key != NULL && ssl_shared_key != NULL)
+    {
+        return 0;
+    }
+    else
+    {
+        return 1;
+    }
+    
+}
 
 void button_task(void *args) {
     l_ezlopi_device_t* device_head = EZPI_core_device_get_head();
     if(device_head)
     {
+        l_ezlopi_item_t* master_item = device_head->items;
         l_ezlopi_item_t* second_item = device_head->next->items;
         l_ezlopi_item_t* third_item  = device_head->next->next->items;
+        uint8_t state1 = 1;
+        uint64_t time1 = esp_timer_get_time();
+        uint8_t state2 = 1;
+        uint64_t time2 = esp_timer_get_time();
+
         while(1)
         {
-            uint8_t count=0;
-            if (gpio_get_level(second_item->interface.gpio.gpio_in.gpio_num) == 0) {
-                second_item->user_arg = !(second_item->user_arg);
-                EZPI_core_device_value_updated_from_device_broadcast(second_item);
+            if (master_item->user_arg)
+            {
+                if (state1 != gpio_get_level(second_item->interface.gpio.gpio_in.gpio_num)) {
+                    if (gpio_get_level(second_item->interface.gpio.gpio_in.gpio_num) == 1)
+                    {
+                        if ((esp_timer_get_time() - time1) > FACTORY_RESET)
+                        {
+                            TRACE_I("-----------------------get_time: %llu",esp_timer_get_time());
+                            TRACE_I("-----------------------time:     %llu",time1);
+                            TRACE_I("-----------------------REBOOT!");
+                            factory_reset();
+                            // esp_restart();
+                        }
+                    }
+                    if (gpio_get_level(second_item->interface.gpio.gpio_in.gpio_num) == 0) {
+                        second_item->user_arg = !(second_item->user_arg);
+                        EZPI_core_device_value_updated_from_device_broadcast(second_item);
+                        time1 = esp_timer_get_time();
+                        TRACE_I("-----------------------when button low time:     %llu",time1);
+                    }
+                    state1 = gpio_get_level(second_item->interface.gpio.gpio_in.gpio_num);
+                }
+
+                if (state2 != gpio_get_level(third_item->interface.gpio.gpio_in.gpio_num)) {
+                    if (gpio_get_level(third_item->interface.gpio.gpio_in.gpio_num) == 1)
+                    {
+                        if ((esp_timer_get_time() - time2) > FACTORY_RESET)
+                        {
+                            TRACE_I("-----------------------get_time: %d",esp_timer_get_time());
+                            TRACE_I("-----------------------time:     %d",time2);
+                            TRACE_I("-----------------------REBOOT!");
+                            factory_reset();
+                        }
+                    }
+                    if (gpio_get_level(third_item->interface.gpio.gpio_in.gpio_num) == 0) {
+                        third_item->user_arg = !(third_item->user_arg);
+                        EZPI_core_device_value_updated_from_device_broadcast(third_item);
+                        time2 = esp_timer_get_time();
+                    }
+                    state2 = gpio_get_level(third_item->interface.gpio.gpio_in.gpio_num);
+                }
             }
-            if (gpio_get_level(third_item->interface.gpio.gpio_in.gpio_num) == 0) {
-                third_item->user_arg = !(third_item->user_arg);
-                EZPI_core_device_value_updated_from_device_broadcast(third_item);
-            }
-            vTaskDelay(1000 / portTICK_PERIOD_MS);
-            // TRACE_D("Task Running %d" ,count++);
+            vTaskDelay(10 / portTICK_PERIOD_MS);
         }
     }
     vTaskDelete(NULL);
 }
+
+static void reset_led_task(void *args) {
+    uint8_t toggle = 0;
+    l_ezlopi_device_t* device_head = EZPI_core_device_get_head();
+    l_ezlopi_item_t* pattern_item  = device_head->next->next->next->items;
+    while (1)
+    {
+        if (is_reset()) {
+            gpio_set_level(pattern_item->interface.gpio.gpio_out.gpio_num, toggle);
+            vTaskDelay(500 / portTICK_PERIOD_MS);
+            toggle = !(toggle);
+        }
+        else
+        {
+            break;
+        }
+    }
+    vTaskDelete(NULL);
+}
+
+static void factory_reset() {
+    if (ESP_OK == esp_partition_erase_range(partition_ctx_v3, EZLOPI_FINFO_OFFSET_HUB_DATA, EZLOPI_FINFO_READ_LEN_4KB))
+    {
+    }
+    if (ESP_OK == esp_partition_erase_range(partition_ctx_v3, EZLOPI_FINFO_OFFSET_CONN_DATA, EZLOPI_FINFO_READ_LEN_4KB))
+    {
+        if (ESP_OK == esp_partition_erase_range(partition_ctx_v3, EZLOPI_FINFO_REL_OFFSET_CA_CERTIFICATE, EZLOPI_FINFO_REL_OFFSET_SSL_SHARED_KEY));
+    }
+    esp_restart();
+}
+/**
+esp_timer_get_time()
+**/
