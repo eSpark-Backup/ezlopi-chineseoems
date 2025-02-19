@@ -1,23 +1,7 @@
-#include "ezlopi_core_wifi.h"
-#include "ezlopi_cloud_items.h"
-#include "ezlopi_cloud_constants.h"
-#include "ezlopi_core_valueformatter.h"
-#include "ezlopi_core_device_value_updated.h"
 #include "device_00112_Corunsmart_Wifi_Charger_Socket.h"
-
-#include "ezlopi_core_ota.h"
-#include "ezlopi_service_webprov.h"
-#include "ezlopi_core_factory_info.h"
-
-// extern bool reset;
 
 #define FACTORY_RESET   (5 * 1000 * 1000)
 #define OTA             (10 * 1000 * 1000)
-
-#define ALL_ON      0
-#define ON_ON       1
-#define ON_OFF      2
-#define NONE_ON     3
 
 static const char* corunsmart_led_modes[] = {
     "mode_1",
@@ -39,25 +23,18 @@ static uint32_t master_item_id = 0;
 static uint32_t pattern_item_id = 0;
 static uint32_t child_lock_item_id = 0;
 
-// #include <stdio.h>
-
-#define PRINT_TYPE(x) _Generic((x), \
-    int: "int", \
-    float: "float", \
-    double: "double", \
-    char: "char", \
-    default: "unknown")
+void button_task(void *args);
+static void reset_led_task(void *args);
+static void factory_reset();
+uint8_t is_reset();
+static void OTA_METHOD();
 
 static ezlopi_error_t __prepare(void* arg);
 static ezlopi_error_t __init(l_ezlopi_item_t* item);
 static ezlopi_error_t __set_value(l_ezlopi_item_t* item, void* arg);
 static ezlopi_error_t __get_item(l_ezlopi_item_t* item, void* arg);
 static ezlopi_error_t __get_value_cjson(l_ezlopi_item_t* item, void* arg);
-void button_task(void *args);
-static void reset_led_task(void *args);
-static void factory_reset();
-uint8_t is_reset();
-static void OTA_METHOD();
+
 
 static ezlopi_error_t __prepare_master_control_device_item(uint32_t *parent_id, cJSON* cjson_device);
 static ezlopi_error_t __prepare_switch_one_device_item(uint32_t parent_id, cJSON* cjson_device);
@@ -149,22 +126,9 @@ static ezlopi_error_t __init(l_ezlopi_item_t* item)
 
     if (item)
     {
-        // gpio_set_direction(WiFi_LED  , GPIO_MODE_OUTPUT);
-        // gpio_set_direction(CTRL_LED  , GPIO_MODE_OUTPUT);
-        // gpio_set_direction(INDICATOR1, GPIO_MODE_OUTPUT);
-        // gpio_set_direction(INDICATOR2, GPIO_MODE_OUTPUT);
-        // gpio_set_direction(INDICATOR3, GPIO_MODE_OUTPUT);
-
         if (GPIO_IS_VALID_GPIO(item->interface.gpio.gpio_out.gpio_num) &&
             (255 != item->interface.gpio.gpio_out.gpio_num))
         {
-            // if (perimanGetPinBus(item->interface.gpio.gpio_out.gpio_num, ESP32_BUS_TYPE_GPIO) == NULL) {
-            //     perimanSetBusDeinit(ESP32_BUS_TYPE_GPIO, gpioDetachBus);
-            //     if (!perimanClearPinBus(item->interface.gpio.gpio_out.gpio_num)) {
-            //       log_e("Deinit of previous bus from IO %i failed", item->interface.gpio.gpio_out.gpio_num);
-            //       return;
-            //     }
-            //   }
             const gpio_config_t io_conf = {
                 .pin_bit_mask = (1ULL << item->interface.gpio.gpio_out.gpio_num),
                 .mode = GPIO_MODE_OUTPUT,
@@ -436,7 +400,6 @@ static ezlopi_error_t __get_value_cjson(l_ezlopi_item_t* item, void* args)
         {
             if (master_item->user_arg)
             {
-                TRACE_I("----------yahan aya?");
                 if (!strcmp(item->user_arg, corunsmart_led_modes[0]))
                 {
                     gpio_set_level(item->interface.gpio.gpio_out.gpio_num, 1);
@@ -458,8 +421,6 @@ static ezlopi_error_t __get_value_cjson(l_ezlopi_item_t* item, void* args)
                 }
             }
             
-            TRACE_I("user_arg ki type: %s",PRINT_TYPE(item->user_arg));
-            TRACE_I("----------yahan bhi aya?");
             cJSON_AddStringToObject(__FUNCTION__, cj_properties, ezlopi_valueFormatted_str, item->user_arg);
             cJSON_AddStringToObject(__FUNCTION__, cj_properties, ezlopi_value_str, item->user_arg);
             error = EZPI_SUCCESS;
@@ -607,21 +568,6 @@ static void __prepare_child_lock_item_cloud_properties(l_ezlopi_item_t* item, cJ
     item->cloud_properties.scale = NULL;
 
     CJSON_GET_VALUE_DOUBLE(cjson_device, ezlopi_dev_type_str, item->interface_type);
-
-    // CJSON_GET_VALUE_DOUBLE(cjson_device, ezlopi_is_ip_str, item->interface.gpio.gpio_in.enable);
-    // CJSON_GET_VALUE_DOUBLE(cjson_device, ezlopi_ip_inv_str, item->interface.gpio.gpio_in.invert);
-    // CJSON_GET_VALUE_DOUBLE(cjson_device, ezlopi_val_ip_str, item->interface.gpio.gpio_in.value);
-    // // CJSON_GET_VALUE_BOOL(cjson_device, ezlopi_pullup_ip_str, tmp_var);
-    // item->interface.gpio.gpio_in.pull = GPIO_PULLDOWN_ONLY;
-    // // TRACE_I("%u",item->interface.gpio.gpio_in.pull);
-    // item->interface.gpio.gpio_in.interrupt = GPIO_INTR_DISABLE;
-
-    // item->interface.gpio.gpio_out.enable = true;
-    // CJSON_GET_VALUE_DOUBLE(cjson_device, ezlopi_op_inv_str, item->interface.gpio.gpio_out.invert);
-    // CJSON_GET_VALUE_DOUBLE(cjson_device, ezlopi_val_op_str, item->interface.gpio.gpio_out.value);
-    // CJSON_GET_VALUE_DOUBLE(cjson_device, ezlopi_pullup_op_str, tmp_var);
-    // item->interface.gpio.gpio_out.interrupt = GPIO_INTR_DISABLE;
-    // item->interface.gpio.gpio_out.pull = tmp_var ? GPIO_PULLUP_ONLY : GPIO_PULLDOWN_ONLY;
 }
 
 static ezlopi_error_t __prepare_master_control_device_item(uint32_t *parent_id, cJSON* cjson_device) // parent device
@@ -676,8 +622,6 @@ static ezlopi_error_t __prepare_switch_one_device_item(uint32_t parent_id, cJSON
             item->user_arg = 0;
             CJSON_GET_VALUE_GPIO(cjson_device, ezlopi_gpio1_str, item->interface.gpio.gpio_in.gpio_num);
             CJSON_GET_VALUE_GPIO(cjson_device, ezlopi_gpio3_str, item->interface.gpio.gpio_out.gpio_num);
-            // TRACE_D("item->interface.gpio.gpio_in.gpio_num:  %u", item->interface.gpio.gpio_in.gpio_num);
-            // TRACE_D("item->interface.gpio.gpio_out.gpio_num: %u", item->interface.gpio.gpio_out.gpio_num);
         }
 
         if (!item)
@@ -710,8 +654,6 @@ static ezlopi_error_t __prepare_switch_two_device_item(uint32_t parent_id, cJSON
             item->user_arg = 0;
             CJSON_GET_VALUE_GPIO(cjson_device, ezlopi_gpio2_str, item->interface.gpio.gpio_in.gpio_num);
             CJSON_GET_VALUE_GPIO(cjson_device, ezlopi_gpio4_str, item->interface.gpio.gpio_out.gpio_num);
-            // TRACE_D("item->interface.gpio.gpio_in.gpio_num:  %u", item->interface.gpio.gpio_in.gpio_num);
-            // TRACE_D("item->interface.gpio.gpio_out.gpio_num: %u", item->interface.gpio.gpio_out.gpio_num);
         }
 
         if (!item)
@@ -793,6 +735,7 @@ static ezlopi_error_t __prepare_child_lock_item(uint32_t parent_id, cJSON* cjson
     return error;
 }
 
+
 uint8_t is_reset() {
     char *wifi_ssid = EZPI_core_factory_info_v3_get_ssid();
     char *wifi_password = EZPI_core_factory_info_v3_get_password();
@@ -817,6 +760,7 @@ void button_task(void *args) {
         l_ezlopi_item_t* master_item = device_head->items;
         l_ezlopi_item_t* second_item = device_head->next->items;
         l_ezlopi_item_t* third_item  = device_head->next->next->items;
+        l_ezlopi_item_t* pattern_item  = device_head->next->next->next->items;
         l_ezlopi_item_t* child_item  = device_head->next->next->next->next->items;
         uint8_t state1 = 1;
         uint64_t time1 = esp_timer_get_time();
@@ -824,12 +768,17 @@ void button_task(void *args) {
         uint64_t time2 = esp_timer_get_time();
         uint8_t count = 0;
         uint64_t child_timer = 0;
+        uint8_t toggle = 0;
+        uint64_t new_timer = 0;
+
 
         while(1)
         {
             if (master_item->user_arg)
             {          
                 if (state1 != gpio_get_level(second_item->interface.gpio.gpio_in.gpio_num)) {
+                    new_timer = esp_timer_get_time();
+
                     if (count >= 5) {
                         if ((esp_timer_get_time() - child_timer) < 5*1000*1000) {
                             child_item->user_arg = child_lock_token[1];
@@ -851,6 +800,7 @@ void button_task(void *args) {
                         else if ((esp_timer_get_time() - time1) > OTA)
                         {
                             TRACE_I("-----------------------OTA START!");
+                            OTA_METHOD();
                         }                       
                     }
                     if (gpio_get_level(second_item->interface.gpio.gpio_in.gpio_num) == 0) {
@@ -873,6 +823,8 @@ void button_task(void *args) {
                 }
 
                 if (state2 != gpio_get_level(third_item->interface.gpio.gpio_in.gpio_num)) {
+                    new_timer = esp_timer_get_time();
+
                     if (count >= 5) {
                         if ((esp_timer_get_time() - child_timer) < 5*1000*1000) {
                             child_item->user_arg = child_lock_token[1];
@@ -890,7 +842,6 @@ void button_task(void *args) {
                         {
                             TRACE_I("-----------------------REBOOT!");
                             factory_reset();
-                            OTA_METHOD();
                         }
                         else if ((esp_timer_get_time() - time2) > OTA)
                         {
@@ -917,6 +868,24 @@ void button_task(void *args) {
                 if ((esp_timer_get_time() - child_timer) > 10*1000*1000)
                 {
                     count = 0;
+                }
+                
+                if ((state1 == 0) || (state2 == 0))
+                {
+                    if (((esp_timer_get_time() - new_timer) > FACTORY_RESET) && ((esp_timer_get_time() - new_timer) < OTA))
+                    {
+                        TRACE_I("------------------------------Factory Reset task time start");
+                        gpio_set_level(pattern_item->interface.gpio.gpio_out.gpio_num,toggle);
+                        toggle = !(toggle);
+                    }
+                    if ((esp_timer_get_time() - new_timer) > OTA)
+                    {
+                        TRACE_I("------------------------------OTA task time start");
+                        gpio_set_level(BLUE_LEFT,toggle);
+                        gpio_set_level(BLUE_RIGHT,!(toggle));
+                        toggle = !(toggle);
+                    }
+
                 }
                 
             }
@@ -946,12 +915,10 @@ static void reset_led_task(void *args) {
 }
 
 static void factory_reset() {
-    if (ESP_OK == esp_partition_erase_range(partition_ctx_v3, EZLOPI_FINFO_OFFSET_HUB_DATA, EZLOPI_FINFO_READ_LEN_4KB))
-    {
-    }
+    esp_partition_erase_range(partition_ctx_v3, EZLOPI_FINFO_OFFSET_HUB_DATA, EZLOPI_FINFO_READ_LEN_4KB);
     if (ESP_OK == esp_partition_erase_range(partition_ctx_v3, EZLOPI_FINFO_OFFSET_CONN_DATA, EZLOPI_FINFO_READ_LEN_4KB))
     {
-        if (ESP_OK == esp_partition_erase_range(partition_ctx_v3, EZLOPI_FINFO_REL_OFFSET_CA_CERTIFICATE, EZLOPI_FINFO_REL_OFFSET_SSL_SHARED_KEY));
+        esp_partition_erase_range(partition_ctx_v3, EZLOPI_FINFO_REL_OFFSET_CA_CERTIFICATE, EZLOPI_FINFO_REL_OFFSET_SSL_SHARED_KEY);
     }
     esp_restart();
 }
@@ -986,3 +953,8 @@ static void OTA_METHOD() {
 
 }
 
+
+// while (1)
+// {
+    
+// }

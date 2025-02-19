@@ -54,6 +54,7 @@
 #include "esp_ota_ops.h"
 #include "esp_https_ota.h"
 #include "esp_crt_bundle.h"
+#include "driver/gpio.h"
 
 #include "ezlopi_util_trace.h"
 
@@ -256,6 +257,9 @@ static esp_err_t _http_event_handler(esp_http_client_event_t *evt)
         __ota_in_process = EZLOPI_OTA_STATE_UPDATING;
 
         TRACE_D("HTTP_EVENT_ON_DATA, len=%d", evt->data_len);
+        gpio_set_level(19,1);
+        gpio_set_level(21,1);
+        gpio_set_level(17,1);
         __byte_count += evt->data_len;
         TRACE_D("Received Bytes: %d", __byte_count);
         break;
