@@ -32,8 +32,8 @@ static const char* child_lock_token[] ={
     "unknown",
 };
 
-#define BLUE_LEFT   25
-#define BLUE_RIGHT  26
+#define BLUE_LEFT   19
+#define BLUE_RIGHT  21
 
 static uint32_t master_item_id = 0;
 static uint32_t pattern_item_id = 0;
@@ -289,9 +289,6 @@ static ezlopi_error_t __set_value(l_ezlopi_item_t* item, void* arg)
                             {
                                 gpio_set_level(second_item->interface.gpio.gpio_out.gpio_num, second_item->user_arg);
                                 gpio_set_level(third_item->interface.gpio.gpio_out.gpio_num,  third_item->user_arg);
-                                // gpio_set_level(pattern_item->interface.gpio.gpio_out.gpio_num,  pattern_item->user_arg);
-                                // second_item->user_arg = item->user_arg;
-                                // third_item->user_arg  = item->user_arg;
                                 EZPI_core_device_value_updated_from_device_broadcast(item);
                                 EZPI_core_device_value_updated_from_device_broadcast(third_item);
                                 EZPI_core_device_value_updated_from_device_broadcast(second_item);
@@ -306,8 +303,6 @@ static ezlopi_error_t __set_value(l_ezlopi_item_t* item, void* arg)
                                 gpio_set_level(BLUE_LEFT, 0);
                                 gpio_set_level(BLUE_RIGHT, 0);
 
-                                // second_item->user_arg = item->user_arg;
-                                // third_item->user_arg  = item->user_arg;
                                 EZPI_core_device_value_updated_from_device_broadcast(item);
                                 EZPI_core_device_value_updated_from_device_broadcast(third_item);
                                 EZPI_core_device_value_updated_from_device_broadcast(second_item);
@@ -335,7 +330,6 @@ static ezlopi_error_t __set_value(l_ezlopi_item_t* item, void* arg)
 
                             TRACE_I(cj_value->valuestring);
                             gpio_set_level(item->interface.gpio.gpio_out.gpio_num, 0);
-                            // TRACE_I("------------------------------------------------ %d",value);
                             
                             error = EZPI_SUCCESS;
                             EZPI_core_device_value_updated_from_device_broadcast(item);
@@ -497,12 +491,21 @@ static ezlopi_error_t __get_value_cjson(l_ezlopi_item_t* item, void* args)
             {
                 gpio_set_level(item->interface.gpio.gpio_out.gpio_num,item->user_arg);
                 EZPI_core_device_value_updated_from_device_broadcast(pattern_item);
+                if (cj_properties)
+                {
+                    EZPI_core_valueformatter_bool_to_cjson(cj_properties, item->user_arg, item->cloud_properties.scale);
+                    error = EZPI_SUCCESS;
+                }
             }
-            if (cj_properties)
+            else
             {
-                EZPI_core_valueformatter_bool_to_cjson(cj_properties, item->user_arg, item->cloud_properties.scale);
-                error = EZPI_SUCCESS;
+                if (cj_properties)
+                {
+                    EZPI_core_valueformatter_bool_to_cjson(cj_properties, master_item->user_arg, item->cloud_properties.scale);
+                    error = EZPI_SUCCESS;
+                }
             }
+            
         }
     }
     return error;
@@ -638,7 +641,7 @@ static ezlopi_error_t __prepare_master_control_device_item(uint32_t *parent_id, 
             __setup_item_properties(item, cjson_device);
             master_item_id = item->cloud_properties.item_id;
             item->interface.gpio.gpio_in.gpio_num  = 14;
-            item->interface.gpio.gpio_out.gpio_num = 21;
+            item->interface.gpio.gpio_out.gpio_num = 22;
             item->user_arg = 1;
         }
         else
@@ -739,7 +742,7 @@ static ezlopi_error_t __prepare_led_pattern_item(uint32_t parent_id, cJSON* cjso
             __led_pattern_item_properties(item, cjson_device);
             pattern_item_id = item->cloud_properties.item_id;
             item->interface.gpio.gpio_in.gpio_num  = 15;
-            item->interface.gpio.gpio_out.gpio_num = 5;
+            item->interface.gpio.gpio_out.gpio_num = 17;
             item->user_arg = corunsmart_led_modes[0];
             gpio_set_level(item->interface.gpio.gpio_out.gpio_num, 1);
             TRACE_I("prep krlia pattern ko!!");
@@ -856,16 +859,17 @@ void button_task(void *args) {
                         second_item->user_arg = !(second_item->user_arg);
                         EZPI_core_device_value_updated_from_device_broadcast(second_item);
                         }
+                        count++;
                         time1 = esp_timer_get_time();
                         TRACE_I("-----------------------when button low time:     %llu",time1);
                     }
                     state1 = gpio_get_level(second_item->interface.gpio.gpio_in.gpio_num);
 
-                    count++;
                     if (count == 1)
                     {
                         child_timer = esp_timer_get_time();
                     }
+                    TRACE_I("----------------------count: %d",count);
                 }
 
                 if (state2 != gpio_get_level(third_item->interface.gpio.gpio_in.gpio_num)) {
@@ -900,17 +904,17 @@ void button_task(void *args) {
                         third_item->user_arg = !(third_item->user_arg);
                         EZPI_core_device_value_updated_from_device_broadcast(third_item);
                         }
+                        count++;
                         time2 = esp_timer_get_time();
                     }
                     state2 = gpio_get_level(third_item->interface.gpio.gpio_in.gpio_num);
 
-                    count++;
                     if (count == 1)
                     {
                         child_timer = esp_timer_get_time();
                     }
                 }
-                if (child_timer > 10*1000*1000)
+                if ((esp_timer_get_time() - child_timer) > 10*1000*1000)
                 {
                     count = 0;
                 }
