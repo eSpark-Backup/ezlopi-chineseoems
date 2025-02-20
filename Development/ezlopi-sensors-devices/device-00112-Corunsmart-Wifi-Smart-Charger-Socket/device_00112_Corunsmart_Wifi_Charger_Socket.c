@@ -20,6 +20,7 @@ static const char* child_lock_token[] ={
 #define BLUE_RIGHT  21
 
 TaskHandle_t button_handle = NULL;
+TaskHandle_t ota_led_handle = NULL;
 
 static uint32_t master_item_id = 0;
 static uint32_t pattern_item_id = 0;
@@ -30,6 +31,7 @@ static void reset_led_task(void *args);
 static void factory_reset();
 uint8_t is_reset();
 static void OTA_METHOD();
+void ota_led_task(void *args);
 
 static ezlopi_error_t __prepare(void* arg);
 static ezlopi_error_t __init(l_ezlopi_item_t* item);
@@ -876,16 +878,22 @@ void button_task(void *args) {
                 {
                     if (((esp_timer_get_time() - new_timer) > FACTORY_RESET) && ((esp_timer_get_time() - new_timer) < OTA))
                     {
-                        TRACE_I("------------------------------Factory Reset task time start");
-                        gpio_set_level(pattern_item->interface.gpio.gpio_out.gpio_num,toggle);
-                        toggle = !(toggle);
+                        if (!(is_reset()))
+                        {
+                            TRACE_I("------------------------------Factory Reset task time start");
+                            gpio_set_level(pattern_item->interface.gpio.gpio_out.gpio_num,toggle);
+                            toggle = !(toggle);
+                        }
+                        
                     }
                     if ((esp_timer_get_time() - new_timer) > OTA)
                     {
                         TRACE_I("------------------------------OTA task time start");
-                        gpio_set_level(BLUE_LEFT,toggle);
-                        gpio_set_level(BLUE_RIGHT,!(toggle));
-                        toggle = !(toggle);
+                        if ((ota_led_handle == NULL) && (!(is_reset())))
+                        {
+                            xTaskCreate(ota_led_task,"ota_led_indication_task",1024,NULL,1,&ota_led_handle);
+                        }
+                        
                     }
 
                 }
@@ -931,6 +939,11 @@ esp_timer_get_time()
 
 
 static void OTA_METHOD() {
+    if (ota_led_handle != NULL)
+    {
+        vTaskDelete(ota_led_handle);
+        ota_led_handle = NULL;
+    }
     
     cJSON *cj_data = cJSON_CreateObject(__FUNCTION__);
     if (cj_data)
@@ -955,6 +968,16 @@ static void OTA_METHOD() {
 
 }
 
+void ota_led_task(void *args) {
+    uint8_t toggle = 1;
+    while (1)
+    {
+        gpio_set_level(17,toggle);
+        toggle = !(toggle);
+        vTaskDelay(1500 / portTICK_PERIOD_MS);
+    }
+    vTaskDelete(NULL);
+}
 
 // while (1)
 // {
