@@ -19,6 +19,8 @@ static const char* child_lock_token[] ={
 #define BLUE_LEFT   19
 #define BLUE_RIGHT  21
 
+TaskHandle_t button_handle = NULL;
+
 static uint32_t master_item_id = 0;
 static uint32_t pattern_item_id = 0;
 static uint32_t child_lock_item_id = 0;
@@ -186,7 +188,7 @@ static ezlopi_error_t __init(l_ezlopi_item_t* item)
     }
     if (item->cloud_properties.item_id == master_item_id)
     {
-        xTaskCreate(button_task, "button_task", 1024 * 3, NULL, 1 , NULL);
+        xTaskCreate(button_task, "button_task", 1024 * 3, NULL, 1 , &button_handle);
         xTaskCreate(reset_led_task, "reset_led_task", 1024 * 2, NULL, 1 , NULL);
         const gpio_config_t io_conf = {
             .pin_bit_mask = (1ULL << BLUE_LEFT) | (1ULL << BLUE_RIGHT),
@@ -244,7 +246,7 @@ static ezlopi_error_t __set_value(l_ezlopi_item_t* item, void* arg)
                     l_ezlopi_item_t* second_item = device_head->next->items;
                     l_ezlopi_item_t* third_item  = device_head->next->next->items;
                     l_ezlopi_item_t* pattern_item  = device_head->next->next->next->items;
-                    if(second_item && third_item)
+                    if(second_item && third_item && pattern_item)
                     {
                         if(item->cloud_properties.item_id == master_item_id)
                         {   
@@ -451,10 +453,10 @@ static ezlopi_error_t __get_value_cjson(l_ezlopi_item_t* item, void* args)
             if (master_item->user_arg)
             {
                 gpio_set_level(item->interface.gpio.gpio_out.gpio_num,item->user_arg);
-                EZPI_core_device_value_updated_from_device_broadcast(pattern_item);
                 if (cj_properties)
                 {
                     EZPI_core_valueformatter_bool_to_cjson(cj_properties, item->user_arg, item->cloud_properties.scale);
+                    EZPI_core_device_value_updated_from_device_broadcast(pattern_item);
                     error = EZPI_SUCCESS;
                 }
             }
@@ -762,7 +764,7 @@ void button_task(void *args) {
         l_ezlopi_item_t* third_item  = device_head->next->next->items;
         l_ezlopi_item_t* pattern_item  = device_head->next->next->next->items;
         l_ezlopi_item_t* child_item  = device_head->next->next->next->next->items;
-        uint8_t state1 = 1;
+        uint8_t state1 = 0;
         uint64_t time1 = esp_timer_get_time();
         uint8_t state2 = 1;
         uint64_t time2 = esp_timer_get_time();
