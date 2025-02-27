@@ -213,7 +213,7 @@ extern "C"
      * @brief Variable to be used for keypad type cloud category
      *
      */
-    // extern const  char *category_keypad;
+    extern const  char *category_keypad;
     /**
      * @brief Variable to be used for garage door type cloud category
      *

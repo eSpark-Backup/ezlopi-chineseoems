@@ -80,7 +80,7 @@ extern "C"
      * @brief Variable to be used for type light controller
      *
      */
-    // extern const  char *dev_type_light_controller;
+    extern const  char *dev_type_light_controller;
     /**
      * @brief Variable to be used for type thermostat
      *

@@ -99,7 +99,6 @@ static void __connection_upcall(bool connected);
 static void __message_process_cjson(cJSON *cj_request, time_t time_stamp);
 static int __message_upcall(char *payload, uint32_t len, time_t time_stamp);
 
-static int __send_cjson_data_to_nma_websocket(cJSON *cj_data);
 static ezlopi_error_t __send_str_data_to_nma_websocket(char *str_data);
 
 bool EZPI_service_webprov_is_connected(void)
@@ -418,7 +417,7 @@ static int __message_upcall(char *payload, uint32_t len, time_t time_stamp)
     return ret;
 }
 
-static int __send_cjson_data_to_nma_websocket(cJSON *cj_data)
+int __send_cjson_data_to_nma_websocket(cJSON *cj_data)
 {
     int ret = 0;
 
