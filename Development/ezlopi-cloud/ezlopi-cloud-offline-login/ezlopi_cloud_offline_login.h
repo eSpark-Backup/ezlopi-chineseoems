@@ -1,13 +1,5 @@
-
-/**
- * @file    ezlopi_cloud_offline_login.h
- * @brief
- * @author
- * @version
- * @date
- */
 /* ===========================================================================
-** Copyright (C) 2022 Ezlo Innovation Inc
+** Copyright (C) 2025 Ezlo Innovation Inc
 **
 ** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
 **
@@ -37,20 +29,44 @@
 ** ===========================================================================
 */
 
-#ifndef EZLOPI_CLOUD_OFFLINE_LOGIN_H_
-#define EZLOPI_CLOUD_OFFLINE_LOGIN_H_
+/**
+ * @file    ezlopi_cloud_offline_login.h
+ * @brief   Definitions for cloud offline login functions
+ * @author
+ * @version 1.0
+ * @date    March 26th, 2024 10:59 PM
+ */
+#ifndef __EZLOPI_CLOUD_OFFLINE_LOGIN_H__
+#define __EZLOPI_CLOUD_OFFLINE_LOGIN_H__
 
+/*******************************************************************************
+ *                          Include Files
+ *******************************************************************************/
 #include "cjext.h"
 
+/*******************************************************************************
+ *                          C++ Declaration Wrapper
+ *******************************************************************************/
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+
+    /*******************************************************************************
+     *                          Type & Macro Declarations
+     *******************************************************************************/
+
+    /*******************************************************************************
+     *                          Extern Data Declarations
+     *******************************************************************************/
     extern bool flag_offline_login;
 
+    /*******************************************************************************
+     *                          Extern Function Prototypes
+     *******************************************************************************/
     /**
      * @brief Function to respond to hub.offline.login.ui method
-     * 
+     *
      * @param cj_request Incoming JSON request
      * @param cj_response Outgoing JSON response
      */
@@ -60,7 +76,7 @@ extern "C"
 }
 #endif
 
-#endif // EZLOPI_CLOUD_OFFLINE_LOGIN_H_
+#endif // __EZLOPI_CLOUD_OFFLINE_LOGIN_H__
 
 /*******************************************************************************
  *                          End of File

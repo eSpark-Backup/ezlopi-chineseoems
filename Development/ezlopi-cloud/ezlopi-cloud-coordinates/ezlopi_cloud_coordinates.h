@@ -1,13 +1,5 @@
-
-/**
- * @file    ezlopi_cloud_coordinates.h
- * @brief
- * @author
- * @version
- * @date
- */
 /* ===========================================================================
-** Copyright (C) 2022 Ezlo Innovation Inc
+** Copyright (C) 2025 Ezlo Innovation Inc
 **
 ** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
 **
@@ -37,16 +29,40 @@
 ** ===========================================================================
 */
 
-#ifndef _EZLOPI_CLOUD_COORDINSTES_H_
-#define _EZLOPI_CLOUD_COORDINSTES_H_
+/**
+ * @file    ezlopi_cloud_coordinates.h
+ * @brief   Declarations for cloud coordinate functions
+ * @author
+ * @version 1.0
+ * @date    February 19th, 2024 12:00 PM
+ */
 
+#ifndef __EZLOPI_CLOUD_COORDINSTES_H__
+#define __EZLOPI_CLOUD_COORDINSTES_H__
+
+/*******************************************************************************
+ *                          Include Files
+ *******************************************************************************/
 #include "cjext.h"
-
+/*******************************************************************************
+ *                          C++ Declaration Wrapper
+ *******************************************************************************/
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
+    /*******************************************************************************
+     *                          Type & Macro Declarations
+     *******************************************************************************/
+
+    /*******************************************************************************
+     *                          Extern Data Declarations
+     *******************************************************************************/
+
+    /*******************************************************************************
+     *                          Extern Function Prototypes
+     *******************************************************************************/
     /**
      * @brief Function to handle hub.coordinate.set method
      *
@@ -80,7 +96,8 @@ extern "C"
 }
 #endif
 
-#endif // _EZLOPI_CLOUD_COORDINSTES_H_
+#endif // __EZLOPI_CLOUD_COORDINSTES_H__
+
 /*******************************************************************************
  *                          End of File
  *******************************************************************************/

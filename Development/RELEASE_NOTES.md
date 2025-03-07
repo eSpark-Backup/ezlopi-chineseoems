@@ -4,6 +4,76 @@
 
 # RELEASE NOTES
 
+# Version 4.4.13 Build 203
+
+## New
+
+1. Implement : ADC De-Init function with memory cleanup [EZPI-574](https://jira.mios.com/browse/EZPI-574)
+2. Implement : delete_service context functions [EZPI-575](https://jira.mios.com/browse/EZPI-575)
+3. Implement : Error Returns on mDNS Module [EZPI-576](https://jira.mios.com/browse/EZPI-576)
+
+## Fixes
+
+1. Fix: Annotate file and function headers [EZPI-539](https://jira.mios.com/browse/EZPI-539)
+2. Fix: Null pointer dereference : Scenes Populate [EZPI-595](https://jira.mios.com/browse/EZPI-595)
+3. Fix : Possible null pointer dereference: house_mode_id_array [EZPI-596](https://jira.mios.com/browse/EZPI-596)
+4. Fix : invalidFunctionArg : MQ Sensors [EZPI-597](https://jira.mios.com/browse/EZPI-597)
+5. Fix : hub.nma.register.repeat implementation missing / not working [EZPI-455](https://jira.mios.com/browse/EZPI-455)
+6. Fix : Change the author and details position from files [EZPI-483](https://jira.mios.com/browse/EZPI-483)
+7. Fix : Object does not has a parent [EZPI-589](https://jira.mios.com/browse/EZPI-589)
+8. Fix : Shifting 32-bit value by 56 bits is undefined behaviour [shiftTooManyBits] [EZPI-592](https://jira.mios.com/browse/EZPI-592)
+9. Fix : Core Modes -> Null pointer dereference: curr_source [nullPointer] [EZPI-593](https://jira.mios.com/browse/EZPI-593)
+10. Fix : arrayIndexOutOfBounds on ezlopi_core_processes [EZPI-594](https://jira.mios.com/browse/EZPI-594)
+11. Fix : Null pointer dereference : Scenes Populate [EZPI-595](https://jira.mios.com/browse/EZPI-595)
+12. Fix : Possible null pointer dereference: house_mode_id_array [EZPI-596](https://jira.mios.com/browse/EZPI-596)
+13. Fix : Possible null pointer dereference: house_mode_id_array [EZPI-596](https://jira.mios.com/browse/EZPI-596)
+
+## What's Changed
+
+- Revert "Feature kconfig ot" by @lomasSE89 in https://github.com/ezloteam/Ezlo_Pi/pull/217
+- Development by @lomasSE89 in https://github.com/ezloteam/Ezlo_Pi/pull/224
+- Development by @lomasSE89 in https://github.com/ezloteam/Ezlo_Pi/pull/225
+- EZPI-537 Apply templates to all source files by @ezlo-gary in https://github.com/ezloteam/Ezlo_Pi/pull/208
+- Dev lastest merge code clean by @ezlo-rikenm in https://github.com/ezloteam/Ezlo_Pi/pull/226
+- Ezpi for device test by @NDJ-EZLO in https://github.com/ezloteam/Ezlo_Pi/pull/227
+- Ezpi combined fix 593 595 596 597 by @ezlo-rikenm in https://github.com/ezloteam/Ezlo_Pi/pull/228
+- Espi 583 change author and details positions by @NDJ-EZLO in https://github.com/ezloteam/Ezlo_Pi/pull/232
+- Fixed the bug of IndexOutOfBound in \_\_check_ezlopi_task function by @NDJ-EZLO in https://github.com/ezloteam/Ezlo_Pi/pull/231
+- Ezpi 576 error return on functions by @NDJ-EZLO in https://github.com/ezloteam/Ezlo_Pi/pull/230
+- Development by @lomasSE89 in https://github.com/ezloteam/Ezlo_Pi/pull/233
+
+# Version 4.3.12 Build 202
+
+## New
+
+1. Implement : Header source with the updated templates on EzloPi Local Scenes [EZPI-557](https://jira.mios.com/browse/EZPI-557)
+2. Implement : Header source with the updated templates on EzloPi Cores [EZPI-558](https://jira.mios.com/browse/EZPI-558)
+3. Implement : Add Config Chipset check support for ESP32S2 [EZPI-580](https://jira.mios.com/browse/EZPI-580)
+4. Implement : Add K-Config for Otel Enable Disable [EZPI-553](https://jira.mios.com/browse/EZPI-553)
+5. Implement : header & source templates on Ezlopi_hal components [EZPI-567](https://jira.mios.com/browse/EZPI-567)
+
+## Fixes
+
+1. Fix: ESP32-C3 Device is not responding [EZPI-519](https://jira.mios.com/browse/EZPI-519)
+2. Fix: EzloPi Core OTA Testing and fixing [EZPI-566](https://jira.mios.com/browse/EZPI-566)
+3. Fix: Decrease delay while broadcasting WSS messages [EZPI-552](https://jira.mios.com/browse/EZPI-552)
+4. Fix: Stack overflow on MQ Calibration Tasks [EZPI-568](https://jira.mios.com/browse/EZPI-568)
+5. Fix: Remove global/static variables from sensor-devices [EZPI-572](https://jira.mios.com/browse/EZPI-572)
+6. Fix: Potential array bounds issues [EZPI-554](https://jira.mios.com/browse/EZPI-554)
+7. Fix: Potential memory leak issues [EZPI-556](https://jira.mios.com/browse/EZPI-556)
+8. Fix: Moving from tasks to loop for memory optimization [EZPI-578](https://jira.mios.com/browse/EZPI-578)
+9. Fix: Debugging, Fixing errors and memory leaks [EZPI-579](https://jira.mios.com/browse/EZPI-579)
+
+## What's Changed
+
+- Ezpi 568 remove sensor tasks by @ezlo-rikenm in https://github.com/ezloteam/Ezlo_Pi/pull/214
+- Feature kconfig ot by @krishna-ezlo in https://github.com/ezloteam/Ezlo_Pi/pull/215
+- Removing global statics in sensor devices by @ezlo-rikenm in https://github.com/ezloteam/Ezlo_Pi/pull/219
+- Current config freeing by @NDJ-EZLO in https://github.com/ezloteam/Ezlo_Pi/pull/218
+- Ezpi 566 ota test and fix by @lomasSE89 in https://github.com/ezloteam/Ezlo_Pi/pull/220
+- fix memoryleak tendencies https://jira.mios.com/browse/EZPI-556. by @lomasSE89 in https://github.com/ezloteam/Ezlo_Pi/pull/221
+- fix array out of bounds issue : https://jira.mios.com/browse/EZPI-554 by @lomasSE89 in https://github.com/ezloteam/Ezlo_Pi/pull/222
+
 # Version 4.3.11 Build 201
 
 ## New

@@ -93,7 +93,7 @@ void comm_start_task(void *arg)
     // start_packet();
     send_command(CMD_CONNECTION_START);
     TRACE_I("Comm started!");
-    xTaskCreate(heartBeat_task,"Heart_beat_task: ",4*1024,NULL,1,NULL);
+    xTaskCreate(heartBeat_task,"Heart_beat_task: ",3*1024,NULL,1,NULL);
     vTaskDelete(NULL);
 }
 
@@ -139,7 +139,7 @@ static ezlopi_error_t __init_v3(l_ezlopi_item_t* item)
             else
             {
                 intitialized = true;
-                xTaskCreate(comm_start_task,"com_start_task: ",6*1024,NULL,1,NULL);
+                xTaskCreate(comm_start_task,"com_start_task: ",3*1024,NULL,1,NULL);
                 TRACE_I("-------comm delete krkay bahir aagaya");
                 
             }
@@ -248,7 +248,17 @@ static ezlopi_error_t __get_value_cjson_v3(l_ezlopi_item_t* item, void* args)
     error = EZPI_SUCCESS;
     if (power_item_id == item->cloud_properties.item_id)
     {
+        // TRACE_I("---------------------------------formater say pehalay %d",Diffuser_data.power_value);
         EZPI_core_valueformatter_bool_to_cjson(cj_params, Diffuser_data.power_value, item->cloud_properties.scale);
+        // TRACE_I("---------------------------------formater kay baad %d",Diffuser_data.power_value);
+
+        // if (Diffuser_data.power_value) {
+        //     EZPI_core_valueformatter_bool_to_cjson(cj_params, Diffuser_data.fan_value, fan_item->cloud_properties.scale);
+        // }
+        // else
+        // {
+        //     EZPI_core_valueformatter_bool_to_cjson(cj_params, Diffuser_data.power_value, fan_item->cloud_properties.scale);
+        // }
     }
     else if (fan_item_id == item->cloud_properties.item_id)
     {

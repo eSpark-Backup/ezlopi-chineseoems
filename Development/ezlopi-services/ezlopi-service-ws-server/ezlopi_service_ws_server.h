@@ -1,13 +1,5 @@
-
-/**
- * @file    ezlopi_service_ws_server.h
- * @brief
- * @author
- * @version
- * @date
- */
 /* ===========================================================================
-** Copyright (C) 2024 Ezlo Innovation Inc
+** Copyright (C) 2025 Ezlo Innovation Inc
 **
 ** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
 **
@@ -37,18 +29,34 @@
 ** ===========================================================================
 */
 
+/**
+ * @file    ezlopi_service_ws_server.h
+ * @brief   perform some function on data
+ * @authors Krishna Kumar Sah (work.krishnasah@gmail.com)
+ * @version 1.0
+ * @date    February 25th, 2024 12:37 AM
+ */
+
 #ifndef __EZLOPI_SERVICE_WS_SERVER_H__
 #define __EZLOPI_SERVICE_WS_SERVER_H__
 
+/*******************************************************************************
+ *                          Include Files
+ *******************************************************************************/
+#include "cjext.h"
+#include "ezlopi_service_ws_server_clients.h"
+
+/*******************************************************************************
+ *                          C++ Declaration Wrapper
+ *******************************************************************************/
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-    /**
-     * @brief Enum that indicates the statss of the wbesocket server
-     *
-     */
+    /*******************************************************************************
+     *                          Type & Macro Declarations
+     *******************************************************************************/
     typedef enum e_ws_status
     {
         WS_STATUS_RUNNING = 0, /**< Status running */
@@ -56,6 +64,13 @@ extern "C"
         WS_STATUS_STOPPED,     /**< Status stopped */
     } e_ws_status_t;
 
+    /*******************************************************************************
+     *                          Extern Data Declarations
+     *******************************************************************************/
+
+    /*******************************************************************************
+     *                          Extern Function Prototypes
+     *******************************************************************************/
     /**
      * @brief Function to stop websocket server
      *

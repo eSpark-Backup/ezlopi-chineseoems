@@ -55,7 +55,8 @@ bool scent_diffuser_init(s_ezlopi_uart_t *scent_diffuser_uart_config)
         TRACE_I("  Tx: %d",scent_diffuser_uart_config->tx);
         TRACE_I("  Rx: %d",scent_diffuser_uart_config->rx);
         // TRACE_I("  channel: %d",scent_diffuser_uart_object_handle->ezlopi_uart.channel);
-        scent_diffuser_uart_object_handle = EZPI_hal_uart_init(scent_diffuser_uart_config->baudrate, scent_diffuser_uart_config->tx, scent_diffuser_uart_config->rx, scent_diffuser_callback, NULL);
+        // scent_diffuser_uart_object_handle = EZPI_hal_uart_init(scent_diffuser_uart_config->baudrate, scent_diffuser_uart_config->tx, scent_diffuser_uart_config->rx, scent_diffuser_callback, NULL);
+        scent_diffuser_uart_object_handle = EZPI_hal_uart_init(115200, 21, 20, scent_diffuser_callback, NULL);
         
         
         return scent_diffuser_uart_object_handle;
@@ -130,6 +131,10 @@ void create_packet(CommandType cmd, uint8_t *packet, uint8_t *length)
         packet[8] = 0x00; packet[9] = 0xE3; packet[10] = CLOSE;
 
         break;
+    // case CMD_WIFI:
+    //     packet[3] = 0x03; packet[4] = 0x00; packet[5] = 0x01; packet[6] = 0x05; packet[7] = 0x08;
+    //     *length = 8;
+    //     break;
     default:
         TRACE_E("Unknown command type");
         break;

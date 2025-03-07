@@ -1,13 +1,5 @@
-
-/**
- * @file    ezlopi_cloud_ota.h
- * @brief
- * @author
- * @version
- * @date
- */
 /* ===========================================================================
-** Copyright (C) 2022 Ezlo Innovation Inc
+** Copyright (C) 2025 Ezlo Innovation Inc
 **
 ** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
 **
@@ -37,20 +29,44 @@
 ** ===========================================================================
 */
 
+/**
+ * @file    ezlopi_cloud_ota.h
+ * @brief   Declerations for cloud OTA functions
+ * @authors Krishna Kumar Sah (work.krishnasah@gmail.com)
+ * @version 1.0
+ * @date    March 7th, 2023 8:52 PM
+ */
+
 #ifndef __HUB_FIRMWARE_H__
 #define __HUB_FIRMWARE_H__
 
+/*******************************************************************************
+ *                          Include Files
+ *******************************************************************************/
 #include "../../build/config/sdkconfig.h"
 
 #ifdef CONFIG_EZPI_ENABLE_OTA
 
 #include "cjext.h"
 
+/*******************************************************************************
+ *                          C++ Declaration Wrapper
+ *******************************************************************************/
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+    /*******************************************************************************
+     *                          Type & Macro Declarations
+     *******************************************************************************/
 
+    /*******************************************************************************
+     *                          Extern Data Declarations
+     *******************************************************************************/
+
+    /*******************************************************************************
+     *                          Extern Function Prototypes
+     *******************************************************************************/
     /**
      * @brief Function to respond to cloud.firmware.info.get method
      *

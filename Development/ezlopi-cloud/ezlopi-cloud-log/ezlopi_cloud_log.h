@@ -1,13 +1,5 @@
-
-/**
- * @file    ezlopi_cloud_log.c
- * @brief
- * @author
- * @version
- * @date
- */
 /* ===========================================================================
-** Copyright (C) 2022 Ezlo Innovation Inc
+** Copyright (C) 2025 Ezlo Innovation Inc
 **
 ** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
 **
@@ -37,19 +29,44 @@
 ** ===========================================================================
 */
 
-#ifndef _EZLOPI_CLOUD_LOG_H_
-#define _EZLOPI_CLOUD_LOG_H_
+/**
+ * @file    ezlopi_cloud_log.h
+ * @brief   Declerations for cloud log functions
+ * @author  Krishna Kumar Sah (work.krishnasah@gmail.com)
+ * @version 1.0
+ * @date    May 2nd, 2024 5:21 PM
+ */
+
+#ifndef __EZLOPI_CLOUD_LOG_H__
+#define __EZLOPI_CLOUD_LOG_H__
 
 #include "../../build/config/sdkconfig.h"
 
 #ifdef CONFIG_EZPI_UTIL_TRACE_EN
-
+/*******************************************************************************
+ *                          Include Files
+ *******************************************************************************/
 #include "cjext.h"
 
+/*******************************************************************************
+ *                          C++ Declaration Wrapper
+ *******************************************************************************/
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+
+    /*******************************************************************************
+     *                          Type & Macro Declarations
+     *******************************************************************************/
+
+    /*******************************************************************************
+     *                          Extern Data Declarations
+     *******************************************************************************/
+
+    /*******************************************************************************
+     *                          Extern Function Prototypes
+     *******************************************************************************/
 
     /**
      * @brief Function to respond to hub.log.set method
@@ -78,7 +95,7 @@ extern "C"
 }
 #endif
 
-#endif // _EZLOPI_CLOUD_LOG_H_
+#endif // __EZLOPI_CLOUD_LOG_H__
 
 /*******************************************************************************
  *                          End of File

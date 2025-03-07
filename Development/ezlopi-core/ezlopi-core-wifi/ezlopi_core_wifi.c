@@ -1,5 +1,5 @@
 /* ===========================================================================
-** Copyright (C) 2024 Ezlo Innovation Inc
+** Copyright (C) 2025 Ezlo Innovation Inc
 **
 ** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
 **
@@ -31,7 +31,7 @@
 /**
  * @file    ezlopi_core_wifi.c
  * @brief   perform some function on wifi-operations
- * @author  xx
+ * @author  Krishna Kumar Sah (work.krishnasah@gmail.com)
  * @version 0.1
  * @date    12th DEC 2024
  */
@@ -71,7 +71,6 @@
 #include "ezlopi_core_cjson_macros.h"
 #include "ezlopi_core_wifi_err_reason.h"
 #include "ezlopi_core_device_value_updated.h"
-#include "scent_diffuser.h"
 // #include "ezlopi_core_errors.h"
 
 #include "ezlopi_cloud_constants.h"
@@ -189,7 +188,7 @@ int EZPI_core_wifi_get_auth_mode_str(char auth_str[50], wifi_auth_mode_t mode)
 {
     int ret = 0;
     memset(auth_str, 0, 50);
-    char *auth_mode_str = "";
+    char *auth_mode_str = ezlopi__str;
     switch (mode)
     {
     case WIFI_AUTH_OPEN:
@@ -352,8 +351,8 @@ void ezlopi_wifi_try_connect_task(void *params)
         {
             char ssid[32];
             char pass[32];
-            CJSON_GET_VALUE_STRING_BY_COPY(cj_network, ezlopi_ssid_str, ssid);
-            CJSON_GET_VALUE_STRING_BY_COPY(cj_network, ezlopi_key_str, pass);
+            CJSON_GET_VALUE_STRING_BY_COPY(cj_network, ezlopi_ssid_str, ssid, sizeof(ssid));
+            CJSON_GET_VALUE_STRING_BY_COPY(cj_network, ezlopi_key_str, pass, sizeof(pass));
             if (('\0' != ssid[0]) && ('\0' != pass))
             {
                 TRACE_D("Trying to connect to %s with password %s", ssid, pass);
@@ -484,7 +483,6 @@ static void __event_handler(void *arg, esp_event_base_t event_base, int32_t even
         case WIFI_EVENT_STA_CONNECTED:
         {
             TRACE_D("wifi-connected!");
-            // send_command(CMD_CONNECTION_START);
             break;
         }
         default:

@@ -1,8 +1,8 @@
 file( GLOB_RECURSE src_files "*.c*" )
 
-set(ESP_IDF_COMPONENTS 
+set(ESP_IDF_COMPONENTS
 )
-set(EZLOPI_COMPONENTS 
+set(EZLOPI_COMPONENTS
         ezlopi-util-trace
 )
 
@@ -27,9 +27,10 @@ set(EZLOPI_CLOUD_COMPONENTS
         ezlopi-cloud-log
         ezlopi-cloud-hub-data-list
         ezlopi-cloud-setting-commands
+        ezlopi-cloud-protect
 )
 
-set(EZLOPI_CORE_COMPONENTS 
+set(EZLOPI_CORE_COMPONENTS
         ezlopi-core-reset
         ezlopi-core-ezlopi
 )

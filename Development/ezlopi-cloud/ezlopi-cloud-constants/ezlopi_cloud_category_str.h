@@ -1,14 +1,5 @@
-
-
-/**
- * @file    ezlopi_cloud_category_str.h
- * @brief
- * @author
- * @version
- * @date
- */
 /* ===========================================================================
-** Copyright (C) 2022 Ezlo Innovation Inc
+** Copyright (C) 2025 Ezlo Innovation Inc
 **
 ** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
 **
@@ -38,13 +29,37 @@
 ** ===========================================================================
 */
 
+/**
+ * @file    ezlopi_cloud_category_str.h
+ * @brief
+ * @author  Krishna Kumar Sah (work.krishnasah@gmail.com)
+ * @version 1.0
+ * @date    October 12th, 2022 8:24 PM
+ */
+
 #ifndef __EZLOPI_CATEGORY_H__
 #define __EZLOPI_CATEGORY_H__
+
+/*******************************************************************************
+ *                          Include Files
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          C++ Declaration Wrapper
+ *******************************************************************************/
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+
+    /*******************************************************************************
+     *                          Type & Macro Declarations
+     *******************************************************************************/
+
+    /*******************************************************************************
+     *                          Extern Data Declarations
+     *******************************************************************************/
 
     /// @brief https://api.ezlo.com/devices/categories/index.html
 
@@ -82,7 +97,7 @@ extern "C"
      * @brief Variable to be used for hvac type cloud category
      *
      */
-    extern const  char *category_hvac;
+    // extern const  char *category_hvac;
     /**
      * @brief Variable to be used for camera type cloud category
      *
@@ -93,12 +108,6 @@ extern "C"
      *
      */
     extern const char *category_door_lock;
-    /**
-     * @brief Variable to be used for lock type cloud category
-     *
-     */
-    extern const char *category_lock;
-    extern const char *category_mode;
     /**
      * @brief Variable to be used for window cov type cloud category
      *
@@ -213,7 +222,7 @@ extern "C"
      * @brief Variable to be used for keypad type cloud category
      *
      */
-    extern const  char *category_keypad;
+    // extern const  char *category_keypad;
     /**
      * @brief Variable to be used for garage door type cloud category
      *
@@ -245,6 +254,9 @@ extern "C"
      */
     // extern const  char *category_clock;
 
+    /*******************************************************************************
+     *                          Extern Function Prototypes
+     *******************************************************************************/
 #ifdef __cplusplus
 }
 #endif

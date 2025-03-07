@@ -1,14 +1,7 @@
 
 
-/**
- * @file    ezlopi_cloud_subcategory_str.c
- * @brief
- * @author
- * @version
- * @date
- */
 /* ===========================================================================
-** Copyright (C) 2022 Ezlo Innovation Inc
+** Copyright (C) 2025 Ezlo Innovation Inc
 **
 ** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
 **
@@ -38,6 +31,44 @@
 ** ===========================================================================
 */
 
+/**
+ * @file    ezlopi_cloud_subcategory_str.c
+ * @brief   Definitions for cloud subcategory strings
+ * @author  Krishna Kumar Sah (work.krishnasah@gmail.com)
+ * @version 1.0
+ * @date    November 22nd, 2023 3:27 PM
+ */
+
+#ifndef __EZLOPI_SUBCATEGORY_H__
+#define __EZLOPI_SUBCATEGORY_H__
+
+/*******************************************************************************
+ *                          Include Files
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Extern Data Declarations
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Extern Function Declarations
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Type & Macro Definitions
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Static Function Prototypes
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Static Data Definitions
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Extern Data Definitions
+ *******************************************************************************/
 /// @brief https://api.ezlo.com/devices/categories/index.html
 const char *subcategory_not_defined = "";
 const char *subcategory_dimmable_bulb = "dimmable_bulb";
@@ -55,16 +86,14 @@ const char *subcategory_leak = "leak";
 const char *subcategory_motion = "motion";
 // const  char *subcategory_glass = "glass";
 // const  char *subcategory_smoke = "smoke";
-// const  char *subcategory_co = "co";
+const  char *subcategory_co = "co";
 // const  char *subcategory_co2 = "co2";
 const char *subcategory_gas = "gas";
 const char *subcategory_heat = "heat";
 // const  char *subcategory_hvac = "hvac";
 // const  char *subcategory_heater = "heater";
 const  char *subcategory_cooler = "cooler";
-const  char *subcategory_custom_hvac = "custom_hvac";
-const char *subcategory_child_lock = "child_lock"; 
-const char *subcategory_mode_selection = "control";
+// const  char *subcategory_custom_hvac = "custom_hvac";
 // const  char *subcategory_indoor_cam = "indoor_cam";
 // const  char *subcategory_outdoor_cam = "outdoor_cam";
 // const  char *subcategory_doorbell_cam = "doorbell_cam";
@@ -98,6 +127,16 @@ const char *subcategory_sound = "sound";
 const char *subcategory_navigation = "navigation";
 // const  char *subcategory_seismicity = "seismicity";
 // const  char *subcategory_time = "time";
+
+/*******************************************************************************
+ *                          Extern Function Definitions
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Static Function Definitions
+ *******************************************************************************/
+
+#endif // __EZLOPI_SUBCATEGORY_H__
 
 /*******************************************************************************
  *                          End of File

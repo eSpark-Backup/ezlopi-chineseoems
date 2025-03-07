@@ -1,13 +1,5 @@
-
-/**
- * @file    ezlopi_cloud_network.h
- * @brief
- * @author
- * @version
- * @date
- */
 /* ===========================================================================
-** Copyright (C) 2022 Ezlo Innovation Inc
+** Copyright (C) 2025 Ezlo Innovation Inc
 **
 ** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
 **
@@ -37,18 +29,38 @@
 ** ===========================================================================
 */
 
+/**
+ * @file    ezlopi_cloud_network.h
+ * @brief   Declerations for cloud network functions
+ * @author  Krishna Kumar Sah (work.krishnasah@gmail.com)
+ * @version 1.0
+ * @date    August 15th, 2022 11:57 AM
+ */
+
 #ifndef __NETWORK_H__
 #define __NETWORK_H__
 
+/*******************************************************************************
+ *                          Include Files
+ *******************************************************************************/
 #include <string.h>
 
 #include "cjext.h"
 
+/*******************************************************************************
+ *                          C++ Declaration Wrapper
+ *******************************************************************************/
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+    /*******************************************************************************
+     *                          Extern Data Declarations
+     *******************************************************************************/
 
+    /*******************************************************************************
+     *                          Extern Function Prototypes
+     *******************************************************************************/
     /**
      * @brief Function to respond to hub.network.get method
      *
@@ -81,6 +93,7 @@ extern "C"
 #ifdef __cplusplus
 }
 #endif
+
 #endif //__NETWORK_H__
 
 /*******************************************************************************

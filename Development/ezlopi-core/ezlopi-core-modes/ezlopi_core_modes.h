@@ -1,5 +1,5 @@
 /* ===========================================================================
-** Copyright (C) 2024 Ezlo Innovation Inc
+** Copyright (C) 2025 Ezlo Innovation Inc
 **
 ** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
 **
@@ -31,17 +31,17 @@
 /**
  * @file    ezlopi_core_modes.h
  * @brief   These function perform opertation on HouseModes
- * @author  xx
+ * @author  Krishna Kumar Sah (work.krishnasah@gmail.com)
  * @version 0.1
  * @date    12th DEC 2024
-*/
+ */
 
 #ifndef __EZLOPI_HOME_MODES_H__
 #define __EZLOPI_HOME_MODES_H__
 
 /*******************************************************************************
-*                          Include Files
-*******************************************************************************/
+ *                          Include Files
+ *******************************************************************************/
 #include "cjext.h"
 #include <stdlib.h>
 #include <stdint.h>
@@ -54,16 +54,16 @@
 #if defined(CONFIG_EZPI_SERV_ENABLE_MODES)
 
 /*******************************************************************************
-*                          C++ Declaration Wrapper
-*******************************************************************************/
+ *                          C++ Declaration Wrapper
+ *******************************************************************************/
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
     /*******************************************************************************
-    *                          Type & Macro Declarations
-    *******************************************************************************/
+     *                          Type & Macro Declarations
+     *******************************************************************************/
 
     typedef enum e_modes_ref_id_idx
     {
@@ -111,10 +111,10 @@ extern "C"
         uint32_t _id;                 // Numeric representation of the 'House-Mode'
         uint32_t switch_to_delay_sec; // represent a delay before switching to a perticular 'mode'.
         uint32_t alarm_delay_sec;     // Delay before sending alert if armed sensors (door/window or motion sensor) tripped .
-        bool armed;            // flag to indicate if the mode enters the alarmed mode. // Default values: [Home: false], [Away: true], [Night: true], [Vacation: true]
-        bool protect;          // Enables or disables Ezlo Protect for a particular house mode. // Default values: [Home: false], [Away: true], [Night: true], [Vacation: true]
-        bool disarmed_default; // if true ; utilize the disarmed devices.
-        bool notify_all;       // This Flag indicates, notifiations trigger to all user_IDs
+        bool armed;                   // flag to indicate if the mode enters the alarmed mode. // Default values: [Home: false], [Away: true], [Night: true], [Vacation: true]
+        bool protect;                 // Enables or disables Ezlo Protect for a particular house mode. // Default values: [Home: false], [Away: true], [Night: true], [Vacation: true]
+        bool disarmed_default;        // if true ; set all security sensor (in curr houseMode) is disarmed by default.
+        bool notify_all;              // This Flag indicates, notifiations trigger to all user_IDs
 
         cJSON *cj_notifications;       // Specific list of user_IDs to notify
         cJSON *cj_bypass_devices;      // Devices bypass list --> for no alert/security consequences.
@@ -160,15 +160,26 @@ extern "C"
 
     } s_sources_t;
 
+    typedef struct s_system_test
+    {
+        uint32_t started_at;      // Timestamp of the moment when the test was started
+        uint32_t duration;        // The initial or modified duration of a test. Contains initial test duration interval, or actual test duration + test duration interval, if the test was extended.
+        uint32_t time_is_left;    // How much time is left till the end of the test
+        const char *operation_id; // Operation identifier of a test, can be used to identify all events that belong to the test.
+        const char *type;         // Type of a system test, walk for sensor walk test.
+        struct s_sources *next;
+
+    } s_system_test_t;
+
     typedef struct s_alarmed
     {
-        char type[32];                      // default is 'global' ( Indicates that the alarmDelay value was taken from the house modes settings)
-        uint32_t entry_delay_sec;           // If house modes alarmed, and HouseModes.alarmDelay > 0, entry delay period is started . [The default value is given from 'MODE->s_entry_delay_t' choice]
-        volatile uint32_t time_is_left_sec; // Number of seconds left to the end of the Entry delay.
-        bool silent;                        // Default: false ... When : true ; websocket clients should treat the alarm as the silent alarm: no indication of alarm is allowed.
-        e_modes_alarm_phase_t phase;        // --> [Not in  documentation ; Added for broadcast purpose] === alarm_phases_type : [idle / bypassed / entryDelay / main]
-        e_modes_alarm_status_t status;      // --> [Not in  documentation ; Added for broadcast purpose] === House_mode status for 'alaram_phase'
-        s_sources_t *sources;               // Contains an array of devices that waiting for the entry delay to finish. They are security devices which emitted security events
+        char type[32];                 // default is 'global' ( Indicates that the alarmDelay value was taken from the house modes settings)
+        uint32_t entry_delay_sec;      // If house modes alarmed, and HouseModes.alarmDelay > 0, entry delay period is started . [The default value is given from 'MODE->s_entry_delay_t' choice]
+        uint32_t time_is_left_sec;     // Number of seconds left to the end of the Entry delay.
+        bool silent;                   // Default: false ... When : true ; websocket clients should treat the alarm as the silent alarm: no indication of alarm is allowed.
+        e_modes_alarm_phase_t phase;   // --> [Not in  documentation ; Added for broadcast purpose] === alarm_phases_type : [idle / bypassed / entryDelay / main]
+        e_modes_alarm_status_t status; // --> [Not in  documentation ; Added for broadcast purpose] === House_mode status for 'alaram_phase'
+        s_sources_t *sources;          // Contains an array of devices that waiting for the entry delay to finish. They are security devices which emitted security events
     } s_alarmed_t;
 
     typedef struct s_ezlopi_modes
@@ -181,7 +192,7 @@ extern "C"
         uint32_t alarm_delay;                //  Delay (sec) before sending alert if armed sensors (door/window or motion sensor) tripped. // [https://log.ezlo.com/new/hub/house_modes_manager/#hubmodesget-version-20] 	Delay (sec) before sending alert to the all modes   // NOTE : [(alarm_delay_sec > 0) === means 'mode->alarmed' member exists ]
         uint32_t switch_to_delay_runs_out;   //  A period of 'exit-time-delay' ; switching to/from the armed mode.
 
-        cJSON *cj_alarms;  // Array of device id which make alarms after trips (Main alert list)
+        cJSON *cj_alarms;  // Array of sensors/devices with ability to alarm us after it trips.
         cJSON *cj_cameras; // Array of camera device identifiers with items named make_recording
         cJSON *cj_devices; // Array of device id with security sensors
         s_protect_buttons_t *l_protect_buttons;
@@ -198,262 +209,350 @@ extern "C"
 
     } s_ezlopi_modes_t;
 
-    /*******************************************************************************
-    *                          Extern Data Declarations
-    *******************************************************************************/
+    typedef struct l_modes_alert
+    {
+        bool alert_trig;               // default 'false' [guard to trigger alert]
+        uint32_t u_id;                 // ID of security device 'uuid'
+        uint32_t abort_window_ll;      // abort alarm-broadcast with this time   (Phase 1)
+        uint32_t alarm_delay_ll;       // delay before triggering an alert       (Phase 2)
+        uint32_t timeleft_to_abort_ll; // time limit within which it is possible to abort a trigger-alert
+        uint32_t timeleft_to_alarm_ll; // custome delay-time assigned before alarm triggers
+
+        struct l_modes_alert *next;
+    } l_modes_alert_t;
 
     /*******************************************************************************
-    *                          Extern Function Prototypes
-    *******************************************************************************/
+     *                          Extern Data Declarations
+     *******************************************************************************/
+
+    /*******************************************************************************
+     *                          Extern Function Prototypes
+     *******************************************************************************/
+    /**
+     * @brief Function return 'alert_ll' head_node
+     *
+     */
+    l_modes_alert_t *EZPI_core_modes_get_alert_head(void);
+    /**
+     * @brief Function to add alert triggers for target device_id
+     *
+     * @param u_id Target device_id
+     * @param ez_mode Pointer to current HouseMode
+     * @return ezlopi_error_t
+     */
+    ezlopi_error_t EZPI_core_modes_add_alert(uint32_t u_id, s_ezlopi_modes_t *ez_mode);
+    /**
+     * @brief Function to remove all alerts
+     *
+     */
+    void EZPI_core_modes_remove_all_alerts(void);
 
     /**
-    * @brief This function initializes House-mode task
-    */
+     * @brief This function initializes House-mode task
+     */
     void EZPI_core_modes_init(void);
     /**
-    * @brief This function initializes default house-mode information
-    */
+     * @brief This function initializes default house-mode information
+     */
     void EZPI_core_default_init(void);
     /**
-    * @brief This function store new house-mode to nvs
-    * @return ezlopi_error_t
-    */
+     * @brief This function store new house-mode to nvs
+     * @return ezlopi_error_t
+     */
     ezlopi_error_t EZPI_core_modes_store_to_nvs(void);
 
     /**
-    * @brief This function initializes default house-mode information
-    */
+     * @brief This function returns default house-mode information
+     */
     s_ezlopi_modes_t *EZPI_core_default_mode_get(void);
     /**
-    * @brief This function returns house-mode information by id
-    *
-    * @param house_mode_id Target house-mode-id
-    * @return s_house_modes_t *
-    */
+     * @brief This function returns house-mode information by id
+     *
+     * @param house_mode_id Target house-mode-id
+     * @return s_house_modes_t *
+     */
     s_house_modes_t *EZPI_core_modes_get_house_mode_by_id(uint32_t house_mode_id);
     /**
-    * @brief This function returns house-mode information by name
-    *
-    * @param house_mode_name Name of target house-mode
-    * @return s_house_modes_t *
-    */
+     * @brief This function returns house-mode information by name
+     *
+     * @param house_mode_name Name of target house-mode
+     * @return s_house_modes_t *
+     */
     s_house_modes_t *EZPI_core_modes_get_house_mode_by_name(char *house_mode_name);
 
     /**
-    * @brief This function return active house-mode information
-    *
-    * @return s_ezlopi_modes_t *
-    */
+     * @brief This function return active house-mode information
+     *
+     * @return s_ezlopi_modes_t *
+     */
     s_ezlopi_modes_t *EZPI_core_modes_get_custom_modes(void);
     /**
-    * @brief This function return active house-mode struct information
-    *
-    * @return s_house_modes_t *
-    */
+     * @brief This function return active house-mode struct information
+     *
+     * @return s_house_modes_t *
+     */
     s_house_modes_t *EZPI_core_modes_get_current_house_modes(void);
     /**
-    * @brief This function sets 'new-house-mode' as active
-    *
-    * @param new_house_mode Name of target house-mode
-    * @return ezlopi_error_t
-    */
+     * @brief This function sets 'new-house-mode' as active
+     *
+     * @param new_house_mode Name of target house-mode
+     * @return ezlopi_error_t
+     */
     ezlopi_error_t EZPI_core_modes_set_current_house_mode(s_house_modes_t *new_house_mode);
     /**
-    * @brief This function sets/resets device armed flag
-    *
-    * @param cj_device_array Pointer to array of target-devices
-    * @param set Value to set
-    * @return ezlopi_error_t
-    */
+     * @brief This function sets/resets device armed flag
+     *
+     * @param cj_device_array Pointer to array of target-devices
+     * @param set Value to set
+     * @return ezlopi_error_t
+     */
     ezlopi_error_t EZPI_core_modes_set_unset_device_armed_status(cJSON *cj_device_array, const bool set);
 
     /**
-    * @brief This function extracts house-mode information from 'cj_result'
-    *
-    * @param cj_result Destinaiton which stores modes
-    * @return ezlopi_error_t
-    */
+     * @brief This function extracts house-mode information from 'cj_result'
+     *
+     * @param cj_result Destinaiton which stores modes
+     * @return ezlopi_error_t
+     */
     ezlopi_error_t EZPI_core_modes_api_get_modes(cJSON *cj_result);
     /**
-    * @brief This function extract house-mode information
-    *
-    * @param cj_result Destinaiton which stores modes info
-    * @return ezlopi_error_t
-    */
+     * @brief This function extract house-mode information
+     *
+     * @param cj_result Destinaiton which stores modes info
+     * @return ezlopi_error_t
+     */
     ezlopi_error_t EZPI_core_modes_api_get_current_mode(cJSON *cj_result);
     /**
-    * @brief This function switch-mode to new mode
-    *
-    * @param switch_to_house_mode Pointer to new node
-    * @return ezlopi_error_t
-    */
+     * @brief This function switch-mode to new mode
+     *
+     * @param switch_to_house_mode Pointer to new node
+     * @return ezlopi_error_t
+     */
     ezlopi_error_t EZPI_core_modes_api_switch_mode(s_house_modes_t *switch_to_house_mode);
     /**
-    * @brief This function cancels switching of new mode
-    * @return ezlopi_error_t
-    */
+     * @brief This function cancels switching of new mode
+     * @return ezlopi_error_t
+     */
     ezlopi_error_t EZPI_core_modes_api_cancel_switch(void);
     /**
-    * @brief This function cancel entry-delay-phase of 'house-mode' loop
-    * @return ezlopi_error_t
-    */
+     * @brief This function cancel entry-delay-phase of 'house-mode' loop
+     * @return ezlopi_error_t
+     */
     ezlopi_error_t EZPI_core_modes_api_cancel_entry_delay(void);
     /**
-    * @brief This function skips entry-delay-phase of 'house-mode' loop
-    * @return ezlopi_error_t
-    */
+     * @brief This function skips entry-delay-phase of 'house-mode' loop
+     * @return ezlopi_error_t
+     */
     ezlopi_error_t EZPI_core_modes_api_skip_entry_delay(void);
     /**
-    * @brief This function sets the delay time before switching for active modes
-    *
-    * @param switch_to_delay switch_to_delay time in sec
-    * @return ezlopi_error_t
-    */
+     * @brief This function sets the delay time before switching for active modes
+     *
+     * @param switch_to_delay switch_to_delay time in sec
+     * @return ezlopi_error_t
+     */
     ezlopi_error_t EZPI_core_modes_api_set_switch_to_delay(uint32_t switch_to_delay);
     /**
-    * @brief This function sets alarmDelay for active modes
-    *
-    * @param switch_to_delay AlarmDelay time in sec
-    * @return ezlopi_error_t
-    */
+     * @brief This function sets alarmDelay for active modes
+     *
+     * @param switch_to_delay AlarmDelay time in sec
+     * @return ezlopi_error_t
+     */
     ezlopi_error_t EZPI_core_modes_api_set_alarm_delay(uint32_t switch_to_delay);
     /**
-    * @brief This function sets notification_ids for active modes
-    *
-    * @param modeId Target ModeID to modify
-    * @param all Flag for notification-type
-    * @param user_id_aray Target Ids to add
-    * @return ezlopi_error_t
-    */
+     * @brief This function sets notification_ids for active modes
+     *
+     * @param modeId Target ModeID to modify
+     * @param all Flag for notification-type
+     * @param user_id_aray Target Ids to add
+     * @return ezlopi_error_t
+     */
     ezlopi_error_t EZPI_core_modes_api_set_notifications(uint8_t modeId, bool all, cJSON *user_id_aray);
     /**
-    * @brief This function sets disarmed_default for active modes
-    *
-    * @param modeId target modeId to set the flag for
-    * @param disarmedDefault value of flag to set
-    * @return ezlopi_error_t
-    */
+     * @brief This function sets disarmed_default for active modes
+     *
+     * @param modeId target modeId to set the flag for
+     * @param disarmedDefault value of flag to set
+     * @return ezlopi_error_t
+     */
     ezlopi_error_t EZPI_core_modes_api_set_disarmed_default(uint8_t modeId, bool disarmedDefault);
     /**
-    * @brief This function add disarmed_default for active modes
-    *
-    * @param modeId Flag for notification-type
-    * @param device_id_str  Id of the device to add
-    * @return ezlopi_error_t
-    */
+     * @brief This function add disarmed_default for active modes
+     *
+     * @param modeId Flag for notification-type
+     * @param device_id_str  Id of the device to add
+     * @return ezlopi_error_t
+     */
     ezlopi_error_t EZPI_core_modes_api_add_disarmed_device(uint8_t modeId, const char *device_id_str);
     /**
-    * @brief This function removes devices from disarmed_device list
-    *
-    * @param modeId Target mode_id
-    * @param device_id_str Id of the device to remove
-    * @return ezlopi_error_t
-    */
+     * @brief This function removes devices from disarmed_device list
+     *
+     * @param modeId Target mode_id
+     * @param device_id_str Id of the device to remove
+     * @return ezlopi_error_t
+     */
     ezlopi_error_t EZPI_core_modes_api_remove_disarmed_device(uint8_t modeId, const char *device_id_str);
     /**
-    * @brief This function sets protect flag for a house-mode
-    *
-    * @param modeId Target mode_id
-    * @param protect_state Flag to protect a mode
-    * @return ezlopi_error_t
-    */
+     * @brief This function sets protect flag for a house-mode
+     *
+     * @param modeId Target mode_id
+     * @param protect_state Flag to protect a mode
+     * @return ezlopi_error_t
+     */
     ezlopi_error_t EZPI_core_modes_api_set_protect(uint32_t modeId, bool protect_state);
     /**
-    * @brief This function sets 'protect_button' information
-    *
-    * @param service_str Type of protect service for the button
-    * @param deviceId Id of the device to remove
-    * @param status Status of the button changes
-    * @return ezlopi_error_t
-    */
+     * @brief This function sets 'protect_button' information
+     *
+     * @param service_str Type of protect service for the button
+     * @param deviceId Id of the device to remove
+     * @param status Status of the button changes
+     * @return ezlopi_error_t
+     */
     ezlopi_error_t EZPI_core_modes_api_set_protect_button(char *service_str, uint32_t deviceId, uint8_t *status);
     /**
-    * @brief This function adds devices to 'protect'
-    *
-    * @param user_id_aray Array of user_ids to add
-    * @return ezlopi_error_t
-    */
+     * @brief This function adds devices to 'protect'
+     *
+     * @param user_id_aray Array of user_ids to add
+     * @return ezlopi_error_t
+     */
     ezlopi_error_t EZPI_core_modes_api_add_protect_devices(cJSON *user_id_aray);
     /**
-    * @brief This function adds devices to 'protect'
-    *
-    * @param user_id_aray Array of user_ids to remove
-    * @return ezlopi_error_t
-    */
+     * @brief This function adds devices to 'protect'
+     *
+     * @param user_id_aray Array of user_ids to remove
+     * @return ezlopi_error_t
+     */
     ezlopi_error_t EZPI_core_modes_api_remove_protect_devices(cJSON *user_id_aray);
 
     /**
-    * @brief This function to add alarm_off devices from perticular mode
-    *
-    * @param modeId The target-mode-id
-    * @param device_id_str alarm_off device_id to add
-    * @return ezlopi_error_t
-    */
+     * @brief This function to add alarm_off devices from perticular mode
+     *
+     * @param modeId The target-mode-id
+     * @param device_id_str alarm_off device_id to add
+     * @return ezlopi_error_t
+     */
     ezlopi_error_t EZPI_core_modes_api_add_alarm_off(uint8_t modeId, const char *device_id_str);
     /**
-    * @brief This function to remove alarm_off devices from perticular mode
-    *
-    * @param modeId The target-mode-id
-    * @param device_id_str alarm_off device_id to remove
-    * @return ezlopi_error_t
-    */
+     * @brief This function to remove alarm_off devices from perticular mode
+     *
+     * @param modeId The target-mode-id
+     * @param device_id_str alarm_off device_id to remove
+     * @return ezlopi_error_t
+     */
     ezlopi_error_t EZPI_core_modes_api_remove_alarm_off(uint32_t modeId, const char *device_id_str);
     /**
-    * @brief This function to add cameras_off devices from perticular mode
-    *
-    * @param modeId The target-mode-id
-    * @param device_id_str cameras_off device_id to add
-    * @return ezlopi_error_t
-    */
+     * @brief This function to add cameras_off devices from perticular mode
+     *
+     * @param modeId The target-mode-id
+     * @param device_id_str cameras_off device_id to add
+     * @return ezlopi_error_t
+     */
     ezlopi_error_t EZPI_core_modes_api_add_cameras_off(uint8_t modeId, const char *device_id_str);
     /**
-    * @brief This function to remove cameras_off devices from perticular mode
-    *
-    * @param modeId The target-mode-id
-    * @param device_id_str cameras_off device_id to remove
-    * @return ezlopi_error_t
-    */
+     * @brief This function to remove cameras_off devices from perticular mode
+     *
+     * @param modeId The target-mode-id
+     * @param device_id_str cameras_off device_id to remove
+     * @return ezlopi_error_t
+     */
     ezlopi_error_t EZPI_core_modes_api_remove_cameras_off(uint8_t modeId, const char *device_id_str);
 
     /**
-    * @brief This function to add bypass devices from perticular mode
-    *
-    * @param modeId The target-mode-id
-    * @param cj_device_id_array List of bypass devices to add
-    * @return ezlopi_error_t
-    */
+     * @brief This function to add bypass devices from perticular mode
+     *
+     * @param modeId The target-mode-id
+     * @param cj_device_id_array List of bypass devices to add
+     * @return ezlopi_error_t
+     */
     ezlopi_error_t EZPI_core_modes_api_bypass_device_add(uint8_t modeId, cJSON *cj_device_id_array);
     /**
-    * @brief This function to remove bypass devices from perticular mode
-    *
-    * @param modeId The target-mode-id
-    * @param cj_device_id_array List of bypass devices to remove
-    * @return ezlopi_error_t
-    */
+     * @brief This function to remove bypass devices from perticular mode
+     *
+     * @param modeId The target-mode-id
+     * @param cj_device_id_array List of bypass devices to remove
+     * @return ezlopi_error_t
+     */
     ezlopi_error_t EZPI_core_modes_api_bypass_device_remove(uint8_t modeId, cJSON *cj_device_id_array);
 
     /**
-    * @brief This function to get current house-mode-id
-    *
-    * @param cj_result Cjson that stores active house-mode-id
-    * @return ezlopi_error_t
-    */
+     * @brief This function to get current house-mode-id
+     *
+     * @param cj_result Cjson that stores active house-mode-id
+     * @return ezlopi_error_t
+     */
     ezlopi_error_t EZPI_core_modes_cjson_get_current_mode(cJSON *cj_result);
     /**
-    * @brief This function sets entry_delay
-    *
-    * @param normal_sec Normal entry-delay sec
-    * @param extended_sec Extended entry-delay sec
-    * @param long_extended_sec Long extended entry-delay sec
-    * @param instant_sec Instant entry-delay sec
-    * @return ezlopi_error_t
-    */
+     * @brief This function sets entry_delay
+     *
+     * @param normal_sec Normal entry-delay sec
+     * @param extended_sec Extended entry-delay sec
+     * @param long_extended_sec Long extended entry-delay sec
+     * @param instant_sec Instant entry-delay sec
+     * @return ezlopi_error_t
+     */
     ezlopi_error_t EZPI_core_modes_api_set_entry_delay(uint32_t normal_sec, uint32_t extended_sec, uint32_t long_extended_sec, uint32_t instant_sec);
     /**
-    * @brief This function resets entry_delay
-    * @return ezlopi_error_t
-    */
+     * @brief This function resets entry_delay
+     * @return ezlopi_error_t
+     */
     ezlopi_error_t EZPI_core_modes_api_reset_entry_delay(void);
+    /**
+     * @brief Function to List limitations and statistics for devices under Swinger Shutdown.
+     *
+     * @param cj_result Pointer to resultant list.
+     * @return ezlopi_error_t
+     */
+    ezlopi_error_t EZPI_core_modes_api_swinger_shutdown_list(cJSON *cj_result);
+    /**
+     * @brief Function to reset swinger info
+     *
+     * @param u_id Target Device_id
+     * @return ezlopi_error_t
+     */
+    ezlopi_error_t EZPI_core_modes_api_swinger_shutdown_reset(uint32_t u_id);
+    /**
+     * @brief Function to disable swinger shutdown for target device
+     *
+     * @param u_id Target device id
+     * @return ezlopi_error_t
+     */
+    ezlopi_error_t EZPI_core_modes_api_swinger_shutdown_disable_add(uint32_t u_id);
+    /**
+     * @brief Function to activate swinger shutdown for target device
+     *
+     * @param u_id Target device id
+     * @return ezlopi_error_t
+     */
+    ezlopi_error_t EZPI_core_modes_api_swinger_shutdown_disable_remove(uint32_t u_id);
+    /**
+     * @brief Function to set the limits for swinger shutdown of Target device_id
+     *
+     * @param u_id Target device_id
+     * @param hitslimit New hitsLimit for device
+     * @param inactivity_sec New Inactivity Window
+     * @return ezlopi_error_t
+     */
+    ezlopi_error_t EZPI_core_modes_api_swinger_shutdown_limit_set(uint32_t u_id, uint32_t hitslimit, uint32_t inactivity_sec);
+    /**
+     * @brief Function to reset Limit values of target device_id to 'global_default' value.
+     *
+     * @param u_id Target device_id
+     * @return ezlopi_error_t
+     */
+    ezlopi_error_t EZPI_core_modes_api_swinger_shutdown_limit_reset(uint32_t u_id);
+    /**
+     * @brief Function to Turn off the local alarm raised by the sensor in disarmed mode
+     *
+     * @param modeId Target-Mode
+     * @return ezlopi_error_t
+     */
+    ezlopi_error_t EZPI_core_modes_api_local_alarm_off(uint8_t modeId);
+    /**
+     * @brief Function to Cancel all security events when the system alarmed during the disarmed mode
+     *
+     * @param modeId Target-Mode
+     * @return ezlopi_error_t
+     */
+    ezlopi_error_t EZPI_core_modes_api_force_disarm(uint8_t modeId);
 
 #ifdef __cplusplus
 }
@@ -464,8 +563,5 @@ extern "C"
 #endif // __EZLOPI_HOME_MODES_H__
 
 /*******************************************************************************
-*                          End of File
-*******************************************************************************/
-
-
-
+ *                          End of File
+ *******************************************************************************/

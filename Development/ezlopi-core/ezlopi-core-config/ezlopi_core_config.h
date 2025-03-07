@@ -1,5 +1,5 @@
 /* ===========================================================================
-** Copyright (C) 2024 Ezlo Innovation Inc
+** Copyright (C) 2025 Ezlo Innovation Inc
 **
 ** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
 **
@@ -31,49 +31,55 @@
 /**
  * @file    ezlopi_core_config.h
  * @brief   Ezlopi-core configuration macros
- * @author  xx
+ * @author  Krishna Kumar Sah (work.krishnasah@gmail.com)
  * @version 0.1
  * @date    12th DEC 2024
-*/
+ */
 
 #ifndef _EZLOPI_CORE_CONFIG_H_
 #define _EZLOPI_CORE_CONFIG_H_
 
-
+/*******************************************************************************
+ *                          Include Files
+ *******************************************************************************/
 
 /*******************************************************************************
-*                          Include Files
-*******************************************************************************/
-
-
-/*******************************************************************************
-*                          C++ Declaration Wrapper
-*******************************************************************************/
+ *                          C++ Declaration Wrapper
+ *******************************************************************************/
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
     /*******************************************************************************
-    *                          Type & Macro Declarations
-    *******************************************************************************/
+     *                          Type & Macro Declarations
+     *******************************************************************************/
 #define EZLOPI_DEVICE_TYPE_ID "ezlopi"
-    /*******************************************************************************
-    *                          Extern Data Declarations
-    *******************************************************************************/
 
     /*******************************************************************************
-    *                          Extern Function Prototypes
-    *******************************************************************************/
-    
+     *                          Extern Data Declarations
+     *******************************************************************************/
+
+    /*******************************************************************************
+     *                          Extern Function Prototypes
+     *******************************************************************************/
+    /**
+     * @brief Global function template example
+     * Convention : Use capital letter for initial word on extern function
+     * maincomponent : Main component as hal, core, service etc.
+     * subcomponent : Sub component as i2c from hal, ble from service etc
+     * functiontitle : Title of the function
+     * eg : EZPI_hal_i2c_init()
+     * @param arg
+     *
+     */
 
 #ifdef __cplusplus
 }
 #endif
 
-
 #endif // _EZLOPI_CORE_CONFIG_H_
 
 /*******************************************************************************
-*                          End of File
-*******************************************************************************/
+ *                          End of File
+ *******************************************************************************/

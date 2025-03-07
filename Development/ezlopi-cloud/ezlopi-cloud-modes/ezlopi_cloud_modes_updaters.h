@@ -1,13 +1,5 @@
-
-/**
- * @file    ezlopi_cloud_modes_updaters.h
- * @brief
- * @author
- * @version
- * @date
- */
 /* ===========================================================================
-** Copyright (C) 2022 Ezlo Innovation Inc
+** Copyright (C) 2025 Ezlo Innovation Inc
 **
 ** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
 **
@@ -37,17 +29,43 @@
 ** ===========================================================================
 */
 
+/**
+ * @file    ezlopi_cloud_modes_updaters.h
+ * @brief   Declerations for cloud modes updater functions
+ * @author  Krishna Kumar Sah (work.krishnasah@gmail.com)
+ * @version 1.0
+ * @date    January 30th, 2024 6:39 PM
+ */
+
 #ifndef __EZLOPI_CLOUD_MODES_UPDATERS_H__
 #define __EZLOPI_CLOUD_MODES_UPDATERS_H__
 
+/*******************************************************************************
+ *                          Include Files
+ *******************************************************************************/
 #include "cjext.h"
 
 #if defined(CONFIG_EZPI_SERV_ENABLE_MODES)
 
+/*******************************************************************************
+ *                          C++ Declaration Wrapper
+ *******************************************************************************/
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+
+    /*******************************************************************************
+     *                          Type & Macro Declarations
+     *******************************************************************************/
+
+    /*******************************************************************************
+     *                          Extern Data Declarations
+     *******************************************************************************/
+
+    /*******************************************************************************
+     *                          Extern Function Prototypes
+     *******************************************************************************/
 
     /**
      * @brief Updater function for modes switched
@@ -203,6 +221,41 @@ extern "C"
      * @param cj_response Outgoing JSON response
      */
     void EZPI_cloud_modes_entry_delay_changed(cJSON *cj_request, cJSON *cj_response);
+    /**
+     * @brief Updater function for modes swinger shutdown reset done
+     *
+     * @param cj_request incoming JSON request
+     * @param cj_response Outgoing JSON response
+     */
+    void EZPI_cloud_modes_swinger_shutdown_reset_done(cJSON *cj_request, cJSON *cj_response);
+    /**
+     * @brief Updater function for modes swinger shutdown disable added
+     *
+     * @param cj_request incoming JSON request
+     * @param cj_response Outgoing JSON response
+     */
+    void EZPI_cloud_modes_swinger_shutdown_disable_added(cJSON *cj_request, cJSON *cj_response);
+    /**
+     * @brief Updater function for modes swinger shutdown disable removed
+     *
+     * @param cj_request incoming JSON request
+     * @param cj_response Outgoing JSON response
+     */
+    void EZPI_cloud_modes_swinger_shutdown_disable_removed(cJSON *cj_request, cJSON *cj_response);
+    /**
+     * @brief Updater function for modes swinger shutdown limit changed
+     *
+     * @param cj_request incoming JSON request
+     * @param cj_response Outgoing JSON response
+     */
+    void EZPI_cloud_modes_swinger_shutdown_limit_changed(cJSON *cj_request, cJSON *cj_response);
+    /**
+     * @brief Updater Function for local alarmed turned off
+     *
+     * @param cj_request incoming JSON request
+     * @param cj_response Outgoing JSON response
+     */
+    void EZPI_cloud_modes_local_alarmed_turned_off(cJSON *cj_request, cJSON *cj_response);
 
 #ifdef __cplusplus
 }

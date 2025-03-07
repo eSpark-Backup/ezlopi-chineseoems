@@ -1,14 +1,5 @@
-
-
-/**
- * @file    ezlopi_cloud_device_types_str.c
- * @brief
- * @author
- * @version
- * @date
- */
 /* ===========================================================================
-** Copyright (C) 2022 Ezlo Innovation Inc
+** Copyright (C) 2025 Ezlo Innovation Inc
 **
 ** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
 **
@@ -38,6 +29,41 @@
 ** ===========================================================================
 */
 
+/**
+ * @file    ezlopi_cloud_device_types_str.c
+ * @brief
+ * @author  Krishna Kumar Sah (work.krishnasah@gmail.com)
+ * @version 1.0
+ * @date    November 22nd, 2023 3:27 PM
+ */
+
+/*******************************************************************************
+ *                          Include Files
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Extern Data Declarations
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Extern Function Declarations
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Type & Macro Definitions
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Static Function Prototypes
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Static Data Definitions
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Extern Data Definitions
+ *******************************************************************************/
 /// @brief https://api.ezlo.com/devices/devices/index.html
 const char *dev_type_device = "device";
 const char *dev_type_sensor = "sensor";
@@ -45,8 +71,8 @@ const char *dev_type_sensor_motion = "sensor.motion";
 // const  char *dev_type_sensor_multisensor = "sensor.multisensor";
 // const  char *dev_type_light_bulb = "light.bulb";
 // const  char *dev_type_light_strip = "light.strip";
-const  char *dev_type_light_controller = "light.controller";
-const  char *dev_type_thermostat = "thermostat";
+// const  char *dev_type_light_controller = "light.controller";
+// const  char *dev_type_thermostat = "thermostat";
 const char *dev_type_switch_outlet = "switch.outlet";
 const char *dev_type_dimmer_outlet = "dimmer.outlet";
 const char *dev_type_switch_inwall = "switch.inwall";
@@ -67,3 +93,15 @@ const char *dev_type_transmitter_ir = "transmitter.ir";
 // const  char *dev_type_meter_power = "meter.power";
 // const  char *dev_type_meter_flow = "meter.flow";
 // const  char *dev_type_camera = "camera";
+
+/*******************************************************************************
+ *                          Extern Function Definitions
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Static Function Definitions
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          End of File
+ *******************************************************************************/

@@ -1,13 +1,5 @@
-
-/**
- * @file    ezlopi_service_ota.h
- * @brief
- * @author
- * @version
- * @date
- */
 /* ===========================================================================
-** Copyright (C) 2024 Ezlo Innovation Inc
+** Copyright (C) 2025 Ezlo Innovation Inc
 **
 ** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
 **
@@ -37,16 +29,39 @@
 ** ===========================================================================
 */
 
-#ifndef _EZLOPI_SERVICE_OTA_H_
-#define _EZLOPI_SERVICE_OTA_H_
+/**
+ * @file    ezlopi_service_ota.h
+ * @brief   Contains function declarations related to OTA operations
+ * @authors Krishna Kumar Sah (work.krishnasah@gmail.com)
+ * @version 1.0
+ * @date    April 27th, 2023 6:21 PM
+ */
+#ifndef __EZLOPI_SERVICE_OTA_H__
+#define __EZLOPI_SERVICE_OTA_H__
 
 #ifdef CONFIG_EZPI_ENABLE_OTA
+/*******************************************************************************
+ *                          Include Files
+ *******************************************************************************/
 
+/*******************************************************************************
+ *                          C++ Declaration Wrapper
+ *******************************************************************************/
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+    /*******************************************************************************
+     *                          Type & Macro Declarations
+     *******************************************************************************/
 
+    /*******************************************************************************
+     *                          Extern Data Declarations
+     *******************************************************************************/
+
+    /*******************************************************************************
+     *                          Extern Function Prototypes
+     *******************************************************************************/
     /**
      * @brief Function to initialize OTA update
      * @details Following operations are performed in this function
@@ -62,7 +77,7 @@ extern "C"
 
 #endif // CONFIG_EZPI_ENABLE_OTA
 
-#endif // _EZLOPI_SERVICE_OTA_H_
+#endif // __EZLOPI_SERVICE_OTA_H__
 
 /*******************************************************************************
  *                          End of File

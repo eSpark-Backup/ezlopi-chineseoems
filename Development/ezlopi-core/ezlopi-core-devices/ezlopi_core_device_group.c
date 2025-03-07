@@ -1,5 +1,5 @@
 /* ===========================================================================
-** Copyright (C) 2024 Ezlo Innovation Inc
+** Copyright (C) 2025 Ezlo Innovation Inc
 **
 ** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
 **
@@ -29,16 +29,16 @@
 ** ===========================================================================
 */
 /**
-* @file    ezlopi_core_device_group.c
-* @brief   These function perform operation on device-groups
-* @author  xx
-* @version 0.1
-* @date    12th DEC 2024
-*/
+ * @file    ezlopi_core_device_group.c
+ * @brief   These function perform operation on device-groups
+ * @author
+ * @version 0.1
+ * @date    July 3rd, 2024 7:15 PM
+ */
 
 /*******************************************************************************
-*                          Include Files
-*******************************************************************************/
+ *                          Include Files
+ *******************************************************************************/
 #include "ezlopi_core_nvs.h"
 #include "ezlopi_core_device_group.h"
 
@@ -47,16 +47,16 @@
 #include "EZLOPI_USER_CONFIG.h"
 
 /*******************************************************************************
-*                          Extern Data Declarations
-*******************************************************************************/
+ *                          Extern Data Declarations
+ *******************************************************************************/
 
 /*******************************************************************************
-*                          Extern Function Declarations
-*******************************************************************************/
+ *                          Extern Function Declarations
+ *******************************************************************************/
 
 /*******************************************************************************
-*                          Type & Macro Definitions
-*******************************************************************************/
+ *                          Type & Macro Definitions
+ *******************************************************************************/
 enum e_devicGrp_vs_itemGrp_choice
 {
     DEVICE_GROUP_SELECTED = 0,
@@ -64,8 +64,8 @@ enum e_devicGrp_vs_itemGrp_choice
 };
 
 /*******************************************************************************
-*                          Static Function Prototypes
-*******************************************************************************/
+ *                          Static Function Prototypes
+ *******************************************************************************/
 static void __EZPI_core_device_group_print(l_ezlopi_device_grp_t *device_grp_node);
 static void __EZPI_core_item_group_print(l_ezlopi_item_grp_t *item_grp_node);
 static void __edit_devgrp_from_ll(l_ezlopi_device_grp_t *req_devgrp_node, cJSON *cj_devgrp_new);
@@ -94,18 +94,18 @@ static void ______add_items_list_to_dest_array(cJSON *cj_main_device_list, l_ezl
 static void ____compare_when_itemgrpid_is_given(cJSON *cj_main_device_list, l_ezlopi_device_t *curr_dev_node, const char *device_id_str, const char *itemgrp_id_str);
 static void __generate_device_list_with_specific_itemgroup_id(cJSON *cj_destination_array, cJSON *cj_devices_arr, cJSON *cj_params);
 /*******************************************************************************
-*                          Static Data Definitions
-*******************************************************************************/
+ *                          Static Data Definitions
+ *******************************************************************************/
 static l_ezlopi_device_grp_t *l_device_grp_head = NULL;
 static l_ezlopi_item_grp_t *l_item_grp_head = NULL;
 
 /*******************************************************************************
-*                          Extern Data Definitions
-*******************************************************************************/
+ *                          Extern Data Definitions
+ *******************************************************************************/
 
 /*******************************************************************************
-*                          Extern Function Definitions
-*******************************************************************************/
+ *                          Extern Function Definitions
+ *******************************************************************************/
 l_ezlopi_device_grp_t *EZPI_core_device_group_get_head(void)
 {
     return l_device_grp_head;
@@ -156,7 +156,7 @@ cJSON *EZPI_core_device_group_create_cjson(l_ezlopi_device_grp_t *devgrp_node)
         cj_devgrp = cJSON_CreateObject(__FUNCTION__);
         if (cj_devgrp)
         {
-            char tmp_str[16] = { 0 };
+            char tmp_str[16] = {0};
             snprintf(tmp_str, sizeof(tmp_str), "%08x", devgrp_node->_id);
             cJSON_AddStringToObject(__FUNCTION__, cj_devgrp, ezlopi__id_str, tmp_str);
             cJSON_AddStringToObject(__FUNCTION__, cj_devgrp, ezlopi_name_str, devgrp_node->name);
@@ -168,27 +168,27 @@ cJSON *EZPI_core_device_group_create_cjson(l_ezlopi_device_grp_t *devgrp_node)
             { // add 'entryDelay'
                 switch (devgrp_node->entry_delay)
                 {
-                case EZLOPI_DEVICE_GRP_ENTRYDELAY_NORMAL:
+                case EZLOPI_PROTECT_ENTRYDELAY_NORMAL:
                 {
                     cJSON_AddStringToObject(__FUNCTION__, cj_devgrp, ezlopi_entryDelay_str, ezlopi_normal_str);
                     break;
                 }
-                case EZLOPI_DEVICE_GRP_ENTRYDELAY_LONG_EXTENDED:
+                case EZLOPI_PROTECT_ENTRYDELAY_LONG_EXTENDED:
                 {
                     cJSON_AddStringToObject(__FUNCTION__, cj_devgrp, ezlopi_entryDelay_str, ezlopi_long_extended_str);
                     break;
                 }
-                case EZLOPI_DEVICE_GRP_ENTRYDELAY_EXTENDED:
+                case EZLOPI_PROTECT_ENTRYDELAY_EXTENDED:
                 {
                     cJSON_AddStringToObject(__FUNCTION__, cj_devgrp, ezlopi_entryDelay_str, ezlopi_extended_str);
                     break;
                 }
-                case EZLOPI_DEVICE_GRP_ENTRYDELAY_INSTANT:
+                case EZLOPI_PROTECT_ENTRYDELAY_INSTANT:
                 {
                     cJSON_AddStringToObject(__FUNCTION__, cj_devgrp, ezlopi_entryDelay_str, ezlopi_instant_str);
                     break;
                 }
-                case EZLOPI_DEVICE_GRP_ENTRYDELAY_NONE:
+                case EZLOPI_PROTECT_ENTRYDELAY_NONE:
                 default:
                 {
                     cJSON_AddStringToObject(__FUNCTION__, cj_devgrp, ezlopi_entryDelay_str, ezlopi_none_str);
@@ -229,7 +229,7 @@ cJSON *EZPI_core_item_group_create_cjson(l_ezlopi_item_grp_t *itemgrp_node)
         cj_itemgrp = cJSON_CreateObject(__FUNCTION__);
         if (cj_itemgrp)
         {
-            char tmp_str[16] = { 0 };
+            char tmp_str[16] = {0};
             snprintf(tmp_str, sizeof(tmp_str), "%08x", itemgrp_node->_id);
             cJSON_AddStringToObject(__FUNCTION__, cj_itemgrp, ezlopi__id_str, tmp_str);
             cJSON_AddStringToObject(__FUNCTION__, cj_itemgrp, ezlopi_name_str, itemgrp_node->name);
@@ -377,7 +377,9 @@ uint32_t EZPI_core_device_group_find(cJSON *cj_destination_array, cJSON *cj_para
                     cJSON *cj_curr_devgrp_node = cJSON_Parse(__FUNCTION__, devgrp_str);
                     if (cj_curr_devgrp_node)
                     {
+#ifdef CONFIG_EZPI_UTIL_TRACE_EN
                         CJSON_TRACE(" Checking ---> ", cj_curr_devgrp_node);
+#endif
                         //------------------------------------------------------------------------------------------------
                         // 2. if Yes create add object with fields "_id" & "name"
                         if (__check_devgroup_validity(cj_curr_devgrp_node, cj_params))
@@ -498,7 +500,11 @@ void EZPI_device_group_init(void)
                             if (new_devgrp_node)
                             {
                                 cJSON *cj_new_devgrp_node = EZPI_core_device_group_create_cjson(new_devgrp_node);
+
+#ifdef CONFIG_EZPI_UTIL_TRACE_EN
                                 // CJSON_TRACE("new_devgrp_node", cj_new_devgrp_node);
+#endif
+
                                 cJSON_Delete(__FUNCTION__, cj_new_devgrp_node);
                             }
                         }
@@ -546,7 +552,11 @@ void EZPI_item_group_init(void)
                             if (new_itemgrp_node)
                             {
                                 cJSON *cj_new_itemgrp_node = EZPI_core_item_group_create_cjson(new_itemgrp_node);
+
+#ifdef CONFIG_EZPI_UTIL_TRACE_EN
                                 // CJSON_TRACE("new_itemgrp_node", cj_new_itemgrp_node);
+#endif
+
                                 cJSON_Delete(__FUNCTION__, cj_new_itemgrp_node);
                             }
                         }
@@ -565,8 +575,8 @@ void EZPI_item_group_init(void)
 //--------------------------------------------------------------------------------------------------------------------------------
 
 /*******************************************************************************
-*                         Static Function Definitions
-*******************************************************************************/
+ *                         Static Function Definitions
+ *******************************************************************************/
 
 static void __EZPI_core_device_group_print(l_ezlopi_device_grp_t *device_grp_node)
 {
@@ -580,11 +590,11 @@ static void __EZPI_core_device_group_print(l_ezlopi_device_grp_t *device_grp_nod
         CJSON_TRACE("\t|-- Devices", device_grp_node->devices);
         CJSON_TRACE("\t|-- Exceptions", device_grp_node->exceptions);
         TRACE_D("\t|-- Persistent: %s", device_grp_node->persistent ? ezlopi_true_str : ezlopi_false_str);
-        TRACE_D("\t|-- Entry_Delay: %s", (EZLOPI_DEVICE_GRP_ENTRYDELAY_NORMAL == device_grp_node->entry_delay) ? ezlopi_normal_str
-            : (EZLOPI_DEVICE_GRP_ENTRYDELAY_LONG_EXTENDED == device_grp_node->entry_delay) ? ezlopi_long_extended_str
-            : (EZLOPI_DEVICE_GRP_ENTRYDELAY_EXTENDED == device_grp_node->entry_delay) ? ezlopi_extended_str
-            : (EZLOPI_DEVICE_GRP_ENTRYDELAY_INSTANT == device_grp_node->entry_delay) ? ezlopi_instant_str
-            : ezlopi_none_str);
+        TRACE_D("\t|-- Entry_Delay: %s", (EZLOPI_PROTECT_ENTRYDELAY_NORMAL == device_grp_node->entry_delay)          ? ezlopi_normal_str
+                                         : (EZLOPI_PROTECT_ENTRYDELAY_LONG_EXTENDED == device_grp_node->entry_delay) ? ezlopi_long_extended_str
+                                         : (EZLOPI_PROTECT_ENTRYDELAY_EXTENDED == device_grp_node->entry_delay)      ? ezlopi_extended_str
+                                         : (EZLOPI_PROTECT_ENTRYDELAY_INSTANT == device_grp_node->entry_delay)       ? ezlopi_instant_str
+                                                                                                                     : ezlopi_none_str);
         TRACE_D("\t|-- Follow_Entry: %s", device_grp_node->follow_entry ? ezlopi_true_str : ezlopi_false_str);
         TRACE_D("\t|-- Role: %s", (EZLOPI_DEVICE_GRP_ROLE_HOUSE_MODES == device_grp_node->role) ? ezlopi_house_modes_str : ezlopi_user_str);
         TRACE_D("\t|-- Package_Id: %s", device_grp_node->package_id);
@@ -607,8 +617,11 @@ static void __EZPI_core_item_group_print(l_ezlopi_item_grp_t *item_grp_node)
         TRACE_D("\t|-- Value_Type: %s", item_grp_node->value_type);
         CJSON_TRACE("\t|-- Enum", item_grp_node->enum_values);
         TRACE_D("\t|-- Value_Type_Family: %s", item_grp_node->value_type_family);
-        TRACE_D("\t|-- Role: %s", (EZLOPI_ITEM_GRP_ROLE_HOUSE_MODES == item_grp_node->role) ? ezlopi_house_modes_str : (EZLOPI_ITEM_GRP_ROLE_LIFE_SAFETY == item_grp_node->role) ? ezlopi_lifeSafety_str
-            : ezlopi_empty_str);
+
+        TRACE_D("\t|-- Role: %s", (EZLOPI_ITEM_GRP_ROLE_HOUSE_MODES == item_grp_node->role)   ? ezlopi_house_modes_str
+                                  : (EZLOPI_ITEM_GRP_ROLE_LIFE_SAFETY == item_grp_node->role) ? ezlopi_lifeSafety_str
+                                                                                              : ezlopi_empty_str);
+
         CJSON_TRACE("\t|-- Info", item_grp_node->info);
         TRACE_D("\t|-- ----------------- ----------- --------------------");
     }
@@ -622,9 +635,8 @@ static void __EZPI_core_item_group_print(l_ezlopi_item_grp_t *item_grp_node)
  */
 static void __edit_devgrp_from_ll(l_ezlopi_device_grp_t *req_devgrp_node, cJSON *cj_devgrp_new)
 {
-
-    (NULL != cJSON_GetObjectItem(__FUNCTION__, cj_devgrp_new, ezlopi_name_str))       
-        ? (CJSON_GET_VALUE_STRING_BY_COPY_INTO_PTR(cj_devgrp_new, ezlopi_name_str, req_devgrp_node->name))       
+    (NULL != cJSON_GetObjectItem(__FUNCTION__, cj_devgrp_new, ezlopi_name_str))
+        ? (CJSON_GET_VALUE_STRING_BY_COPY_INTO_PTR(cj_devgrp_new, ezlopi_name_str, &req_devgrp_node->name))
         : cJSON_AddStringToObject(__FUNCTION__, cj_devgrp_new, ezlopi_packageId_str, req_devgrp_node->name);
 
     (NULL != cJSON_GetObjectItem(__FUNCTION__, cj_devgrp_new, ezlopi_persistent_str))
@@ -635,8 +647,8 @@ static void __edit_devgrp_from_ll(l_ezlopi_device_grp_t *req_devgrp_node, cJSON 
         ? (CJSON_GET_VALUE_BOOL(cj_devgrp_new, ezlopi_followEntry_str, req_devgrp_node->follow_entry))
         : cJSON_AddBoolToObject(__FUNCTION__, cj_devgrp_new, ezlopi_followEntry_str, req_devgrp_node->follow_entry);
 
-    (NULL != cJSON_GetObjectItem(__FUNCTION__, cj_devgrp_new, ezlopi_packageId_str))       
-        ? (CJSON_GET_VALUE_STRING_BY_COPY_INTO_PTR(cj_devgrp_new, ezlopi_packageId_str, req_devgrp_node->package_id))       
+    (NULL != cJSON_GetObjectItem(__FUNCTION__, cj_devgrp_new, ezlopi_packageId_str))
+        ? (CJSON_GET_VALUE_STRING_BY_COPY_INTO_PTR(cj_devgrp_new, ezlopi_packageId_str, &req_devgrp_node->package_id))
         : cJSON_AddStringToObject(__FUNCTION__, cj_devgrp_new, ezlopi_packageId_str, req_devgrp_node->package_id);
 
     // ------------- categories -------------
@@ -695,30 +707,29 @@ static void __edit_devgrp_from_ll(l_ezlopi_device_grp_t *req_devgrp_node, cJSON 
         cJSON *cj_entry_delay = cJSON_GetObjectItem(__FUNCTION__, cj_devgrp_new, ezlopi_entryDelay_str);
         if (cj_entry_delay && cj_entry_delay->valuestring && cj_entry_delay->str_value_len)
         {
-            req_devgrp_node->entry_delay = (
-                (EZPI_STRNCMP_IF_EQUAL(cj_entry_delay->valuestring, ezlopi_normal_str, cj_entry_delay->str_value_len, 7)) ? EZLOPI_DEVICE_GRP_ENTRYDELAY_NORMAL
-                : (EZPI_STRNCMP_IF_EQUAL(cj_entry_delay->valuestring, ezlopi_long_extended_str, cj_entry_delay->str_value_len, 13)) ? EZLOPI_DEVICE_GRP_ENTRYDELAY_LONG_EXTENDED
-                : (EZPI_STRNCMP_IF_EQUAL(cj_entry_delay->valuestring, ezlopi_extended_str, cj_entry_delay->str_value_len, 9)) ? EZLOPI_DEVICE_GRP_ENTRYDELAY_EXTENDED
-                : (EZPI_STRNCMP_IF_EQUAL(cj_entry_delay->valuestring, ezlopi_instant_str, cj_entry_delay->str_value_len, 8)) ? EZLOPI_DEVICE_GRP_ENTRYDELAY_INSTANT
-                : EZLOPI_DEVICE_GRP_ENTRYDELAY_NONE);
+            req_devgrp_node->entry_delay = ((EZPI_STRNCMP_IF_EQUAL(cj_entry_delay->valuestring, ezlopi_normal_str, cj_entry_delay->str_value_len, 7))           ? EZLOPI_PROTECT_ENTRYDELAY_NORMAL
+                                            : (EZPI_STRNCMP_IF_EQUAL(cj_entry_delay->valuestring, ezlopi_long_extended_str, cj_entry_delay->str_value_len, 13)) ? EZLOPI_PROTECT_ENTRYDELAY_LONG_EXTENDED
+                                            : (EZPI_STRNCMP_IF_EQUAL(cj_entry_delay->valuestring, ezlopi_extended_str, cj_entry_delay->str_value_len, 9))       ? EZLOPI_PROTECT_ENTRYDELAY_EXTENDED
+                                            : (EZPI_STRNCMP_IF_EQUAL(cj_entry_delay->valuestring, ezlopi_instant_str, cj_entry_delay->str_value_len, 8))        ? EZLOPI_PROTECT_ENTRYDELAY_INSTANT
+                                                                                                                                                                : EZLOPI_PROTECT_ENTRYDELAY_NONE);
         }
         else
         {
             switch (req_devgrp_node->entry_delay)
             {
-            case EZLOPI_DEVICE_GRP_ENTRYDELAY_NORMAL:
+            case EZLOPI_PROTECT_ENTRYDELAY_NORMAL:
                 cJSON_AddStringToObject(__FUNCTION__, cj_devgrp_new, ezlopi_entryDelay_str, ezlopi_normal_str);
                 break;
-            case EZLOPI_DEVICE_GRP_ENTRYDELAY_LONG_EXTENDED:
+            case EZLOPI_PROTECT_ENTRYDELAY_LONG_EXTENDED:
                 cJSON_AddStringToObject(__FUNCTION__, cj_devgrp_new, ezlopi_entryDelay_str, ezlopi_long_extended_str);
                 break;
-            case EZLOPI_DEVICE_GRP_ENTRYDELAY_EXTENDED:
+            case EZLOPI_PROTECT_ENTRYDELAY_EXTENDED:
                 cJSON_AddStringToObject(__FUNCTION__, cj_devgrp_new, ezlopi_entryDelay_str, ezlopi_extended_str);
                 break;
-            case EZLOPI_DEVICE_GRP_ENTRYDELAY_INSTANT:
+            case EZLOPI_PROTECT_ENTRYDELAY_INSTANT:
                 cJSON_AddStringToObject(__FUNCTION__, cj_devgrp_new, ezlopi_entryDelay_str, ezlopi_instant_str);
                 break;
-            case EZLOPI_DEVICE_GRP_ENTRYDELAY_NONE:
+            case EZLOPI_PROTECT_ENTRYDELAY_NONE:
             default:
                 cJSON_AddStringToObject(__FUNCTION__, cj_devgrp_new, ezlopi_entryDelay_str, ezlopi_none_str);
                 break;
@@ -750,14 +761,15 @@ static void __edit_devgrp_from_ll(l_ezlopi_device_grp_t *req_devgrp_node, cJSON 
     }
     __EZPI_core_device_group_print(req_devgrp_node);
 }
+
 static void __edit_itemgrp_from_ll(l_ezlopi_item_grp_t *req_itemgrp_node, cJSON *cj_itemgrp_new)
 {
     (NULL != cJSON_GetObjectItem(__FUNCTION__, cj_itemgrp_new, ezlopi_name_str))
-        ? (CJSON_GET_VALUE_STRING_BY_COPY_INTO_PTR(cj_itemgrp_new, ezlopi_name_str, req_itemgrp_node->name))       
+        ? (CJSON_GET_VALUE_STRING_BY_COPY_INTO_PTR(cj_itemgrp_new, ezlopi_name_str, &req_itemgrp_node->name))
         : cJSON_AddStringToObject(__FUNCTION__, cj_itemgrp_new, ezlopi_name_str, req_itemgrp_node->name);
 
     (NULL != cJSON_GetObjectItem(__FUNCTION__, cj_itemgrp_new, ezlopi_hasGetter_str))
-        ? (CJSON_GET_VALUE_BOOL(cj_itemgrp_new, ezlopi_hasGetter_str, req_itemgrp_node->has_getter))       
+        ? (CJSON_GET_VALUE_BOOL(cj_itemgrp_new, ezlopi_hasGetter_str, req_itemgrp_node->has_getter))
         : cJSON_AddBoolToObject(__FUNCTION__, cj_itemgrp_new, ezlopi_hasGetter_str, req_itemgrp_node->has_getter);
 
     (NULL != cJSON_GetObjectItem(__FUNCTION__, cj_itemgrp_new, ezlopi_hasSetter_str))
@@ -769,13 +781,13 @@ static void __edit_itemgrp_from_ll(l_ezlopi_item_grp_t *req_itemgrp_node, cJSON 
         : cJSON_AddBoolToObject(__FUNCTION__, cj_itemgrp_new, ezlopi_persistent_str, req_itemgrp_node->persistent);
 
     (NULL != cJSON_GetObjectItem(__FUNCTION__, cj_itemgrp_new, ezlopi_valueType_str))
-        ? (CJSON_GET_VALUE_STRING_BY_COPY_INTO_PTR(cj_itemgrp_new, ezlopi_valueType_str, req_itemgrp_node->value_type))       
+        ? (CJSON_GET_VALUE_STRING_BY_COPY_INTO_PTR(cj_itemgrp_new, ezlopi_valueType_str, &req_itemgrp_node->value_type))
         : cJSON_AddStringToObject(__FUNCTION__, cj_itemgrp_new, ezlopi_valueType_str, req_itemgrp_node->value_type);
 
     if (req_itemgrp_node->value_type && strlen(req_itemgrp_node->value_type))
     {
         (NULL != cJSON_GetObjectItem(__FUNCTION__, cj_itemgrp_new, ezlopi_valueTypeFamily_str))
-            ? (CJSON_GET_VALUE_STRING_BY_COPY_INTO_PTR(cj_itemgrp_new, ezlopi_valueTypeFamily_str, req_itemgrp_node->value_type_family))           
+            ? (CJSON_GET_VALUE_STRING_BY_COPY_INTO_PTR(cj_itemgrp_new, ezlopi_valueTypeFamily_str, &req_itemgrp_node->value_type_family))
             : cJSON_AddStringToObject(__FUNCTION__, cj_itemgrp_new, ezlopi_valueTypeFamily_str, req_itemgrp_node->value_type_family);
     }
 
@@ -819,10 +831,9 @@ static void __edit_itemgrp_from_ll(l_ezlopi_item_grp_t *req_itemgrp_node, cJSON 
         cJSON *cj_role = cJSON_GetObjectItem(__FUNCTION__, cj_itemgrp_new, ezlopi_role_str);
         if (cj_role && cj_role->valuestring && cj_role->str_value_len)
         {
-            req_itemgrp_node->role = (
-                (EZPI_STRNCMP_IF_EQUAL(cj_role->valuestring, ezlopi_house_modes_str, cj_role->str_value_len, 12)) ? EZLOPI_ITEM_GRP_ROLE_HOUSE_MODES
-                : (EZPI_STRNCMP_IF_EQUAL(cj_role->valuestring, ezlopi_lifeSafety_str, cj_role->str_value_len, 11)) ? EZLOPI_ITEM_GRP_ROLE_LIFE_SAFETY
-                : EZLOPI_ITEM_GRP_ROLE_EMPTY);
+            req_itemgrp_node->role = ((EZPI_STRNCMP_IF_EQUAL(cj_role->valuestring, ezlopi_house_modes_str, cj_role->str_value_len, 12))  ? EZLOPI_ITEM_GRP_ROLE_HOUSE_MODES
+                                      : (EZPI_STRNCMP_IF_EQUAL(cj_role->valuestring, ezlopi_lifeSafety_str, cj_role->str_value_len, 11)) ? EZLOPI_ITEM_GRP_ROLE_LIFE_SAFETY
+                                                                                                                                         : EZLOPI_ITEM_GRP_ROLE_EMPTY);
         }
         else
         {
@@ -870,7 +881,10 @@ static void __edit_itemgrp_from_ll(l_ezlopi_item_grp_t *req_itemgrp_node, cJSON 
 static int __edit_and_update_ll_devgrp_by_id(uint32_t devgrp_id, cJSON *cj_devgrp_new)
 {
     int ret = 0;
+
+#ifdef CONFIG_EZPI_UTIL_TRACE_EN
     // CJSON_TRACE("cj_updated_devgrp_node :", cj_devgrp_new);
+#endif
 
     if (devgrp_id && cj_devgrp_new)
     {
@@ -883,10 +897,14 @@ static int __edit_and_update_ll_devgrp_by_id(uint32_t devgrp_id, cJSON *cj_devgr
     }
     return ret;
 }
+
 static int __edit_and_update_ll_itemgrp_by_id(uint32_t itemgrp_id, cJSON *cj_itemgrp_new)
 {
     int ret = 0;
+
+#ifdef CONFIG_EZPI_UTIL_TRACE_EN
     CJSON_TRACE("cj_updated_itemgrp_node :", cj_itemgrp_new);
+#endif
 
     if (itemgrp_id && cj_itemgrp_new)
     {
@@ -965,6 +983,7 @@ static l_ezlopi_device_grp_t *__device_group_pop_by_id(uint32_t _id)
 
     return ret_devgrp;
 }
+
 static l_ezlopi_item_grp_t *__item_group_pop_by_id(uint32_t _id)
 {
     l_ezlopi_item_grp_t *ret_itemgrp = NULL;
@@ -1033,6 +1052,7 @@ static void __device_group_delete_node(l_ezlopi_device_grp_t *devgrp_node)
         ezlopi_free(__FUNCTION__, devgrp_node);
     }
 }
+
 static void __item_group_delete_node(l_ezlopi_item_grp_t *itemgrp_node)
 {
     if (itemgrp_node)
@@ -1091,10 +1111,10 @@ static l_ezlopi_device_grp_t *____device_grp_create_node(cJSON *cj_device_grp, u
 
             new_device_grp_node->_id = device_grp_id;
 
-            CJSON_GET_VALUE_STRING_BY_COPY_INTO_PTR(cj_device_grp, ezlopi_name_str, new_device_grp_node->name);
+            CJSON_GET_VALUE_STRING_BY_COPY_INTO_PTR(cj_device_grp, ezlopi_name_str, &new_device_grp_node->name);
             CJSON_GET_VALUE_BOOL(cj_device_grp, ezlopi_persistent_str, new_device_grp_node->persistent);
             CJSON_GET_VALUE_BOOL(cj_device_grp, ezlopi_followEntry_str, new_device_grp_node->follow_entry);
-            CJSON_GET_VALUE_STRING_BY_COPY_INTO_PTR(cj_device_grp, ezlopi_packageId_str, new_device_grp_node->package_id);
+            CJSON_GET_VALUE_STRING_BY_COPY_INTO_PTR(cj_device_grp, ezlopi_packageId_str, &new_device_grp_node->package_id);
 
             {
                 cJSON *cj_categories = cJSON_GetObjectItem(__FUNCTION__, cj_device_grp, ezlopi_categories_str);
@@ -1124,12 +1144,11 @@ static l_ezlopi_device_grp_t *____device_grp_create_node(cJSON *cj_device_grp, u
                 cJSON *cj_entry_delay = cJSON_GetObjectItem(__FUNCTION__, cj_device_grp, ezlopi_entryDelay_str);
                 if (cj_entry_delay && cj_entry_delay->valuestring && cj_entry_delay->str_value_len)
                 {
-                    new_device_grp_node->entry_delay = (
-                        (EZPI_STRNCMP_IF_EQUAL(cj_entry_delay->valuestring, ezlopi_normal_str, cj_entry_delay->str_value_len, 7)) ? EZLOPI_DEVICE_GRP_ENTRYDELAY_NORMAL
-                        : (EZPI_STRNCMP_IF_EQUAL(cj_entry_delay->valuestring, ezlopi_long_extended_str, cj_entry_delay->str_value_len, 13)) ? EZLOPI_DEVICE_GRP_ENTRYDELAY_LONG_EXTENDED
-                        : (EZPI_STRNCMP_IF_EQUAL(cj_entry_delay->valuestring, ezlopi_extended_str, cj_entry_delay->str_value_len, 9)) ? EZLOPI_DEVICE_GRP_ENTRYDELAY_EXTENDED
-                        : (EZPI_STRNCMP_IF_EQUAL(cj_entry_delay->valuestring, ezlopi_instant_str, cj_entry_delay->str_value_len, 8)) ? EZLOPI_DEVICE_GRP_ENTRYDELAY_INSTANT
-                        : EZLOPI_DEVICE_GRP_ENTRYDELAY_NONE);
+                    new_device_grp_node->entry_delay = ((EZPI_STRNCMP_IF_EQUAL(cj_entry_delay->valuestring, ezlopi_normal_str, cj_entry_delay->str_value_len, 7))           ? EZLOPI_PROTECT_ENTRYDELAY_NORMAL
+                                                        : (EZPI_STRNCMP_IF_EQUAL(cj_entry_delay->valuestring, ezlopi_long_extended_str, cj_entry_delay->str_value_len, 13)) ? EZLOPI_PROTECT_ENTRYDELAY_LONG_EXTENDED
+                                                        : (EZPI_STRNCMP_IF_EQUAL(cj_entry_delay->valuestring, ezlopi_extended_str, cj_entry_delay->str_value_len, 9))       ? EZLOPI_PROTECT_ENTRYDELAY_EXTENDED
+                                                        : (EZPI_STRNCMP_IF_EQUAL(cj_entry_delay->valuestring, ezlopi_instant_str, cj_entry_delay->str_value_len, 8))        ? EZLOPI_PROTECT_ENTRYDELAY_INSTANT
+                                                                                                                                                                            : EZLOPI_PROTECT_ENTRYDELAY_NONE);
                 }
             }
 
@@ -1146,6 +1165,7 @@ static l_ezlopi_device_grp_t *____device_grp_create_node(cJSON *cj_device_grp, u
     }
     return new_device_grp_node;
 }
+
 static l_ezlopi_item_grp_t *____item_grp_create_node(cJSON *cj_item_grp, uint32_t item_grp_id)
 {
     l_ezlopi_item_grp_t *new_item_grp_node = NULL;
@@ -1158,11 +1178,11 @@ static l_ezlopi_item_grp_t *____item_grp_create_node(cJSON *cj_item_grp, uint32_
 
             new_item_grp_node->_id = item_grp_id;
 
-            CJSON_GET_VALUE_STRING_BY_COPY_INTO_PTR(cj_item_grp, ezlopi_name_str, new_item_grp_node->name);
+            CJSON_GET_VALUE_STRING_BY_COPY_INTO_PTR(cj_item_grp, ezlopi_name_str, &new_item_grp_node->name);
             CJSON_GET_VALUE_BOOL(cj_item_grp, ezlopi_hasGetter_str, new_item_grp_node->has_getter);
             CJSON_GET_VALUE_BOOL(cj_item_grp, ezlopi_hasSetter_str, new_item_grp_node->has_setter);
             CJSON_GET_VALUE_BOOL(cj_item_grp, ezlopi_persistent_str, new_item_grp_node->persistent);
-            CJSON_GET_VALUE_STRING_BY_COPY_INTO_PTR(cj_item_grp, ezlopi_valueType_str, new_item_grp_node->value_type);
+            CJSON_GET_VALUE_STRING_BY_COPY_INTO_PTR(cj_item_grp, ezlopi_valueType_str, &new_item_grp_node->value_type);
 
             {
                 cJSON *cj_item_names = cJSON_GetObjectItem(__FUNCTION__, cj_item_grp, ezlopi_itemNames_str);
@@ -1183,7 +1203,7 @@ static l_ezlopi_item_grp_t *____item_grp_create_node(cJSON *cj_item_grp, uint32_
             { // Add ('value_type' is abscent)  valueType_Family [cjson]
                 if (NULL == new_item_grp_node->value_type)
                 {
-                    CJSON_GET_VALUE_STRING_BY_COPY_INTO_PTR(cj_item_grp, ezlopi_valueTypeFamily_str, new_item_grp_node->value_type_family);
+                    CJSON_GET_VALUE_STRING_BY_COPY_INTO_PTR(cj_item_grp, ezlopi_valueTypeFamily_str, &new_item_grp_node->value_type_family);
                 }
             }
 
@@ -1191,10 +1211,9 @@ static l_ezlopi_item_grp_t *____item_grp_create_node(cJSON *cj_item_grp, uint32_
                 cJSON *cj_role = cJSON_GetObjectItem(__FUNCTION__, cj_item_grp, ezlopi_role_str);
                 if (cj_role && cj_role->valuestring && cj_role->str_value_len)
                 {
-                    new_item_grp_node->role = (
-                        (EZPI_STRNCMP_IF_EQUAL(cj_role->valuestring, ezlopi_house_modes_str, cj_role->str_value_len, 12)) ? EZLOPI_ITEM_GRP_ROLE_HOUSE_MODES
-                        : (EZPI_STRNCMP_IF_EQUAL(cj_role->valuestring, ezlopi_lifeSafety_str, cj_role->str_value_len, 11)) ? EZLOPI_ITEM_GRP_ROLE_LIFE_SAFETY
-                        : EZLOPI_ITEM_GRP_ROLE_EMPTY);
+                    new_item_grp_node->role = ((EZPI_STRNCMP_IF_EQUAL(cj_role->valuestring, ezlopi_house_modes_str, cj_role->str_value_len, 12))  ? EZLOPI_ITEM_GRP_ROLE_HOUSE_MODES
+                                               : (EZPI_STRNCMP_IF_EQUAL(cj_role->valuestring, ezlopi_lifeSafety_str, cj_role->str_value_len, 11)) ? EZLOPI_ITEM_GRP_ROLE_LIFE_SAFETY
+                                                                                                                                                  : EZLOPI_ITEM_GRP_ROLE_EMPTY);
                 }
             }
 
@@ -1228,13 +1247,17 @@ static l_ezlopi_device_grp_t *__device_group_populate(cJSON *cj_device_grp, uint
     }
     else
     {
+#ifdef CONFIG_EZPI_UTIL_TRACE_EN
         // CJSON_TRACE("new-device-group", cj_device_grp);
+#endif
+
         l_device_grp_head = ____device_grp_create_node(cj_device_grp, device_grp_id);
         new_device_grp_node = l_device_grp_head;
     }
 
     return new_device_grp_node;
 }
+
 static l_ezlopi_item_grp_t *__item_group_populate(cJSON *cj_item_grp, uint32_t item_grp_id)
 {
     l_ezlopi_item_grp_t *new_item_grp_node = NULL;
@@ -1251,7 +1274,10 @@ static l_ezlopi_item_grp_t *__item_group_populate(cJSON *cj_item_grp, uint32_t i
     }
     else
     {
+#ifdef CONFIG_EZPI_UTIL_TRACE_EN
         // CJSON_TRACE("new-item-group", cj_item_grp);
+#endif
+
         l_item_grp_head = ____item_grp_create_node(cj_item_grp, item_grp_id);
         new_item_grp_node = l_item_grp_head;
     }
@@ -1305,7 +1331,10 @@ static uint32_t __grp_get_list(cJSON *cj_grp_array, bool choice_of_trigger)
         cJSON *cj_grp_id_list = cJSON_Parse(__FUNCTION__, grp_id_list);
         if (cj_grp_id_list)
         {
+#ifdef CONFIG_EZPI_UTIL_TRACE_EN
             // CJSON_TRACE("In-cjson :", cj_grp_id_list);
+#endif
+
             int array_size = cJSON_GetArraySize(cj_grp_id_list);
             for (int i = 0; i < array_size; i++)
             {
@@ -1459,6 +1488,7 @@ static bool ____check_for_category_in_devGrp(cJSON *cj_curr_devGrp_node, const c
     }
     return ret;
 }
+
 static bool ____check_for_subcategory_in_devGrp(cJSON *cj_curr_devGrp_node, const char *req_subcategory_name)
 {
     bool ret = false;
@@ -1497,6 +1527,7 @@ static bool ____check_for_subcategory_in_devGrp(cJSON *cj_curr_devGrp_node, cons
     }
     return ret;
 }
+
 static bool ____check_for_device_id_in_devGrp(cJSON *cj_curr_devGrp_node, const char *req_device_id_str)
 {
     bool ret = false;
@@ -1521,6 +1552,7 @@ static bool ____check_for_device_id_in_devGrp(cJSON *cj_curr_devGrp_node, const 
     }
     return ret;
 }
+
 static bool ____check_for_deviceGroupIds_list(cJSON *cj_curr_devGrp_node, cJSON *deviceGroupIds_list)
 {
     bool ret = false;
@@ -1545,6 +1577,7 @@ static bool ____check_for_deviceGroupIds_list(cJSON *cj_curr_devGrp_node, cJSON 
     }
     return ret;
 }
+
 static bool ____check_for_deviceGroupId(cJSON *cj_curr_devGrp_node, const char *req_deviceGroupId)
 {
     bool ret = true;
@@ -1564,6 +1597,7 @@ static bool ____check_for_deviceGroupId(cJSON *cj_curr_devGrp_node, const char *
     }
     return ret;
 }
+
 static bool __check_devgroup_validity(cJSON *cj_curr_devgrp_node, cJSON *cj_params)
 {
     // # Check the condition from "cj_params"
@@ -1661,6 +1695,7 @@ static void ______add_items_list_to_dest_array(cJSON *cj_main_device_list, l_ezl
         }
     }
 }
+
 static void ____compare_when_itemgrpid_is_given(cJSON *cj_main_device_list, l_ezlopi_device_t *curr_dev_node, const char *device_id_str, const char *itemgrp_id_str)
 {
     if (cj_main_device_list && curr_dev_node && device_id_str && itemgrp_id_str)
@@ -1668,7 +1703,7 @@ static void ____compare_when_itemgrpid_is_given(cJSON *cj_main_device_list, l_ez
         uint32_t get_itemgrp_id = strtoul(itemgrp_id_str, NULL, 16); // "itemGroupId" : "2002ce001"
 
         l_ezlopi_item_grp_t *curr_itemgrp_ll = EZPI_core_item_group_get_by_id(get_itemgrp_id); // node <--- itemgrp_ll
-        if (curr_itemgrp_ll && (NULL != curr_itemgrp_ll->item_names))                            // item_names --> cj_arr
+        if (curr_itemgrp_ll && (NULL != curr_itemgrp_ll->item_names))                          // item_names --> cj_arr
         {
             int req_count = 0; // total_count of "item_name" condition we must fullfill
             int num_of_dev_items = 0;
@@ -1686,9 +1721,9 @@ static void ____compare_when_itemgrpid_is_given(cJSON *cj_main_device_list, l_ez
                     req_count++; // increase the count on items checked
 
                     if (EZPI_STRNCMP_IF_EQUAL(curr_items_ll_node->cloud_properties.item_name, // items_ll <---- device_ll
-                        cj_item_name_compare->valuestring,              // cj_item_name_compare ("temp") <--- itemNames[] <--- ll_itemgrp
-                        strlen(curr_items_ll_node->cloud_properties.item_name) + 1,
-                        cj_item_name_compare->str_value_len))
+                                              cj_item_name_compare->valuestring,              // cj_item_name_compare ("temp") <--- itemNames[] <--- ll_itemgrp
+                                              strlen(curr_items_ll_node->cloud_properties.item_name) + 1,
+                                              cj_item_name_compare->str_value_len))
                     {
                         num_of_matched_items++;
                         break;
@@ -1710,6 +1745,7 @@ static void ____compare_when_itemgrpid_is_given(cJSON *cj_main_device_list, l_ez
         }
     }
 }
+
 static void __generate_device_list_with_specific_itemgroup_id(cJSON *cj_destination_array, cJSON *cj_devices_arr, cJSON *cj_params)
 {
     if (cj_destination_array && cj_devices_arr && cj_params)
@@ -1746,9 +1782,9 @@ static void __generate_device_list_with_specific_itemgroup_id(cJSON *cj_destinat
                             cJSON *cj_showitems = cJSON_GetObjectItem(__FUNCTION__, cj_params, ezlopi_showItems_str);
                             if (cj_showitems && (cj_showitems->type == cJSON_True))
                             {
-#ifdef CONFIG_EZPI_UTIL_TRACE_EN
-                                TRACE_E("Since, [showItems==TRUE] ; attaching items_list ");
-#endif
+                                // #ifdef CONFIG_EZPI_UTIL_TRACE_EN
+                                //                                 TRACE_E("Since, [showItems==TRUE] ; attaching items_list ");
+                                // #endif
 
                                 // C2 . add "items" : [...]
                                 ______add_items_list_to_dest_array(cj_main_device_list, curr_dev_node);
@@ -1822,5 +1858,5 @@ static void __remove_residue_ids_from_list(bool choice_of_trigger)
 #endif
 
 /*******************************************************************************
-*                          End of File
-*******************************************************************************/
+ *                          End of File
+ *******************************************************************************/

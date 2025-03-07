@@ -1,5 +1,5 @@
 /* ===========================================================================
-** Copyright (C) 2024 Ezlo Innovation Inc
+** Copyright (C) 2025 Ezlo Innovation Inc
 **
 ** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
 **
@@ -31,7 +31,7 @@
 /**
  * @file    ezlopi_core_ble_gap.c
  * @brief   perform some function on ble-gap-operations
- * @author  xx
+ * @author  Krishna Kumar Sah (work.krishnasah@gmail.com)
  * @version 0.1
  * @date    12th DEC 2024
  */
@@ -120,7 +120,7 @@ static esp_ble_adv_params_t adv_params = {
  *                          Extern Data Definitions
  *******************************************************************************/
 esp_ble_adv_data_t scan_rsp_data = {
-    .set_scan_rsp = true,
+    .set_scan_rsp = false,
     .include_name = true,
     .include_txpower = true,
     .appearance = 0x00,
@@ -293,7 +293,7 @@ void EZPI_core_ble_gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_c
     }
 #endif
 
-#if (1 == CONFIG_EZPI_BLE_ENALBE_PAIRING)
+#if (1 == CONFIG_EZPI_BLE_ENABLE_PAIRING)
     case ESP_GAP_BLE_PASSKEY_REQ_EVT: // 12
     {
         break;
@@ -393,7 +393,7 @@ void EZPI_core_ble_gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_c
 #endif
         break;
     }
-#if (1 == CONFIG_EZPI_BLE_ENALBE_PAIRING)
+#if (1 == CONFIG_EZPI_BLE_ENABLE_PAIRING)
     case ESP_GAP_BLE_SET_LOCAL_PRIVACY_COMPLETE_EVT: // 22
     {
         EZPI_core_ble_setup_adv_config();

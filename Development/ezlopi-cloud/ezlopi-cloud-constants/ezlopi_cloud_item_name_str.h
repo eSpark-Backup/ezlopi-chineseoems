@@ -2,57 +2,78 @@
 
 /**
  * @file    ezlopi_cloud_item_name_str.h
- * @brief
+ * @brief   Declarations for cloud item name strings
  * @author
- * @version
- * @date
+ * @version 0.1
+ * @date    1st January 2024
  */
- /* ===========================================================================
- ** Copyright (C) 2022 Ezlo Innovation Inc
- **
- ** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
- **
- ** Redistribution and use in source and binary forms, with or without
- ** modification, are permitted provided that the following conditions are met:
- **
- ** 1. Redistributions of source code must retain the above copyright notice,
- **    this list of conditions and the following disclaimer.
- ** 2. Redistributions in binary form must reproduce the above copyright
- **    notice, this list of conditions and the following disclaimer in the
- **    documentation and/or other materials provided with the distribution.
- ** 3. Neither the name of the copyright holder nor the names of its
- **    contributors may be used to endorse or promote products derived from
- **    this software without specific prior written permission.
- **
- ** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- ** AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- ** IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- ** ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
- ** LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- ** CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- ** SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- ** INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- ** CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- ** ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- ** POSSIBILITY OF SUCH DAMAGE.
- ** ===========================================================================
+
+/* ===========================================================================
+** Copyright (C) 2025 Ezlo Innovation Inc
+**
+** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
+**
+** Redistribution and use in source and binary forms, with or without
+** modification, are permitted provided that the following conditions are met:
+**
+** 1. Redistributions of source code must retain the above copyright notice,
+**    this list of conditions and the following disclaimer.
+** 2. Redistributions in binary form must reproduce the above copyright
+**    notice, this list of conditions and the following disclaimer in the
+**    documentation and/or other materials provided with the distribution.
+** 3. Neither the name of the copyright holder nor the names of its
+**    contributors may be used to endorse or promote products derived from
+**    this software without specific prior written permission.
+**
+** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+** AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+** IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+** ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+** LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+** CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+** SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+** INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+** CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+** ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+** POSSIBILITY OF SUCH DAMAGE.
+** ===========================================================================
+*/
+
+/**
+ * @file    ezlopi_cloud_item_name_str.h
+ * @brief
+ * @author  Krishna Kumar Sah (work.krishnasah@gmail.com)
+ * @version 1.0
+ * @date    October 21st, 2022 7:47 PM
  */
 
 #ifndef __EZLOPI_ITEM_NAME_STR_H__
 #define __EZLOPI_ITEM_NAME_STR_H__
 
+/*******************************************************************************
+ *                          Include Files
+ *******************************************************************************/
 
-
+/*******************************************************************************
+ *                          C++ Declaration Wrapper
+ *******************************************************************************/
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
+  /*******************************************************************************
+   *                          Type & Macro Declarations
+   *******************************************************************************/
+
+  /*******************************************************************************
+   *                          Extern Data Declarations
+   *******************************************************************************/
   /// @brief https://api.ezlo.com/devices/items/index.html
-    /**
-     * @brief Variable to be used for undefined items
-     *
-     */
+  /**
+   * @brief Variable to be used for undefined items
+   *
+   */
   extern const char *ezlopi_item_name_undefined;
   /**
    * @brief Variable to be used for acceleration-x items
@@ -88,9 +109,9 @@ extern "C"
   // extern const  char *ezlopi_item_name_barrier_problem_sensors;
   // extern const  char *ezlopi_item_name_barrier_short_circuit;
   // extern const  char *ezlopi_item_name_barrier_fail_events;
-  extern const  char *ezlopi_item_name_button_state;
+  extern const char *ezlopi_item_name_button_state;
   // extern const  char *ezlopi_item_name_test_state;
-  // extern const  char *ezlopi_item_name_co_alarm;
+  extern const  char *ezlopi_item_name_co_alarm;
   // extern const  char *ezlopi_item_name_maintenance_state;
   extern const char *ezlopi_item_name_sounding_mode;
   // extern const  char *ezlopi_item_name_sound_list;
@@ -300,14 +321,12 @@ extern "C"
   extern const char *ezlopi_item_name_temp;
   // extern const  char *ezlopi_item_name_thermostat_fan_mode;
   // extern const  char *ezlopi_item_name_thermostat_fan_state;
-  extern const  char *ezlopi_item_name_thermostat_mode;
-  extern const  char *ezlopi_item_name_thermostat_energy_saving_mode;
+  // extern const  char *ezlopi_item_name_thermostat_mode;
+  // extern const  char *ezlopi_item_name_thermostat_energy_saving_mode;
   // extern const  char *ezlopi_item_name_thermostat_operating_state;
-  extern const  char *ezlopi_item_name_thermostat_setpoint;
+  // extern const  char *ezlopi_item_name_thermostat_setpoint;
   // extern const  char *ezlopi_item_name_thermostat_setpoint_heating;
   // extern const  char *ezlopi_item_name_thermostat_setpoint_cooling;
-  extern const char *ezlopi_item_name_child_lock;
-extern const char *ezlopi_item_name_program_mode_selection;
   // extern const  char *ezlopi_item_name_tide_level;
   // extern const  char *ezlopi_item_name_ultraviolet;
   // extern const  char *ezlopi_item_name_user_codes_keypad_mode;
@@ -388,19 +407,11 @@ extern const char *ezlopi_item_name_program_mode_selection;
   // extern const  char *ezlopi_item_name_muscle_mass;
   // extern const  char *ezlopi_item_name_relative_modulation_level;
   // extern const  char *ezlopi_item_name_respiratory_rate;
-  /**
-   * @brief Variable to be used for smoke density items
-   *
-   */
   extern const char *ezlopi_item_name_smoke_density;
   // extern const  char *ezlopi_item_name_heart_rate;
   // extern const  char *ezlopi_item_name_soil_salinity;
   // extern const  char *ezlopi_item_name_soil_reactivity;
   // extern const  char *ezlopi_item_name_soil_humidity;
-  /**
-   * @brief Variable to be used for VOC level items
-   *
-   */
   extern const char *ezlopi_item_name_volatile_organic_compound_level;
   // extern const  char *ezlopi_item_name_methane_density;
   // extern const  char *ezlopi_item_name_radon_concentration;

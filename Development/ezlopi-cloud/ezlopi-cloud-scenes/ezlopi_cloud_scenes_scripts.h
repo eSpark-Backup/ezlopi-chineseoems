@@ -1,13 +1,5 @@
-
-/**
- * @file    ezlopi_cloud_scenes_scripts.h
- * @brief
- * @author
- * @version
- * @date
- */
 /* ===========================================================================
-** Copyright (C) 2022 Ezlo Innovation Inc
+** Copyright (C) 2025 Ezlo Innovation Inc
 **
 ** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
 **
@@ -37,55 +29,81 @@
 ** ===========================================================================
 */
 
+/**
+ * @file    ezlopi_cloud_scenes_scripts.h
+ * @brief   Decleration for cloud scenes scripts functions
+ * @authors Krishna Kumar Sah (work.krishnasah@gmail.com)
+ * @version 1.0
+ * @date    October 4th, 2023 11:21 PM
+ */
+
 #ifndef __SCENES_SCRIPTS_H__
 #define __SCENES_SCRIPTS_H__
 
 #ifdef CONFIG_EZPI_SERV_ENABLE_MESHBOTS
 
+/*******************************************************************************
+ *                          Include Files
+ *******************************************************************************/
 #include "cjext.h"
 
+/*******************************************************************************
+ *                          C++ Declaration Wrapper
+ *******************************************************************************/
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+
+    /*******************************************************************************
+     *                          Type & Macro Declarations
+     *******************************************************************************/
+
+    /*******************************************************************************
+     *                          Extern Data Declarations
+     *******************************************************************************/
+
+    /*******************************************************************************
+     *                          Extern Function Prototypes
+     *******************************************************************************/
     /**
      * @brief Function that responds to hub.scenes.script.add method
-     * 
+     *
      * @param cj_request Incoming JSON request
      * @param cj_response Outgoing JSON response
      */
     void EZPI_scenes_scripts_add(cJSON *cj_request, cJSON *cj_response);
     /**
      * @brief Function that responds to hub.scenes.script.get method
-     * 
+     *
      * @param cj_request Incoming JSON request
      * @param cj_response Outgoing JSON response
      */
     void EZPI_scenes_scripts_get(cJSON *cj_request, cJSON *cj_response);
     /**
      * @brief Function that responds to hub.scenes.script.list method
-     * 
+     *
      * @param cj_request Incoming JSON request
      * @param cj_response Outgoing JSON response
      */
     void EZPI_scenes_scripts_list(cJSON *cj_request, cJSON *cj_response);
     /**
      * @brief Function that responds to hub.scenes.script.delete method
-     * 
+     *
      * @param cj_request Incoming JSON request
      * @param cj_response Outgoing JSON response
      */
     void EZPI_scenes_scripts_delete(cJSON *cj_request, cJSON *cj_response);
     /**
      * @brief Function that responds to hub.scenes.script.set method
-     * 
+     *
      * @param cj_request Incoming JSON request
      * @param cj_response Outgoing JSON response
      */
     void EZPI_scenes_scripts_set(cJSON *cj_request, cJSON *cj_response);
     /**
      * @brief Function that responds to hub.scenes.script.run method
-     * 
+     *
      * @param cj_request Incoming JSON request
      * @param cj_response Outgoing JSON response
      */

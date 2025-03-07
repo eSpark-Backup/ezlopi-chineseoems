@@ -1,50 +1,64 @@
-
+/* ===========================================================================
+** Copyright (C) 2025 Ezlo Innovation Inc
+**
+** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
+**
+** Redistribution and use in source and binary forms, with or without
+** modification, are permitted provided that the following conditions are met:
+**
+** 1. Redistributions of source code must retain the above copyright notice,
+**    this list of conditions and the following disclaimer.
+** 2. Redistributions in binary form must reproduce the above copyright
+**    notice, this list of conditions and the following disclaimer in the
+**    documentation and/or other materials provided with the distribution.
+** 3. Neither the name of the copyright holder nor the names of its
+**    contributors may be used to endorse or promote products derived from
+**    this software without specific prior written permission.
+**
+** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+** AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+** IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+** ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+** LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+** CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+** SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+** INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+** CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+** ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+** POSSIBILITY OF SUCH DAMAGE.
+** ===========================================================================
+*/
 
 /**
  * @file    ezlopi_cloud_methods_str.h
- * @brief
- * @author
- * @version
- * @date
- */
- /* ===========================================================================
- ** Copyright (C) 2022 Ezlo Innovation Inc
- **
- ** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
- **
- ** Redistribution and use in source and binary forms, with or without
- ** modification, are permitted provided that the following conditions are met:
- **
- ** 1. Redistributions of source code must retain the above copyright notice,
- **    this list of conditions and the following disclaimer.
- ** 2. Redistributions in binary form must reproduce the above copyright
- **    notice, this list of conditions and the following disclaimer in the
- **    documentation and/or other materials provided with the distribution.
- ** 3. Neither the name of the copyright holder nor the names of its
- **    contributors may be used to endorse or promote products derived from
- **    this software without specific prior written permission.
- **
- ** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- ** AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- ** IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- ** ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
- ** LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- ** CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- ** SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- ** INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- ** CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- ** ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- ** POSSIBILITY OF SUCH DAMAGE.
- ** ===========================================================================
+ * @brief   Declarations for cloud method strings
+ * @author  Krishna Kumar Sah (work.krishnasah@gmail.com)
+ * @version 1.0
+ * @date    October 13th, 2022 7:24 PM
  */
 
 #ifndef __EZLOPI_METHODS_STR_H__
 #define __EZLOPI_METHODS_STR_H__
 
+/*******************************************************************************
+ *                          Include Files
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          C++ Declaration Wrapper
+ *******************************************************************************/
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+
+    /*******************************************************************************
+     *                          Type & Macro Declarations
+     *******************************************************************************/
+
+    /*******************************************************************************
+     *                          Extern Data Declarations
+     *******************************************************************************/
 
     /*****************************************************************************************
      *                                     Methods                                           *
@@ -75,7 +89,7 @@ extern "C"
     extern const char *method_hub_devices_list;
     extern const char *method_hub_device_armed_set;
     // extern const  char *method_hub_device_name_set;
-    extern const  char *method_hub_device_room_set;
+    extern const char *method_hub_device_room_set;
     // extern const  char *method_hub_device_setting_dictionary_value_set ;
     // extern const  char *method_hub_device_setting_value_set ;
     // extern const  char *method_hub_gateway_setting_value_set ;
@@ -83,7 +97,7 @@ extern "C"
     // extern const  char *method_hub_detection_devices_list ;
     // extern const  char *method_hub_detection_device_remove ;
     // extern const  char *method_hub_detection_device_set ;
-    extern const  char *method_hub_setting_updated;
+    extern const char *method_hub_setting_updated;
     // extern const  char *method_hub_device_setting_reset ;
     // extern const  char *method_hub_device_settings_list;
     // extern const  char *method_hub_setting_value_set_request;
@@ -118,8 +132,8 @@ extern "C"
     // extern const  char *method_hub_modes_switch ;
     // extern const  char *method_hub_modes_switch_to_delay_set;
     // extern const  char *method_hub_modes_alarm_delay_set ;
-    extern const  char *method_hub_modes_alarms_off_add;
-    extern const  char *method_hub_modes_alarms_off_remove;
+    extern const char *method_hub_modes_alarms_off_add;
+    extern const char *method_hub_modes_alarms_off_remove;
     // extern const  char *method_hub_modes_switch_cancel ;
     // extern const  char *method_hub_modes_notification_add;
     // extern const  char *method_hub_modes_notificationnotifyallset ;
@@ -203,7 +217,11 @@ extern "C"
     extern const char *ezlopi_hub_modes_protect_devices_added;
     extern const char *ezlopi_hub_modes_protect_devices_removed;
     extern const char *ezlopi_hub_modes_entry_delay_changed;
-
+    extern const char *ezlopi_hub_modes_swinger_shutdown_reset_done;
+    extern const char *ezlopi_hub_modes_swinger_shutdown_disable_added;
+    extern const char *ezlopi_hub_modes_swinger_shutdown_disable_removed;
+    extern const char *ezlopi_hub_modes_swinger_shutdown_limit_changed;
+    extern const char *ezlopi_hub_modes_local_alarmed_turned_off;
 #ifdef __cplusplus
 }
 #endif

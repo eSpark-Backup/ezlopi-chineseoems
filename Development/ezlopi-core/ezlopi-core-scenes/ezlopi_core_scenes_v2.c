@@ -1,5 +1,5 @@
 /* ===========================================================================
-** Copyright (C) 2024 Ezlo Innovation Inc
+** Copyright (C) 2025 Ezlo Innovation Inc
 **
 ** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
 **
@@ -29,16 +29,16 @@
 ** ===========================================================================
 */
 /**
-* @file    ezlopi_core_scenes_v2.c
-* @brief   These functions perform  scene creation operations
-* @author  xx
-* @version 0.1
-* @date    12th DEC 2024
-*/
+ * @file    ezlopi_core_scenes_v2.c
+ * @brief   These functions perform  scene creation operations
+ * @author  Krishna Kumar Sah (work.krishnasah@gmail.com)
+ * @version 1.0
+ * @date    October 20th, 2023 7:50 PM
+ */
 
 /*******************************************************************************
-*                          Include Files
-*******************************************************************************/
+ *                          Include Files
+ *******************************************************************************/
 
 #include "../../build/config/sdkconfig.h"
 
@@ -70,20 +70,20 @@
 #include "EZLOPI_USER_CONFIG.h"
 
 /*******************************************************************************
-*                          Extern Data Declarations
-*******************************************************************************/
+ *                          Extern Data Declarations
+ *******************************************************************************/
 
 /*******************************************************************************
-*                          Extern Function Declarations
-*******************************************************************************/
+ *                          Extern Function Declarations
+ *******************************************************************************/
 
 /*******************************************************************************
-*                          Type & Macro Definitions
-*******************************************************************************/
+ *                          Type & Macro Definitions
+ *******************************************************************************/
 
 /*******************************************************************************
-*                          Static Function Prototypes
-*******************************************************************************/
+ *                          Static Function Prototypes
+ *******************************************************************************/
 static l_fields_v2_t *______new_field_populate(cJSON *cj_field);
 static l_fields_v2_t *_____fields_populate(cJSON *cj_fields);
 static void _______fields_get_value(l_fields_v2_t *field, cJSON *cj_value);
@@ -117,8 +117,8 @@ static char *__get_time_category_method_name(cJSON *cj_scenes_array, l_scenes_li
 static l_when_block_v2_t *___get_group_when_blocks(l_when_block_v2_t *curr_when_block, uint32_t group_id);
 
 /*******************************************************************************
-*                          Static Data Definitions
-*******************************************************************************/
+ *                          Static Data Definitions
+ *******************************************************************************/
 static l_scenes_list_v2_t *scenes_list_head_v2 = NULL;
 static const f_scene_method_v2_t ezlopi_core_scenes_methods[] = {
 #define EZLOPI_SCENE(method_type, name, func, category) func,
@@ -127,12 +127,12 @@ static const f_scene_method_v2_t ezlopi_core_scenes_methods[] = {
 };
 
 /*******************************************************************************
-*                          Extern Data Definitions
-*******************************************************************************/
+ *                          Extern Data Definitions
+ *******************************************************************************/
 
 /*******************************************************************************
-*                          Extern Function Definitions
-*******************************************************************************/
+ *                          Extern Function Definitions
+ *******************************************************************************/
 void EZPI_core_scenes_add_users_in_notifications(l_scenes_list_v2_t *scene_node, cJSON *cj_user)
 {
     if (scene_node && cj_user && cj_user->valuestring)
@@ -389,7 +389,9 @@ ezlopi_error_t EZPI_core_scenes_enable_disable_scene_by_id_v2(uint32_t _id, bool
                         curr_scene->enabled = enabled_flag;
                     }
 
+#ifdef CONFIG_EZPI_UTIL_TRACE_EN
                     CJSON_TRACE("cj_scene----> 2. updated", cj_scene);
+#endif
 
                     /*  DONOT use : 'EZPI_core_scenes_edit_store_updated_to_nvs' .. Here */
                     char *update_scene_str = cJSON_PrintBuffered(__FUNCTION__, cj_scene, 4096, false);
@@ -527,7 +529,7 @@ int EZPI_core_scenes_reset_latch_state(const char *sceneId_str, const char *bloc
         l_when_block_v2_t *curr_when_block = curr_scene->when_block;
         while (curr_when_block)
         {
-            #warning "incomplete : need to iterate throught nested-when";
+#warning "incomplete : need to iterate throught nested-when";
             s_when_function_t *function_state = (s_when_function_t *)curr_scene->when_block->fields->user_arg;
             if (function_state)
             {
@@ -701,7 +703,6 @@ ezlopi_error_t EZPI_core_scenes_set_meta_by_id(const char *sceneId_str, const ch
 
                     if (meta_data_added)
                     {
-                        // CJSON_TRACE("new_cj_scene", cj_scene);
                         /*  DONOT use : 'EZPI_core_scenes_edit_store_updated_to_nvs' .. Here */
                         char *update_scene_str = cJSON_PrintBuffered(__FUNCTION__, cj_scene, 4096, false);
                         TRACE_D("length of 'update_scene_str': %d", strlen(update_scene_str));
@@ -818,7 +819,6 @@ ezlopi_error_t EZPI_scenes_init_v2(void)
                             if (new_scene)
                             {
                                 cJSON *cj_new_scene = EZPI_scenes_create_cjson_scene(new_scene);
-                                // CJSON_TRACE("new_scene", cj_new_scene);
                                 cJSON_Delete(__FUNCTION__, cj_new_scene);
                             }
                         }
@@ -840,8 +840,8 @@ ezlopi_error_t EZPI_scenes_init_v2(void)
 }
 
 /*******************************************************************************
-*                         Static Function Definitions
-*******************************************************************************/
+ *                         Static Function Definitions
+ *******************************************************************************/
 
 static l_scenes_list_v2_t *_scenes_populate(cJSON *cj_scene, uint32_t scene_id)
 {
@@ -859,7 +859,6 @@ static l_scenes_list_v2_t *_scenes_populate(cJSON *cj_scene, uint32_t scene_id)
     }
     else
     {
-        // CJSON_TRACE("new-scene", cj_scene);
         scenes_list_head_v2 = __new_scene_populate(cj_scene, scene_id);
         new_scene_node = scenes_list_head_v2;
     }
@@ -886,8 +885,8 @@ static l_scenes_list_v2_t *__new_scene_populate(cJSON *cj_scene, uint32_t scene_
             CJSON_GET_VALUE_BOOL(cj_scene, ezlopi_is_group_str, new_scene->is_group);
 
             {
-                char tmp_grp_id[32] = { 0 };
-                CJSON_GET_VALUE_STRING_BY_COPY(cj_scene, ezlopi_group_id_str, tmp_grp_id);
+                char tmp_grp_id[32] = {0};
+                CJSON_GET_VALUE_STRING_BY_COPY(cj_scene, ezlopi_group_id_str, tmp_grp_id, sizeof(tmp_grp_id));
                 if (0 < strlen(tmp_grp_id))
                 {
                     new_scene->group_id = (uint32_t)strtoul(tmp_grp_id, NULL, 16);
@@ -896,8 +895,8 @@ static l_scenes_list_v2_t *__new_scene_populate(cJSON *cj_scene, uint32_t scene_
                 }
             }
 
-            CJSON_GET_VALUE_STRING_BY_COPY(cj_scene, ezlopi_name_str, new_scene->name);
-            CJSON_GET_VALUE_STRING_BY_COPY(cj_scene, ezlopi_parent_id_str, new_scene->parent_id);
+            CJSON_GET_VALUE_STRING_BY_COPY(cj_scene, ezlopi_name_str, new_scene->name, sizeof(new_scene->name));
+            CJSON_GET_VALUE_STRING_BY_COPY(cj_scene, ezlopi_parent_id_str, new_scene->parent_id, sizeof(new_scene->parent_id));
 
             {
                 cJSON *cj_meta = cJSON_GetObjectItem(__FUNCTION__, cj_scene, ezlopi_meta_str);
@@ -1152,14 +1151,14 @@ static l_when_block_v2_t *____new_when_block_populate(cJSON *cj_when_block)
             if (new_when_block->when_grp)
             {
                 memset(new_when_block->when_grp, 0, sizeof(l_group_block_type_t));
-                CJSON_GET_VALUE_STRING_BY_COPY(cj_when_block, ezlopi_blockName_str, new_when_block->when_grp->grp_blockName);
+                CJSON_GET_VALUE_STRING_BY_COPY(cj_when_block, ezlopi_blockName_str, new_when_block->when_grp->grp_blockName, sizeof(new_when_block->when_grp->grp_blockName));
                 if (0 < strlen(new_when_block->when_grp->grp_blockName))
                 {
                     TRACE_D("group_blockName : %s ", new_when_block->when_grp->grp_blockName);
                 }
 
-                char grp_id_str[32] = { 0 };
-                CJSON_GET_VALUE_STRING_BY_COPY(cj_when_block, ezlopi_group_id_str, grp_id_str);
+                char grp_id_str[32] = {0};
+                CJSON_GET_VALUE_STRING_BY_COPY(cj_when_block, ezlopi_group_id_str, grp_id_str, sizeof(grp_id_str));
                 if (0 < strlen(grp_id_str))
                 {
                     new_when_block->when_grp->grp_id = (uint32_t)strtoul(grp_id_str, NULL, 16);
@@ -1169,8 +1168,8 @@ static l_when_block_v2_t *____new_when_block_populate(cJSON *cj_when_block)
         }
 
         {
-            char tmp_block_id[32] = { 0 };
-            CJSON_GET_VALUE_STRING_BY_COPY(cj_when_block, ezlopi_blockId_str, tmp_block_id);
+            char tmp_block_id[32] = {0};
+            CJSON_GET_VALUE_STRING_BY_COPY(cj_when_block, ezlopi_blockId_str, tmp_block_id, sizeof(tmp_block_id));
             if (0 < strlen(tmp_block_id))
             {
                 new_when_block->blockId = (uint32_t)strtoul(tmp_block_id, NULL, 16);
@@ -1221,17 +1220,17 @@ static void _____new_block_options_populate(s_block_options_v2_t *p_block_option
 }
 static void __new_method_populate(s_method_v2_t *p_method, cJSON *cj_method)
 {
-    CJSON_GET_VALUE_STRING_BY_COPY(cj_method, ezlopi_name_str, p_method->name);
+    CJSON_GET_VALUE_STRING_BY_COPY(cj_method, ezlopi_name_str, p_method->name, sizeof(p_method->name));
     p_method->type = EZPI_scenes_method_get_type_enum(p_method->name);
 }
 static void _____new_action_delay(s_action_delay_v2_t *action_delay, cJSON *cj_delay)
 {
     if (action_delay && cj_delay)
     {
-        CJSON_GET_VALUE_DOUBLE(cj_delay, ezlopi_days_str, action_delay->days);
-        CJSON_GET_VALUE_DOUBLE(cj_delay, ezlopi_hours_str, action_delay->hours);
-        CJSON_GET_VALUE_DOUBLE(cj_delay, ezlopi_minutes_str, action_delay->minutes);
-        CJSON_GET_VALUE_DOUBLE(cj_delay, ezlopi_seconds_str, action_delay->seconds);
+        CJSON_GET_VALUE_UINT16(cj_delay, ezlopi_days_str, action_delay->days);
+        CJSON_GET_VALUE_UINT16(cj_delay, ezlopi_hours_str, action_delay->hours);
+        CJSON_GET_VALUE_UINT16(cj_delay, ezlopi_minutes_str, action_delay->minutes);
+        CJSON_GET_VALUE_UINT16(cj_delay, ezlopi_seconds_str, action_delay->seconds);
     }
 }
 static l_fields_v2_t *_____fields_populate(cJSON *cj_fields)
@@ -1264,7 +1263,6 @@ static void _______fields_get_value(l_fields_v2_t *field, cJSON *cj_value)
 {
     if (field && cj_value)
     {
-        // CJSON_TRACE("cj_value", cj_value);
         TRACE_I("type: %s", EZPI_core_scenes_get_scene_value_type_name(field->value_type));
         switch (cj_value->type)
         {
@@ -1310,7 +1308,11 @@ static void _______fields_get_value(l_fields_v2_t *field, cJSON *cj_value)
             if (EZLOPI_VALUE_TYPE_BLOCK == field->value_type) // when there is only one-block [ 'cJSON_Object' ]
             {
                 field->field_value.e_type = VALUE_TYPE_BLOCK;
+
+#ifdef CONFIG_EZPI_UTIL_TRACE_EN
                 CJSON_TRACE("cj_single_block", cj_value);
+#endif
+
                 if (field->field_value.u_value.when_block)
                 {
                     l_when_block_v2_t *curr_when_block = field->field_value.u_value.when_block;
@@ -1329,7 +1331,10 @@ static void _______fields_get_value(l_fields_v2_t *field, cJSON *cj_value)
             {
                 field->field_value.e_type = VALUE_TYPE_CJSON;
                 field->field_value.u_value.cj_value = cJSON_Duplicate(__FUNCTION__, cj_value, true);
+
+#ifdef CONFIG_EZPI_UTIL_TRACE_EN
                 CJSON_TRACE(ezlopi_value_str, field->field_value.u_value.cj_value);
+#endif
             }
             break;
         }
@@ -1356,7 +1361,6 @@ static void _______fields_get_value(l_fields_v2_t *field, cJSON *cj_value)
                 field->field_value.e_type = VALUE_TYPE_BLOCK;
                 cJSON_ArrayForEach(cj_block, cj_value)
                 {
-                    // CJSON_TRACE("cj_block", cj_block);
                     if (field->field_value.u_value.when_block)
                     {
                         l_when_block_v2_t *curr_when_block = field->field_value.u_value.when_block;
@@ -1401,7 +1405,7 @@ static l_fields_v2_t *______new_field_populate(cJSON *cj_field)
 
             // field->field_value.u_value.when_block
 
-            CJSON_GET_VALUE_STRING_BY_COPY(cj_field, ezlopi_name_str, field->name);
+            CJSON_GET_VALUE_STRING_BY_COPY(cj_field, ezlopi_name_str, field->name, sizeof(field->name));
             field->value_type = EZPI_core_scenes_value_get_type(cj_field, ezlopi_type_str);
             _______fields_get_value(field, cJSON_GetObjectItem(__FUNCTION__, cj_field, ezlopi_value_str));
         }
@@ -1440,7 +1444,7 @@ static l_when_block_v2_t *___get_group_when_blocks(l_when_block_v2_t *curr_when_
         e_scenes_method_category_t curr_when_category_enum = EZPI_scene_get_scene_method_category_enum(curr_when_block->block_options.method.name); // give corresponding 'category_name' for respective 'method_name'
         if (METHOD_CATEGORY_NAN < curr_when_category_enum && curr_when_category_enum < METHOD_CATEGORY_MAX)
         {
-            if (METHOD_CATEGORY_WHEN_LOGIC == curr_when_category_enum      // and/or/not
+            if (METHOD_CATEGORY_WHEN_LOGIC == curr_when_category_enum        // and/or/not
                 || METHOD_CATEGORY_WHEN_FUNCTION == curr_when_category_enum) // function -> for/repeat/follow....
             {
                 // check for --> the 'when-block' containing the 'group-id'
@@ -1497,6 +1501,7 @@ static void ______add_groupID_and_flag(cJSON *cj_target)
     cJSON_DeleteItemFromObject(__FUNCTION__, cj_target, ezlopi_group_id_str);
     cJSON_AddStringToObject(__FUNCTION__, cj_target, ezlopi_group_id_str, group_id_str); // nvs
 }
+
 static bool ____check_and_append_group_id(cJSON *cj_when_block)
 {
     bool add_groupId_flag = false; // this flag triggers new group_addition
@@ -1654,7 +1659,6 @@ static bool ___enable_disable_block_en_with_blockId(cJSON *cj_when_block, uint32
     bool block_en_changed = false;
 
     /* <1> single scene function */
-    // CJSON_TRACE("cj_when_block : ", cj_when_block);
     cJSON *cj_blockId = cJSON_GetObjectItem(__FUNCTION__, cj_when_block, ezlopi_blockId_str);
     if ((cj_blockId && cj_blockId->valuestring))
     {
@@ -1724,7 +1728,6 @@ static bool ___add_new_blockmeta_by_id(cJSON *cj_when_block, uint32_t blockId, c
     bool block_meta_changed = false;
 
     /* <1> single scene function */
-    // CJSON_TRACE("cj_when_block : ", cj_when_block);
     cJSON *cj_blockId = cJSON_GetObjectItem(__FUNCTION__, cj_when_block, ezlopi_blockId_str);
     if (cj_blockId && cj_blockId->valuestring)
     {
@@ -1793,7 +1796,7 @@ static void _____add_the_scene_time_method_to_arr(cJSON *cj_scenes_array, l_scen
             cJSON_AddStringToObject(__FUNCTION__, cj_new_add, ezlopi_sceneName_str, curr_scene->name);
             cJSON_AddStringToObject(__FUNCTION__, cj_new_add, ezlopi_methodName_str, method_name);
 
-            char timestamp_str[64] = { 0 };
+            char timestamp_str[64] = {0};
             EZPI_core_sntp_epoch_to_iso8601(timestamp_str, sizeof(timestamp_str), (time_t)(curr_scene->executed_date));
             cJSON_AddStringToObject(__FUNCTION__, cj_new_add, ezlopi_executionDate_str, timestamp_str);
 
@@ -1835,6 +1838,7 @@ static char *___get_time_list_from_when_block_fields(cJSON *cj_scenes_array, l_s
     }
     return ret_str;
 }
+
 static char *__get_time_category_method_name(cJSON *cj_scenes_array, l_scenes_list_v2_t *curr_scene, l_when_block_v2_t *curr_when_block)
 {
     char *ret_str = NULL;
@@ -1858,7 +1862,7 @@ static char *__get_time_category_method_name(cJSON *cj_scenes_array, l_scenes_li
                 _____add_the_scene_time_method_to_arr(cj_scenes_array, curr_scene, curr_when_block->block_options.method.name);
             }
             else if (METHOD_CATEGORY_WHEN_LOGIC == curr_when_category_enum        // and,or,xor
-                || METHOD_CATEGORY_WHEN_FUNCTION == curr_when_category_enum) // function -> for/repeat/follow....
+                     || METHOD_CATEGORY_WHEN_FUNCTION == curr_when_category_enum) // function -> for/repeat/follow....
             {
                 ret_str = ___get_time_list_from_when_block_fields(cj_scenes_array, curr_scene, curr_when_block->fields);
             }
@@ -2118,6 +2122,7 @@ int EZPI_core_scenes_set_reset_latch_enable(const char *sceneId_str, const char 
 #endif
 
 #endif // CONFIG_EZPI_SERV_ENABLE_MESHBOTS
+
 /*******************************************************************************
-*                          End of File
-*******************************************************************************/
+ *                          End of File
+ *******************************************************************************/

@@ -1,14 +1,5 @@
-
-
-/**
- * @file    ezlopi_cloud_network.c
- * @brief
- * @author
- * @version
- * @date
- */
 /* ===========================================================================
-** Copyright (C) 2022 Ezlo Innovation Inc
+** Copyright (C) 2025 Ezlo Innovation Inc
 **
 ** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
 **
@@ -38,6 +29,14 @@
 ** ===========================================================================
 */
 
+/**
+ * @file    ezlopi_cloud_network.c
+ * @brief    Definitions for cloud netowrk functions
+ * @author  Krishna Kumar Sah (work.krishnasah@gmail.com)
+ * @version 1.0
+ * @date    August 15th, 2022 11:57 AM
+ */
+
 #include <string.h>
 
 #include "esp_wifi.h"
@@ -55,12 +54,38 @@
 #include "ezlopi_cloud_methods_str.h"
 #include "ezlopi_cloud_keywords.h"
 
+/*******************************************************************************
+ *                          Extern Data Declarations
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Extern Function Declarations
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Type & Macro Definitions
+ *******************************************************************************/
 /**
  * @brief Macro to expand mac address
  *
  */
 #define MAC_ADDR_EXPANDED(mac) mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]
 
+/*******************************************************************************
+ *                          Static Function Prototypes
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Static Data Definitions
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Extern Data Definitions
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Extern Function Definitions
+ *******************************************************************************/
 void EZPI_network_get(cJSON *cj_request, cJSON *cj_response)
 {
     cJSON *cjson_result = cJSON_AddObjectToObject(__FUNCTION__, cj_response, ezlopi_result_str);
@@ -190,7 +215,7 @@ void EZPI_network_wifi_try_connect(cJSON *cj_request, cJSON *cj_response)
     if (cj_params)
     {
         char interfaceId[16];
-        CJSON_GET_VALUE_STRING_BY_COPY(cj_params, ezlopi_interfaceId_str, interfaceId);
+        CJSON_GET_VALUE_STRING_BY_COPY(cj_params, ezlopi_interfaceId_str, interfaceId, sizeof(interfaceId));
         if (0 == strncmp(ezlopi_wlan0_str, interfaceId, 6))
         {
             cJSON *cj_network = cJSON_GetObjectItem(__FUNCTION__, cj_params, ezlopi_network_str);
@@ -201,6 +226,10 @@ void EZPI_network_wifi_try_connect(cJSON *cj_request, cJSON *cj_response)
         }
     }
 }
+
+/*******************************************************************************
+ *                          Static Function Definitions
+ *******************************************************************************/
 
 /*******************************************************************************
  *                          End of File

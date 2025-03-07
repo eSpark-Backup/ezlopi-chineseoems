@@ -1,13 +1,5 @@
-
-/**
- * @file    ezlopi_cloud_status.h
- * @brief
- * @author
- * @version
- * @date
- */
 /* ===========================================================================
-** Copyright (C) 2022 Ezlo Innovation Inc
+** Copyright (C) 2025 Ezlo Innovation Inc
 **
 ** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
 **
@@ -37,15 +29,40 @@
 ** ===========================================================================
 */
 
-#ifndef _EZLOPI_CLOUD_STATUS_H_
-#define _EZLOPI_CLOUD_STATUS_H_
+/**
+ * @file    ezlopi_cloud_status.h
+ * @brief   Declaration for cloud status functions
+ * @author
+ * @version 1.0
+ * @date    January 20, 2024
+ */
+#ifndef __EZLOPI_CLOUD_STATUS_H__
+#define __EZLOPI_CLOUD_STATUS_H__
 
+/*******************************************************************************
+ *                          Include Files
+ *******************************************************************************/
 #include "cjext.h"
 
+/*******************************************************************************
+ *                          C++ Declaration Wrapper
+ *******************************************************************************/
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+
+    /*******************************************************************************
+     *                          Type & Macro Declarations
+     *******************************************************************************/
+
+    /*******************************************************************************
+     *                          Extern Data Declarations
+     *******************************************************************************/
+
+    /*******************************************************************************
+     *                          Extern Function Prototypes
+     *******************************************************************************/
 
     /**
      * @brief Function that responds to hub.status.get method
@@ -59,7 +76,7 @@ extern "C"
 }
 #endif
 
-#endif // _EZLOPI_CLOUD_STATUS_H_
+#endif // __EZLOPI_CLOUD_STATUS_H__
 
 /*******************************************************************************
  *                          End of File

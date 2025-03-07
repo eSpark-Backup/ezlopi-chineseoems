@@ -1,14 +1,5 @@
-
-
-/**
- * @file    ezlopi_service_ota.c
- * @brief
- * @author
- * @version
- * @date
- */
 /* ===========================================================================
-** Copyright (C) 2024 Ezlo Innovation Inc
+** Copyright (C) 2025 Ezlo Innovation Inc
 **
 ** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
 **
@@ -38,6 +29,17 @@
 ** ===========================================================================
 */
 
+/**
+ * @file    ezlopi_service_ota.c
+ * @brief   Contains function definitions related to OTA operations
+ * @authors Krishna Kumar Sah (work.krishnasah@gmail.com)n
+ * @version 1.0
+ * @date    April 27th, 2023 6:21 PM
+ */
+
+/*******************************************************************************
+ *                          Include Files
+ *******************************************************************************/
 #include "../../build/config/sdkconfig.h"
 
 #ifdef CONFIG_EZPI_ENABLE_OTA
@@ -66,9 +68,34 @@
 #include "ezlopi_service_ota.h"
 #include "ezlopi_service_loop.h"
 #include "ezlopi_service_webprov.h"
+/*******************************************************************************
+ *                          Extern Data Declarations
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Extern Function Declarations
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Type & Macro Definitions
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Static Function Prototypes
+ *******************************************************************************/
 
 static void __ota_loop(void *arg);
+/*******************************************************************************
+ *                          Static Data Definitions
+ *******************************************************************************/
 
+/*******************************************************************************
+ *                          Extern Data Definitions
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Extern Function Definitions
+ *******************************************************************************/
 void EZPI_service_ota_init(void)
 {
     EZPI_core_event_group_set_event(EZLOPI_EVENT_OTA);
@@ -81,6 +108,9 @@ void EZPI_service_ota_init(void)
 #endif
 }
 
+/*******************************************************************************
+ *                          Static Function Definitions
+ *******************************************************************************/
 static void __ota_loop(void *arg)
 {
     if (EZPI_SUCCESS == EZPI_core_event_group_wait_for_event(EZLOPI_EVENT_WIFI_CONNECTED, 0, false))
@@ -125,7 +155,6 @@ static void ota_service_process(void *pv)
             // uint32_t message_counter = EZPI_service_web_provisioning_get_message_count();
             cJSON *cj_firmware_info_request = EZPI_firmware_send_firmware_query_to_nma_server(esp_random());
 
-            // CJSON_TRACE("----------------- broadcasting - cj_firmware_info_request", cj_firmware_info_request);
 
             if (0 == EZPI_core_broadcast_add_to_queue(cj_firmware_info_request))
             {

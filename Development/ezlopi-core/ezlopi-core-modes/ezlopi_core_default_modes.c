@@ -1,5 +1,5 @@
 /* ===========================================================================
-** Copyright (C) 2024 Ezlo Innovation Inc
+** Copyright (C) 2025 Ezlo Innovation Inc
 **
 ** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
 **
@@ -29,16 +29,16 @@
 ** ===========================================================================
 */
 /**
-* @file    ezlopi_core_default_modes.c
-* @brief   These files provide default values for house_modes
-* @author  xx
-* @version 0.1
-* @date    12th DEC 2024
-*/
+ * @file    ezlopi_core_default_modes.c
+ * @brief   These files provide default values for house_modes
+ * @author  Krishna Kumar Sah (work.krishnasah@gmail.com)
+ * @version 1.0
+ * @date    January 31st, 2024 5:28 PM
+ */
 
 /*******************************************************************************
-*                          Include Files
-*******************************************************************************/
+ *                          Include Files
+ *******************************************************************************/
 #include <stdio.h>
 #include <string.h>
 
@@ -51,25 +51,25 @@
 #if defined(CONFIG_EZPI_SERV_ENABLE_MODES)
 
 /*******************************************************************************
-*                          Extern Data Declarations
-*******************************************************************************/
+ *                          Extern Data Declarations
+ *******************************************************************************/
 
 /*******************************************************************************
-*                          Extern Function Declarations
-*******************************************************************************/
+ *                          Extern Function Declarations
+ *******************************************************************************/
 
 /*******************************************************************************
-*                          Type & Macro Definitions
-*******************************************************************************/
+ *                          Type & Macro Definitions
+ *******************************************************************************/
 
 /*******************************************************************************
-*                          Static Function Prototypes
-*******************************************************************************/
+ *                          Static Function Prototypes
+ *******************************************************************************/
 static void __cjson_add_security_device_to_array(cJSON *cj_device_array);
-
+static void __cjson_add_alarm_device_to_array(cJSON *cj_alarm_array);
 /*******************************************************************************
-*                          Static Data Definitions
-*******************************************************************************/
+ *                          Static Data Definitions
+ *******************************************************************************/
 static s_ezlopi_modes_t sg_default_mode = {
     .current_mode_id = 0,
     .switch_to_mode_id = 0,
@@ -129,12 +129,12 @@ static s_house_modes_t sg_default_house_mode = {
 };
 
 /*******************************************************************************
-*                          Extern Data Definitions
-*******************************************************************************/
+ *                          Extern Data Definitions
+ *******************************************************************************/
 
 /*******************************************************************************
-*                          Extern Function Definitions
-*******************************************************************************/
+ *                          Extern Function Definitions
+ *******************************************************************************/
 s_ezlopi_modes_t *EZPI_core_default_mode_get(void)
 {
     return &sg_default_mode;
@@ -148,14 +148,19 @@ void EZPI_core_default_init(void)
     sg_default_house_mode.cj_alarms_off_devices = NULL;
     sg_default_house_mode.cj_cameras_off_devices = NULL;
 
-    sg_default_mode.cj_alarms = NULL;
     sg_default_mode.cj_cameras = NULL;
-
-    // Adding valid 'security_device' from 'l_ezlopi_device_t' .
+    // Adding valid 'security_sensor_device' from 'l_ezlopi_device_t' .
     sg_default_mode.cj_devices = cJSON_CreateArray(__func__);
     if (sg_default_mode.cj_devices)
     {
         __cjson_add_security_device_to_array(sg_default_mode.cj_devices);
+    }
+#warning "need to dicuss about the alarm in this default case";
+    // Adding valid 'alarm_devices' from 'l_ezlopi_device_t' .
+    sg_default_mode.cj_alarms = cJSON_CreateArray(__func__);
+    if (sg_default_mode.cj_alarms)
+    {
+        __cjson_add_alarm_device_to_array(sg_default_mode.cj_alarms);
     }
 
     sg_default_mode.current_mode_id = EZLOPI_HOUSE_MODE_REF_ID_HOME;
@@ -190,8 +195,8 @@ void EZPI_core_default_init(void)
 }
 
 /*******************************************************************************
-*                         Static Function Definitions
-*******************************************************************************/
+ *                         Static Function Definitions
+ *******************************************************************************/
 static void __cjson_add_security_device_to_array(cJSON *cj_device_array)
 {
     if (cj_device_array && (cj_device_array->type == cJSON_Array))
@@ -201,8 +206,7 @@ static void __cjson_add_security_device_to_array(cJSON *cj_device_array)
         {
             if (EZPI_STRNCMP_IF_EQUAL(category_security_sensor, curr_device->cloud_properties.category, strlen(category_security_sensor) + 1, strlen(curr_device->cloud_properties.category) + 1))
             {
-                char temp[32];
-                memset(temp, 0, 32);
+                char temp[32] = {0};
                 snprintf(temp, 32, "%08X", curr_device->cloud_properties.device_id);
                 cJSON_AddItemToArray(cj_device_array, cJSON_CreateString(__func__, temp));
             }
@@ -211,7 +215,25 @@ static void __cjson_add_security_device_to_array(cJSON *cj_device_array)
     }
 }
 
+static void __cjson_add_alarm_device_to_array(cJSON *cj_alarm_array)
+{
+    if (cj_alarm_array && (cj_alarm_array->type == cJSON_Array))
+    {
+        l_ezlopi_device_t *curr_device = EZPI_core_device_get_head();
+        while (curr_device)
+        {
+            if (EZPI_STRNCMP_IF_EQUAL(category_security_sensor, curr_device->cloud_properties.category, strlen(category_security_sensor) + 1, strlen(curr_device->cloud_properties.category) + 1))
+            {
+                char temp[32] = {0};
+                snprintf(temp, 32, "%08X", curr_device->cloud_properties.device_id);
+                cJSON_AddItemToArray(cj_alarm_array, cJSON_CreateString(__func__, temp));
+            }
+            curr_device = curr_device->next;
+        }
+    }
+}
 #endif // CONFIG_EZPI_SERV_ENABLE_MODES
+
 /*******************************************************************************
-*                          End of File
-*******************************************************************************/
+ *                          End of File
+ *******************************************************************************/

@@ -1,5 +1,5 @@
 /* ===========================================================================
-** Copyright (C) 2024 Ezlo Innovation Inc
+** Copyright (C) 2025 Ezlo Innovation Inc
 **
 ** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
 **
@@ -31,7 +31,7 @@
 /**
  * @file    ezlopi_core_ble_gatt.c
  * @brief   perform some function on ble-gatt operations
- * @author  xx
+ * @author  Krishna Kumar Sah (work.krishnasah@gmail.com)
  * @version 0.1
  * @date    12th DEC 2024
  */
@@ -297,7 +297,7 @@ void EZPI_core_ble_gatts_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t
         EZPI_core_ble_gatt_call_write_exec_by_handle(gatts_if, param);
         break;
     }
-#if (1 == CONFIG_EZPI_BLE_ENALBE_PAIRING)
+#if (1 == CONFIG_EZPI_BLE_ENABLE_PAIRING)
     case ESP_GATTS_CONNECT_EVT:
     {
 #ifdef CONFIG_EZPI_UTIL_TRACE_EN

@@ -1,13 +1,5 @@
-
-/**
- * @file    ezlopi_service_uart.h
- * @brief
- * @author
- * @version
- * @date
- */
 /* ===========================================================================
-** Copyright (C) 2024 Ezlo Innovation Inc
+** Copyright (C) 2025 Ezlo Innovation Inc
 **
 ** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
 **
@@ -37,16 +29,31 @@
 ** ===========================================================================
 */
 
-#ifndef _EZLOPI_SERVICE_UART_H_
-#define _EZLOPI_SERVICE_UART_H_
+/**
+ * @file    ezlopi_service_uart.h
+ * @brief   Contains function declarations related to UART communication
+ * @authors Krishna Kumar Sah (work.krishnasah@gmail.com)
+ * @version 1.0
+ * @date    July 21st, 2022 9:28 PM
+ */
+#ifndef __EZLOPI_SERVICE_UART_H__
+#define __EZLOPI_SERVICE_UART_H__
 
+/*******************************************************************************
+ *                          Include Files
+ *******************************************************************************/
 #include "../../build/config/sdkconfig.h"
-
+/*******************************************************************************
+ *                          C++ Declaration Wrapper
+ *******************************************************************************/
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
+    /*******************************************************************************
+     *                          Type & Macro Declarations
+     *******************************************************************************/
     // typedef enum e_ezlopi_item_type
     // {
     //     EZLOPI_ITEM_NONE = 0,
@@ -128,11 +135,29 @@ extern "C"
         */
     int EZPI_SERV_uart_tx_data(int len, uint8_t *data);
 
+    /*******************************************************************************
+     *                          Extern Data Declarations
+     *******************************************************************************/
+
+    /*******************************************************************************
+     *                          Extern Function Prototypes
+     *******************************************************************************/
+    /**
+     * @brief Global function template example
+     * Convention : Use capital letter for initial word on extern function
+     * maincomponent : Main component as hal, core, service etc.
+     * subcomponent : Sub component as i2c from hal, ble from service etc
+     * functiontitle : Title of the function
+     * eg : EZPI_hal_i2c_init()
+     * @param arg
+     *
+     */
+
 #ifdef __cplusplus
 }
 #endif
 
-#endif // _EZLOPI_SERVICE_UART_H_
+#endif // __EZLOPI_SERVICE_UART_H__
 
 /*******************************************************************************
  *                          End of File

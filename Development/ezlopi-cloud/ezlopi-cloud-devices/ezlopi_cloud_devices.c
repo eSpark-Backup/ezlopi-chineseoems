@@ -1,14 +1,5 @@
-
-
-/**
- * @file    ezlopi_cloud_devices.c
- * @brief
- * @author
- * @version
- * @date
- */
 /* ===========================================================================
-** Copyright (C) 2022 Ezlo Innovation Inc
+** Copyright (C) 2025 Ezlo Innovation Inc
 **
 ** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
 **
@@ -38,6 +29,17 @@
 ** ===========================================================================
 */
 
+/**
+ * @file    ezlopi_cloud_devices.c
+ * @brief   Declarations for cloud device functions
+ * @author  Krishna Kumar Sah (work.krishnasah@gmail.com)
+ * @version 1.0
+ * @date    May 24th, 2023 4:58 PM
+ */
+
+/*******************************************************************************
+ *                          Include Files
+ *******************************************************************************/
 #include <string.h>
 
 #include "mbedtls/sha1.h"
@@ -55,7 +57,22 @@
 #include "ezlopi_cloud_methods_str.h"
 #include "ezlopi_cloud_constants.h"
 
-//------------------------------------------------------------------------------------------------------------------
+/*******************************************************************************
+ *                          Extern Data Declarations
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Extern Function Declarations
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Type & Macro Definitions
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Static Function Prototypes
+ *******************************************************************************/
+
 /**
  * @brief Function to generate sha1 for src
  *
@@ -65,7 +82,18 @@
  */
 static char *ezpi_generate_sha1_of_src(const char *src);
 
-//------------------------------------------------------------------------------------------------------------------
+/*******************************************************************************
+ *                          Static Data Definitions
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Extern Data Definitions
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Extern Function Definitions
+ *******************************************************************************/
+
 void EZPI_devices_list_v3(cJSON *cj_request, cJSON *cj_response)
 {
     cJSON *cjson_result = cJSON_AddObjectToObject(__FUNCTION__, cj_response, ezlopi_result_str);
@@ -205,7 +233,7 @@ void EZPI_device_updated(cJSON *cj_request, cJSON *cj_response)
                             }
                             else
                             {
-                                cJSON_AddStringToObject(__FUNCTION__, cj_result, ezlopi_roomId_str, "");
+                                cJSON_AddStringToObject(__FUNCTION__, cj_result, ezlopi_roomId_str, ezlopi__str);
                             }
 
                             s_ezlopi_cloud_controller_t *controller_info = EZPI_core_device_get_controller_information();
@@ -404,11 +432,11 @@ void EZPI_device_group_update(cJSON *cj_request, cJSON *cj_response)
                 cJSON *cj_devgrp_id = cJSON_GetObjectItem(__FUNCTION__, cj_params, ezlopi_id_str); // "id"
                 if (cj_devgrp_id && cj_devgrp_id->valuestring)
                 {
+#ifdef CONFIG_EZPI_UTIL_TRACE_EN
                     // CJSON_TRACE("dev-grp [new] : ", cj_devgrp_id);
-                    uint32_t req_devgrp_id = strtoul(cj_devgrp_id->valuestring, NULL, 16);
-
+#endif
                     // edit in nvs and populate again
-                    EZPI_core_device_group_edit_by_id(req_devgrp_id, cj_params);
+                    EZPI_core_device_group_edit_by_id(strtoul(cj_devgrp_id->valuestring, NULL, 16), cj_params);
                 }
             }
         }
@@ -698,11 +726,11 @@ void EZPI_item_group_update(cJSON *cj_request, cJSON *cj_response)
                 cJSON *cj_itemgrp_id = cJSON_GetObjectItem(__FUNCTION__, cj_params, ezlopi_id_str);
                 if (cj_itemgrp_id && cj_itemgrp_id->valuestring)
                 {
+#ifdef CONFIG_EZPI_UTIL_TRACE_EN
                     // CJSON_TRACE("dev-grp [new] : ", cj_itemgrp_id);
-                    uint32_t req_devgrp_id = strtoul(cj_itemgrp_id->valuestring, NULL, 16);
-
+#endif
                     // edit in nvs and populate again
-                    EZPI_core_item_group_edit_by_id(req_devgrp_id, cj_params);
+                    EZPI_core_item_group_edit_by_id(strtoul(cj_itemgrp_id->valuestring, NULL, 16), cj_params);
                 }
             }
         }
@@ -775,6 +803,9 @@ void EZPI_item_group_updated(cJSON *cj_request, cJSON *cj_response)
     }
 }
 
+/*******************************************************************************
+ *                          Static Function Definitions
+ *******************************************************************************/
 static char *ezpi_generate_sha1_of_src(const char *src)
 {
     char *ret = NULL;
@@ -783,7 +814,7 @@ static char *ezpi_generate_sha1_of_src(const char *src)
         if (!mbedtls_sha1_self_test(1))
         {
             unsigned char sha1_hash[20];
-
+            memset(sha1_hash, 0, 20);
             if (0 == mbedtls_sha1_ret((unsigned char *)src, strlen(src), sha1_hash))
             {
                 ret = (char *)ezlopi_malloc(__FUNCTION__, sizeof(unsigned char) * 20);
@@ -796,40 +827,6 @@ static char *ezpi_generate_sha1_of_src(const char *src)
                     TRACE_D(" sha1_hash = %s ;  => ret = %s", sha1_hash, ret);
                 }
             }
-
-            // mbedtls_sha1_context sha1_ctx;
-            // mbedtls_sha1_init(&sha1_ctx);
-            // if (0 == mbedtls_sha1_starts_ret(&sha1_ctx))
-            // {
-            //     if (0 == mbedtls_sha1_update_ret(&sha1_ctx, (const unsigned char *)src, strlen(src)))
-            //     {
-            //         if (0 == mbedtls_sha1_finish_ret(&sha1_ctx, sha1))
-            //         {
-            //             size_t len = (4 * sizeof(sha1)) + 1;
-            //             ret = (char *)ezlopi_malloc(__FUNCTION__, len);
-            //             if (ret)
-            //             {
-            //                 memset(ret, 0, len);
-            //                 for (int i = 0; i < sizeof(sha1); i++)
-            //                 {
-            //                     size_t l = (len - (strlen(ret) + 1));
-            //                     if (l > 0)
-            //                     {
-            //                         ((int)sha1[i] / 100 > 0)  ? (snprintf(ret + strlen(ret), l, "%u", (uint8_t)sha1[i]))    // tripple digit
-            //                         : ((int)sha1[i] / 10 > 0) ? (snprintf(ret + strlen(ret), l, "0%u", (uint8_t)sha1[i]))   // double digit
-            //                                                   : (snprintf(ret + strlen(ret), l, "00%u", (uint8_t)sha1[i])); // single digit
-            //                     }
-            //                     else
-            //                     {
-            //                         break;
-            //                     }
-            //                 }
-            //             }
-            //         }
-            //     }
-            // }
-
-            // mbedtls_sha1_free(&sha1_ctx);
         }
     }
     return ret;

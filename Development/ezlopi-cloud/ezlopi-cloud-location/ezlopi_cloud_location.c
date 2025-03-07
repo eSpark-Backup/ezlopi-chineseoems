@@ -1,13 +1,5 @@
-
-/**
- * @file    ezlopi_cloud_location.c
- * @brief
- * @author
- * @version
- * @date
- */
 /* ===========================================================================
-** Copyright (C) 2022 Ezlo Innovation Inc
+** Copyright (C) 2025 Ezlo Innovation Inc
 **
 ** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
 **
@@ -37,6 +29,17 @@
 ** ===========================================================================
 */
 
+/**
+ * @file    ezlopi_cloud_location.c
+ * @brief   Definitions for cloud location functions
+ * @author  Krishna Kumar Sah (work.krishnasah@gmail.com)
+ * @version 1.0
+ * @date    February 2nd, 2024 8:09 PM
+ */
+
+/*******************************************************************************
+ *                          Include Files
+ *******************************************************************************/
 #include <string.h>
 #include <time.h>
 
@@ -52,6 +55,33 @@
 #include "ezlopi_cloud_constants.h"
 #include "ezlopi_util_trace.h"
 
+/*******************************************************************************
+ *                          Extern Data Declarations
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Extern Function Declarations
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Type & Macro Definitions
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Static Function Prototypes
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Static Data Definitions
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Extern Data Definitions
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Extern Function Definitions
+ *******************************************************************************/
 void EZPI_CLOUD_location_list(cJSON *cj_request, cJSON *cj_response)
 {
     cJSON *cjson_result = cJSON_AddObjectToObject(__FUNCTION__, cj_response, ezlopi_result_str);
@@ -108,7 +138,7 @@ void EZPI_CLOUD_location_set(cJSON *cj_request, cJSON *cj_response)
     {
         char location_str[128];
         memset(location_str, 0, sizeof(location_str));
-        CJSON_GET_VALUE_STRING_BY_COPY(cj_params, ezlopi_location_str, location_str);
+        CJSON_GET_VALUE_STRING_BY_COPY(cj_params, ezlopi_location_str, location_str, sizeof(location_str));
 
         if ('\0' != location_str[0])
         {
@@ -122,6 +152,10 @@ void EZPI_CLOUD_location_set(cJSON *cj_request, cJSON *cj_response)
         }
     }
 }
+
+/*******************************************************************************
+ *                          Static Function Definitions
+ *******************************************************************************/
 
 /*******************************************************************************
  *                          End of File

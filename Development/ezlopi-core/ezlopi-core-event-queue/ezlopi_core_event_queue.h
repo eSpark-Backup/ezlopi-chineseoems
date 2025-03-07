@@ -1,5 +1,5 @@
 /* ===========================================================================
-** Copyright (C) 2024 Ezlo Innovation Inc
+** Copyright (C) 2025 Ezlo Innovation Inc
 **
 ** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
 **
@@ -31,18 +31,22 @@
 /**
  * @file    main.h
  * @brief   perform some function on data
- * @author  xx
+ * @author  Krishna Kumar Sah (work.krishnasah@gmail.com)
  * @version 0.1
  * @date    12th DEC 2024
-*/
+ */
 
 #ifndef _EZLOPI_CORE_EVENT_QUEUE_H_
 #define _EZLOPI_CORE_EVENT_QUEUE_H_
 
 /*******************************************************************************
-*                          Include Files
-*******************************************************************************/
+ *                          Include Files
+ *******************************************************************************/
 #if 0
+
+/*******************************************************************************
+ *                          Include Files
+ *******************************************************************************/
 #include "ezlopi_core_actions.h"
 #include "ezlopi_core_errors.h"
 
@@ -98,11 +102,9 @@ extern "C"
 #endif
 
 #endif
+
 #endif // _EZLOPI_CORE_EVENT_QUEUE_H_
 
 /*******************************************************************************
-*                          End of File
-*******************************************************************************/
-
-
-
+ *                          End of File
+ *******************************************************************************/

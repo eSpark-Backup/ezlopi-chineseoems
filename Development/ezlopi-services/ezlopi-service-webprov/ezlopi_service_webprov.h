@@ -1,13 +1,5 @@
-
-/**
- * @file    ezlopi_service_webprov.h
- * @brief
- * @author
- * @version
- * @date
- */
 /* ===========================================================================
-** Copyright (C) 2024 Ezlo Innovation Inc
+** Copyright (C) 2025 Ezlo Innovation Inc
 **
 ** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
 **
@@ -37,21 +29,43 @@
 ** ===========================================================================
 */
 
-#ifndef _EZLOPI_SERVICE_WEBPROV_H_
-#define _EZLOPI_SERVICE_WEBPROV_H_
+/**
+ * @file    ezlopi_service_webprov.h
+ * @brief   ontains function declarations related to web provisioning
+ * @authors Krishna Kumar Sah (work.krishnasah@gmail.com)
+ * @version 1.0
+ * @date    July 21st, 2022 9:28 PM
+ */
 
+#ifndef __EZLOPI_SERVICE_WEBPROV_H__
+#define __EZLOPI_SERVICE_WEBPROV_H__
+
+/*******************************************************************************
+ *                          Include Files
+ *******************************************************************************/
 #include "../../build/config/sdkconfig.h"
-
 #include <string.h>
-
 #include "cjext.h"
 #include "EZLOPI_USER_CONFIG.h"
 
+/*******************************************************************************
+ *                          C++ Declaration Wrapper
+ *******************************************************************************/
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+    /*******************************************************************************
+     *                          Type & Macro Declarations
+     *******************************************************************************/
 
+    /*******************************************************************************
+     *                          Extern Data Declarations
+     *******************************************************************************/
+
+    /*******************************************************************************
+     *                          Extern Function Prototypes
+     *******************************************************************************/
 #if defined(CONFIG_EZPI_WEBSOCKET_CLIENT)
     /**
      * @brief Function to initialize web provisioning
@@ -60,7 +74,6 @@ extern "C"
      *  - Start fetch WSS endpoint task
      *
      */
-    int __send_cjson_data_to_nma_websocket(cJSON *cj_data);
     void EZPI_service_web_provisioning_init(void);
     /**
      * @brief Function to deinitialize web provisioning
@@ -88,7 +101,7 @@ extern "C"
 }
 #endif
 
-#endif // _EZLOPI_SERVICE_WEBPROV_H_
+#endif // __EZLOPI_SERVICE_WEBPROV_H__
 
 /*******************************************************************************
  *                          End of File

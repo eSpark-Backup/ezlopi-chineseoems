@@ -1,13 +1,6 @@
 
-/**
- * @file    ezlopi_cloud_category_str.c
- * @brief   
- * @author  
- * @version 
- * @date    
- */
 /* ===========================================================================
-** Copyright (C) 2022 Ezlo Innovation Inc
+** Copyright (C) 2025 Ezlo Innovation Inc
 **
 ** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
 **
@@ -37,8 +30,43 @@
 ** ===========================================================================
 */
 
+/**
+ * @file    ezlopi_cloud_category_str.c
+ * @brief
+ * @author  Krishna Kumar Sah (work.krishnasah@gmail.com)
+ * @version 1.0
+ * @date    November 22nd, 2023 3:27 PM
+ */
 
+/*******************************************************************************
+ *                          Include Files
+ *******************************************************************************/
 
+/*******************************************************************************
+ *                          Extern Data Declarations
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Extern Function Declarations
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Type & Macro Definitions
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Static Function Prototypes
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Static Data Definitions
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Extern Data Definitions
+ *******************************************************************************/
+#ifndef __EZLOPI_CATEGORY_H__
+#define __EZLOPI_CATEGORY_H__
 /// @brief https://api.ezlo.com/devices/categories/index.html
 const char *category_not_defined = "";
 const char *category_interface = "interface";
@@ -46,11 +74,9 @@ const char *category_dimmable_light = "dimmable_light";
 const char *category_switch = "switch";
 const char *category_security_sensor = "security_sensor";
 const char *category_generic_sensor = "generic_sensor";
-const  char *category_hvac = "hvac";
+// const  char *category_hvac = "hvac";
 // const  char *category_camera = "camera";
 const char *category_door_lock = "door_lock";
-const char *category_mode = "mode";
-const char *category_lock = "lock";
 // const  char *category_window_cov = "window_cov";
 // const  char *category_remote_control = "remote_control";
 const char *category_ir_tx = "ir_tx";
@@ -73,7 +99,7 @@ const char *category_weather = "weather";
 // const  char *category_uv_sensor = "uv_sensor";
 // const  char *category_mouse_trap = "mouse_trap";
 // const  char *category_doorbell = "doorbell";
-const  char *category_keypad = "keypad";
+// const  char *category_keypad = "keypad";
 // const  char *category_garage_door = "garage_door";
 const char *category_flow_meter = "flow_meter";
 // const  char *category_voltage_sensor = "voltage_sensor";
@@ -81,5 +107,15 @@ const char *category_flow_meter = "flow_meter";
 const char *category_level_sensor = "level_sensor";
 // const  char *category_clock = "clock";
 
+/*******************************************************************************
+ *                          Extern Function Definitions
+ *******************************************************************************/
 
+/*******************************************************************************
+ *                          Static Function Definitions
+ *******************************************************************************/
 
+#endif //__EZLOPI_CATEGORY_H__
+/*******************************************************************************
+ *                          End of File
+ *******************************************************************************/

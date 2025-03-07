@@ -1,13 +1,5 @@
-
-/**
- * @file    ezlopi_cloud_valye_type_str.h
- * @brief
- * @author
- * @version
- * @date
- */
 /* ===========================================================================
-** Copyright (C) 2022 Ezlo Innovation Inc
+** Copyright (C) 2025 Ezlo Innovation Inc
 **
 ** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
 **
@@ -37,13 +29,37 @@
 ** ===========================================================================
 */
 
+/**
+ * @file    ezlopi_cloud_valye_type_str.h
+ * @brief   Declarations for cloud value type strings
+ * @author  Krishna Kumar Sah (work.krishnasah@gmail.com)
+ * @version 1.0
+ * @date    February 24th, 2023 11:18 AM
+ */
+
 #ifndef __EZLOPI_VALUES_STR_H__
 #define __EZLIPI_VALUES_STR_H__
+#pragma once
 
+/*******************************************************************************
+ *                          Include Files
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          C++ Declaration Wrapper
+ *******************************************************************************/
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+
+    /*******************************************************************************
+     *                          Type & Macro Declarations
+     *******************************************************************************/
+
+    /*******************************************************************************
+     *                          Extern Data Declarations
+     *******************************************************************************/
 
     /// @brief https://api.ezlo.com/devices/item_value_types/index.html
     extern const char *value_type_int;
@@ -113,6 +129,9 @@ extern "C"
     // extern const  char *value_manual_not_fully_locked_operation;
     extern const char *value_type_fingerprint_action;
     extern const char *value_type_presence_operation_mode;
+    /*******************************************************************************
+     *                          Extern Function Prototypes
+     *******************************************************************************/
 
 #ifdef __cplusplus
 }

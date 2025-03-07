@@ -1,13 +1,5 @@
-
-/**
- * @file    ezlopi_cloud_scenes_expressions.h
- * @brief
- * @author
- * @version
- * @date
- */
 /* ===========================================================================
-** Copyright (C) 2022 Ezlo Innovation Inc
+** Copyright (C) 2025 Ezlo Innovation Inc
 **
 ** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
 **
@@ -37,34 +29,60 @@
 ** ===========================================================================
 */
 
+/**
+ * @file    ezlopi_cloud_scenes_expressions.h
+ * @brief   Decleration for cloud scenes expressions functions
+ * @authors Krishna Kumar Sah (work.krishnasah@gmail.com)
+ * @version 1.0
+ * @date    December 7th, 2023 7:42 PM
+ */
+
 #ifndef __SCENES_EXPRESSIONS_H__
 #define __SCENES_EXPRESSIONS_H__
 
 #ifdef CONFIG_EZPI_SERV_ENABLE_MESHBOTS
 
+/*******************************************************************************
+ *                          Include Files
+ *******************************************************************************/
 #include "cjext.h"
 
+/*******************************************************************************
+ *                          C++ Declaration Wrapper
+ *******************************************************************************/
 #ifdef __cplusplus
 extern "C"
 {
-#endif  
+#endif
+
+    /*******************************************************************************
+     *                          Type & Macro Declarations
+     *******************************************************************************/
+
+    /*******************************************************************************
+     *                          Extern Data Declarations
+     *******************************************************************************/
+
+    /*******************************************************************************
+     *                          Extern Function Prototypes
+     *******************************************************************************/
     /**
      * @brief Function that responds to hub.scenes.expressions.list.add method
-     * 
+     *
      * @param cj_request Incoming JSON request
      * @param cj_response Outgoing JSON response
      */
     void EZPI_scenes_expressions_list(cJSON *cj_request, cJSON *cj_response);
     /**
      * @brief Function that responds to hub.scenes.script.set method
-     * 
+     *
      * @param cj_request Incoming JSON request
      * @param cj_response Outgoing JSON response
      */
     void EZPI_scenes_expressions_set(cJSON *cj_request, cJSON *cj_response);
     /**
      * @brief Function that responds to hub.scenes.script.delete method
-     * 
+     *
      * @param cj_request Incoming JSON request
      * @param cj_response Outgoing JSON response
      */
@@ -73,14 +91,14 @@ extern "C"
     ///////////// updaters
     /**
      * @brief Updater function with method hub.expression.changed
-     * 
+     *
      * @param cj_request Incoming JSON request
      * @param cj_response Outgoing JSON response
      */
     void EZPI_scenes_expressions_added_changed(cJSON *cj_request, cJSON *cj_response);
     /**
      * @brief Updater function with method hub.expression.deleted
-     * 
+     *
      * @param cj_request Incoming JSON request
      * @param cj_response Outgoing JSON response
      */

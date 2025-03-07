@@ -1,13 +1,5 @@
-
-/**
- * @file    ezlopi_cloud_modes.c
- * @brief
- * @author
- * @version
- * @date
- */
 /* ===========================================================================
-** Copyright (C) 2022 Ezlo Innovation Inc
+** Copyright (C) 2025 Ezlo Innovation Inc
 **
 ** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
 **
@@ -37,6 +29,17 @@
 ** ===========================================================================
 */
 
+/**
+ * @file    ezlopi_cloud_modes.c
+ * @brief   Definitions for cloud modes functions
+ * @author  Krishna Kumar Sah (work.krishnasah@gmail.com)
+ * @version 1.0
+ * @date    August 15th, 2022 11:57 AM
+ */
+
+/*******************************************************************************
+ *                          Include Files
+ *******************************************************************************/
 #include <string.h>
 
 #include "ezlopi_util_trace.h"
@@ -50,7 +53,33 @@
 #include "ezlopi_cloud_constants.h"
 
 #if defined(CONFIG_EZPI_SERV_ENABLE_MODES)
+/*******************************************************************************
+ *                          Extern Data Declarations
+ *******************************************************************************/
 
+/*******************************************************************************
+ *                          Extern Function Declarations
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Type & Macro Definitions
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Static Function Prototypes
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Static Data Definitions
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Extern Data Definitions
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          Extern Function Definitions
+ *******************************************************************************/
 void EZPI_cloud_modes_get(cJSON *cj_request, cJSON *cj_response)
 {
     cJSON *cj_result = cJSON_AddObjectToObject(__FUNCTION__, cj_response, ezlopi_result_str);
@@ -200,7 +229,7 @@ void EZPI_cloud_modes_disarmed_default_set(cJSON *cj_request, cJSON *cj_response
             if (cj_modeId && cj_disarmedDefault)
             {
                 uint8_t modeId = strtoul(cj_modeId->valuestring, NULL, 10);
-                bool disarmedDefault = cj_disarmedDefault->type == cJSON_True ? true : false;
+                bool disarmedDefault = (cj_disarmedDefault->type == cJSON_True) ? true : false;
 
                 // toggle the flag in - inactive and active mode
                 EZPI_core_modes_api_set_disarmed_default(modeId, disarmedDefault);
@@ -373,14 +402,14 @@ void EZPI_cloud_modes_protect_set(cJSON *cj_request, cJSON *cj_response)
     cJSON *cj_result = cJSON_AddObjectToObject(__FUNCTION__, cj_response, ezlopi_result_str);
     if (cj_result)
     {
+        // double timestamp = 0;
         bool protect_state = false;
-        double timestamp = 0;
 
         cJSON *cj_params = cJSON_GetObjectItem(__FUNCTION__, cj_request, ezlopi_params_str);
         if (cj_params)
         {
             CJSON_GET_VALUE_BOOL(cj_params, ezlopi_protect_str, protect_state);
-            CJSON_GET_VALUE_DOUBLE(cj_params, ezlopi_timestamp_str, timestamp); // timestamp not needed rightnow
+            // CJSON_GET_VALUE_DOUBLE(cj_params, ezlopi_timestamp_str, timestamp); // timestamp not needed rightnow
 
             cJSON *cj_mode_id = cJSON_GetObjectItem(__FUNCTION__, cj_params, ezlopi_modeId_str);
             if (cj_mode_id && cj_mode_id->valuestring)
@@ -487,6 +516,156 @@ void EZPI_cloud_modes_entry_delay_reset(cJSON *cj_request, cJSON *cj_response)
         EZPI_core_modes_api_reset_entry_delay();
     }
 }
+
+void EZPI_cloud_modes_swinger_shutdown_list(cJSON *cj_request, cJSON *cj_response)
+{
+    cJSON *cj_result = cJSON_AddObjectToObject(__func__, cj_response, ezlopi_result_str);
+    if (cj_result)
+    {
+#warning checking 'version_str' remains;
+        cJSON_AddStringToObject(__func__, cj_result, "version", "1"); // need to generate unique ver. every transmission
+
+        EZPI_core_modes_api_swinger_shutdown_list(cj_result);
+    }
+}
+
+void EZPI_cloud_modes_swinger_shutdown_reset(cJSON *cj_request, cJSON *cj_response)
+{
+    cJSON *cj_result = cJSON_AddObjectToObject(__func__, cj_response, ezlopi_result_str);
+    if (cj_result)
+    {
+        cJSON *cj_params = cJSON_GetObjectItem(__func__, cj_request, ezlopi_params_str);
+        if (cj_params)
+        {
+            cJSON *cj_dev_id = cJSON_GetObjectItem(__func__, cj_params, ezlopi_deviceId_str);
+            if (cj_dev_id && cj_dev_id->valuestring)
+            {
+                uint32_t devId = strtoul(cj_dev_id->valuestring, NULL, 16);
+                EZPI_core_modes_api_swinger_shutdown_reset(devId);
+            }
+        }
+    }
+}
+
+void EZPI_cloud_modes_swinger_shutdown_disabled_add(cJSON *cj_request, cJSON *cj_response)
+{
+    cJSON *cj_result = cJSON_AddObjectToObject(__func__, cj_response, ezlopi_result_str);
+    if (cj_result)
+    {
+        cJSON *cj_params = cJSON_GetObjectItem(__func__, cj_request, ezlopi_params_str);
+        if (cj_params)
+        {
+            cJSON *cj_dev_id = cJSON_GetObjectItem(__func__, cj_params, ezlopi_deviceId_str);
+            if (cj_dev_id && cj_dev_id->valuestring)
+            {
+                uint32_t devId = strtoul(cj_dev_id->valuestring, NULL, 16);
+                EZPI_core_modes_api_swinger_shutdown_disable_add(devId);
+            }
+        }
+    }
+}
+
+void EZPI_cloud_modes_swinger_shutdown_disabled_remove(cJSON *cj_request, cJSON *cj_response)
+{
+    cJSON *cj_result = cJSON_AddObjectToObject(__func__, cj_response, ezlopi_result_str);
+    if (cj_result)
+    {
+        cJSON *cj_params = cJSON_GetObjectItem(__func__, cj_request, ezlopi_params_str);
+        if (cj_params)
+        {
+            cJSON *cj_dev_id = cJSON_GetObjectItem(__func__, cj_params, ezlopi_deviceId_str);
+            if (cj_dev_id && cj_dev_id->valuestring)
+            {
+                uint32_t devId = strtoul(cj_dev_id->valuestring, NULL, 16);
+                EZPI_core_modes_api_swinger_shutdown_disable_remove(devId);
+            }
+        }
+    }
+}
+
+void EZPI_cloud_modes_swinger_shutdown_limit_set(cJSON *cj_request, cJSON *cj_response)
+{
+    cJSON *cj_result = cJSON_AddObjectToObject(__func__, cj_response, ezlopi_result_str);
+    if (cj_result)
+    {
+        cJSON *cj_params = cJSON_GetObjectItem(__func__, cj_request, ezlopi_params_str);
+        if (cj_params)
+        {
+            cJSON *cj_dev_id = cJSON_GetObjectItem(__func__, cj_params, ezlopi_deviceId_str);
+            cJSON *cj_hits_limit = cJSON_GetObjectItem(__func__, cj_params, ezlopi_hits_limit_str);
+            cJSON *cj_inactivity_sec = cJSON_GetObjectItem(__func__, cj_params, ezlopi_inactivity_window_str);
+            if ((cj_dev_id && cj_dev_id->valuestring) && cj_hits_limit && cj_inactivity_sec)
+            {
+                uint32_t devId = strtoul(cj_dev_id->valuestring, NULL, 16);
+                uint32_t hitslimit = cj_hits_limit->valuedouble;
+                uint32_t inactivity_sec = cj_inactivity_sec->valuedouble;
+                EZPI_core_modes_api_swinger_shutdown_limit_set(devId, hitslimit, inactivity_sec);
+            }
+        }
+    }
+}
+
+void EZPI_cloud_modes_swinger_shutdown_limit_reset(cJSON *cj_request, cJSON *cj_response)
+{
+    cJSON *cj_result = cJSON_AddObjectToObject(__func__, cj_response, ezlopi_result_str);
+    if (cj_result)
+    {
+        cJSON *cj_params = cJSON_GetObjectItem(__func__, cj_request, ezlopi_params_str);
+        if (cj_params)
+        {
+            cJSON *cj_dev_id = cJSON_GetObjectItem(__func__, cj_params, ezlopi_deviceId_str);
+            if (cj_dev_id && cj_dev_id->valuestring)
+            {
+                uint32_t devId = strtoul(cj_dev_id->valuestring, NULL, 16);
+                EZPI_core_modes_api_swinger_shutdown_limit_reset(devId);
+            }
+        }
+    }
+}
+
+void EZPI_cloud_modes_local_alarm_off(cJSON *cj_request, cJSON *cj_response)
+{
+    cJSON *cj_result = cJSON_AddObjectToObject(__FUNCTION__, cj_response, ezlopi_result_str);
+    if (cj_result)
+    {
+        cJSON *cj_params = cJSON_GetObjectItem(__func__, cj_request, ezlopi_params_str);
+        if (cj_params)
+        {
+            cJSON *cj_modeId = cJSON_GetObjectItem(__func__, cj_params, ezlopi_modeId_str);
+            if (cj_modeId)
+            {
+                uint8_t modeId = strtoul(cj_modeId->valuestring, NULL, 10);
+                // cJSON *cj_armed = cJSON_GetObjectItem(__func__, cj_params, ezlopi_deviceId_str);
+                EZPI_core_modes_api_local_alarm_off(modeId);
+            }
+        }
+    }
+}
+
+void EZPI_cloud_modes_force_disarm(cJSON *cj_request, cJSON *cj_response)
+{
+    cJSON *cj_result = cJSON_AddObjectToObject(__FUNCTION__, cj_response, ezlopi_result_str);
+    if (cj_result)
+    {
+        cJSON *cj_params = cJSON_GetObjectItem(__func__, cj_request, ezlopi_params_str);
+        if (cj_params)
+        {
+            cJSON *cj_modeId = cJSON_GetObjectItem(__func__, cj_params, ezlopi_modeId_str);
+            if (cj_modeId)
+            {
+                double timestamp = 0;
+                CJSON_GET_VALUE_DOUBLE(cj_params, ezlopi_timestamp_str, timestamp); // timestamp not needed rightnow
+
+                uint8_t modeId = strtoul(cj_modeId->valuestring, NULL, 10);
+                // cJSON *cj_armed = cJSON_GetObjectItem(__func__, cj_params, ezlopi_deviceId_str);
+                EZPI_core_modes_api_force_disarm(modeId);
+            }
+        }
+    }
+}
+/*******************************************************************************
+ *                          Static Function Definitions
+ *******************************************************************************/
 
 #endif // CONFIG_EZPI_SERV_ENABLE_MODES
 

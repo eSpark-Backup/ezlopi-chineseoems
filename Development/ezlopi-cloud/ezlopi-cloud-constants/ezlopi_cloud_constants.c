@@ -1,13 +1,5 @@
-
-/**
- * @file    ezlopi_cloud_constants.c
- * @brief
- * @author
- * @version
- * @date
- */
 /* ===========================================================================
-** Copyright (C) 2022 Ezlo Innovation Inc
+** Copyright (C) 2025 Ezlo Innovation Inc
 **
 ** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
 **
@@ -37,8 +29,19 @@
 ** ===========================================================================
 */
 
+/**
+ * @file    ezlopi_cloud_constants.c
+ * @brief
+ * @author  Krishna Kumar Sah (work.krishnasah@gmail.com)
+ * @version 1.0
+ * @date    November 22nd, 2023 3:27 PM
+ */
 
-
+#ifndef __EZLOPI_CLOUD_CONSTANTS_H__
+#define __EZLOPI_CLOUD_CONSTANTS_H__
+/*******************************************************************************
+ *                          Include Files
+ *******************************************************************************/
 #include "ezlopi_cloud_category_str.h"
 #include "ezlopi_cloud_device_types_str.h"
 #include "ezlopi_cloud_devices_str.h"
@@ -51,7 +54,7 @@
 #include "ezlopi_cloud_value_type_str.h"
 #include "ezlopi_cloud_item_name_str.h"
 
-
 /*******************************************************************************
  *                          End of File
  *******************************************************************************/
+#endif // __EZLOPI_CLOUD_CONSTANTS_H__

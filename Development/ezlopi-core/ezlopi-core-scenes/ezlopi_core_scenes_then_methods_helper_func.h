@@ -1,5 +1,5 @@
 /* ===========================================================================
-** Copyright (C) 2024 Ezlo Innovation Inc
+** Copyright (C) 2025 Ezlo Innovation Inc
 **
 ** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
 **
@@ -31,45 +31,44 @@
 /**
  * @file    ezlopi_core_scenes_then_methods_helper_func.h
  * @brief   These are sub-functions utilized in file 'ezlopi_core_scenes_then_methods.c'
- * @author  xx
+ * @author  Krishna Kumar Sah (work.krishnasah@gmail.com)
  * @version 0.1
  * @date    12th DEC 2024
-*/
+ */
 
 #ifndef _EZLOPI_CORE_SCENES_THEN_METHODS_HELPER_FUNCTIONS_H_
 #define _EZLOPI_CORE_SCENES_THEN_METHODS_HELPER_FUNCTIONS_H_
 
 #ifdef CONFIG_EZPI_SERV_ENABLE_MESHBOTS
 
-
 /*******************************************************************************
-*                          Include Files
-*******************************************************************************/
+ *                          Include Files
+ *******************************************************************************/
 #include "ezlopi_core_http.h"
 
 /*******************************************************************************
-*                          C++ Declaration Wrapper
-*******************************************************************************/
+ *                          C++ Declaration Wrapper
+ *******************************************************************************/
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
     /*******************************************************************************
-    *                          Type & Macro Declarations
-    *******************************************************************************/
+     *                          Type & Macro Declarations
+     *******************************************************************************/
     typedef struct s_sendhttp_method
     {
         const char *field_name;
         void (*field_func)(s_ezlopi_core_http_mbedtls_t *tmp_http_data, l_fields_v2_t *curr_field);
     } s_sendhttp_method_t;
     /*******************************************************************************
-    *                          Extern Data Declarations
-    *******************************************************************************/
+     *                          Extern Data Declarations
+     *******************************************************************************/
 
     /*******************************************************************************
-    *                          Extern Function Prototypes
-    *******************************************************************************/
+     *                          Extern Function Prototypes
+     *******************************************************************************/
     /**
      * @brief This function parses and populates 'HTTP_request_type' into a 's_ezlopi_core_http_mbedtls_t' struct
      *
@@ -150,13 +149,9 @@ extern "C"
 }
 #endif
 
-#endif  // CONFIG_EZPI_SERV_ENABLE_MESHBOTS
+#endif // CONFIG_EZPI_SERV_ENABLE_MESHBOTS
 #endif /*_EZLOPI_CORE_SCENES_THEN_METHODS_HELPER_FUNCTIONS_H_*/
 
 /*******************************************************************************
-*                          End of File
-*******************************************************************************/
-
-
-
-
+ *                          End of File
+ *******************************************************************************/

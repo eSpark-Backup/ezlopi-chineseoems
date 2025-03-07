@@ -1,13 +1,5 @@
-
-/**
- * @file    ezlopi_service_meshbot.h
- * @brief
- * @author
- * @version
- * @date
- */
 /* ===========================================================================
-** Copyright (C) 2024 Ezlo Innovation Inc
+** Copyright (C) 2025 Ezlo Innovation Inc
 **
 ** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
 **
@@ -37,17 +29,43 @@
 ** ===========================================================================
 */
 
-#ifndef _EZLOPI_SERVICE_MESHBOT_H_
-#define _EZLOPI_SERVICE_MESHBOT_H_
+/**
+ * @file    ezlopi_service_meshbot.h
+ * @brief   Contains function declarations for meshbot related operations
+ * @authors Krishna Kumar Sah (work.krishnasah@gmail.com)
+ * @version 1.0
+ * @date    November 2nd, 2023 6:28 PM
+ */
+#ifndef __EZLOPI_SERVICE_MESHBOT_H__
+#define __EZLOPI_SERVICE_MESHBOT_H__
 
 #ifdef CONFIG_EZPI_SERV_ENABLE_MESHBOTS
 
+/*******************************************************************************
+ *                          Include Files
+ *******************************************************************************/
+
 #include "ezlopi_core_scenes_v2.h"
 
+/*******************************************************************************
+ *                          C++ Declaration Wrapper
+ *******************************************************************************/
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+
+    /*******************************************************************************
+     *                          Type & Macro Declarations
+     *******************************************************************************/
+
+    /*******************************************************************************
+     *                          Extern Data Declarations
+     *******************************************************************************/
+
+    /*******************************************************************************
+     *                          Extern Function Prototypes
+     *******************************************************************************/
 
     /**
      * @brief Function to initialize meshbot service
@@ -106,7 +124,7 @@ extern "C"
 
 #endif // CONFIG_EZPI_SERV_ENABLE_MESHBOTS
 
-#endif // _EZLOPI_SERVICE_MESHBOT_H_
+#endif // __EZLOPI_SERVICE_MESHBOT_H__
 /*******************************************************************************
  *                          End of File
  *******************************************************************************/

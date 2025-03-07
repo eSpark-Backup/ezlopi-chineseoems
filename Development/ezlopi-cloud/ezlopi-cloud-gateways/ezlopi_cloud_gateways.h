@@ -1,14 +1,5 @@
-
-
-/**
- * @file    ezlopi_cloud_gateway.h
- * @brief
- * @author
- * @version
- * @date
- */
 /* ===========================================================================
-** Copyright (C) 2022 Ezlo Innovation Inc
+** Copyright (C) 2025 Ezlo Innovation Inc
 **
 ** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
 **
@@ -38,15 +29,42 @@
 ** ===========================================================================
 */
 
+/**
+ * @file    ezlopi_cloud_gateway.h
+ * @brief   Declarations for cloud gateway functions
+ * @author  Krishna Kumar Sah (work.krishnasah@gmail.com)
+ * @version 1.0
+ * @date    July 21st, 2022 9:28 PM
+ */
+
 #ifndef __HUB_GATEWAYS_H__
 #define __HUB_GATEWAYS_H__
 
+/*******************************************************************************
+ *                          Include Files
+ *******************************************************************************/
+#include <string.h>
+
 #include "cjext.h"
 
+/*******************************************************************************
+ *                          C++ Declaration Wrapper
+ *******************************************************************************/
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+    /*******************************************************************************
+     *                          Type & Macro Declarations
+     *******************************************************************************/
+
+    /*******************************************************************************
+     *                          Extern Data Declarations
+     *******************************************************************************/
+
+    /*******************************************************************************
+     *                          Extern Function Prototypes
+     *******************************************************************************/
     /**
      * @brief Function to respond to hub.gateway.list methd
      *

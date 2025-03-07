@@ -1,14 +1,5 @@
-
-
-/**
- * @file    ezlopi_cloud_status_str.h
- * @brief
- * @author
- * @version
- * @date
- */
 /* ===========================================================================
-** Copyright (C) 2022 Ezlo Innovation Inc
+** Copyright (C) 2025 Ezlo Innovation Inc
 **
 ** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
 **
@@ -38,18 +29,44 @@
 ** ===========================================================================
 */
 
+/**
+ * @file    ezlopi_cloud_status_str.h
+ * @brief   Declarations for cloud status strings
+ * @author  
+ * @version 1.0
+ * @date    1st January 2024
+ */
+
 #ifndef __EZLOPI_CLOUD_STATUS_STR_H__
 #define __EZLOPI_CLOUD_STATUS_STR_H__
 
+/*******************************************************************************
+ *                          Include Files
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          C++ Declaration Wrapper
+ *******************************************************************************/
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
+    /*******************************************************************************
+     *                          Type & Macro Declarations
+     *******************************************************************************/
+
+    /*******************************************************************************
+     *                          Extern Data Declarations
+     *******************************************************************************/
     extern const char *ezlopi_cloud_status_idle;
     extern const char *ezlopi_cloud_status_broken;
     extern const char *ezlopi_cloud_status_updating;
     extern const char *ezlopi_cloud_status_rediscovering;
+
+    /*******************************************************************************
+     *                          Extern Function Prototypes
+     *******************************************************************************/
 
 #ifdef __cplusplus
 }

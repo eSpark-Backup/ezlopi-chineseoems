@@ -1,14 +1,5 @@
-
-
-/**
- * @file    ezlopi_cloud_location.h
- * @brief
- * @author
- * @version
- * @date
- */
 /* ===========================================================================
-** Copyright (C) 2022 Ezlo Innovation Inc
+** Copyright (C) 2025 Ezlo Innovation Inc
 **
 ** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
 **
@@ -38,13 +29,40 @@
 ** ===========================================================================
 */
 
-#ifndef _EZLOPI_CLOUD_LOCATION_H_
-#define _EZLOPI_CLOUD_LOCATION_H_
+/**
+ * @file    ezlopi_cloud_location.h
+ * @brief   Declarations for cloud location functions
+ * @author  Krishna Kumar Sah (work.krishnasah@gmail.com)
+ * @version 1.0
+ * @date    January 30th, 2024 9:22 PM
+ */
 
+#ifndef __EZLOPI_CLOUD_LOCATION_H__
+#define __EZLOPI_CLOUD_LOCATION_H__
+
+/*******************************************************************************
+ *                          Include Files
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          C++ Declaration Wrapper
+ *******************************************************************************/
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+
+    /*******************************************************************************
+     *                          Type & Macro Declarations
+     *******************************************************************************/
+
+    /*******************************************************************************
+     *                          Extern Data Declarations
+     *******************************************************************************/
+
+    /*******************************************************************************
+     *                          Extern Function Prototypes
+     *******************************************************************************/
 
     /**
      * @brief Function to respond to hub.time.location.list method
@@ -72,7 +90,7 @@ extern "C"
 }
 #endif
 
-#endif // _EZLOPI_CLOUD_LOCATION_H_
+#endif // __EZLOPI_CLOUD_LOCATION_H__
 
 /*******************************************************************************
  *                          End of File

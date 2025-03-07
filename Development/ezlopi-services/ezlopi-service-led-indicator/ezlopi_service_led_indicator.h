@@ -1,13 +1,5 @@
-
-/**
- * @file    ezlopi_service_led_indicator.h
- * @brief
- * @author
- * @version
- * @date
- */
 /* ===========================================================================
-** Copyright (C) 2024 Ezlo Innovation Inc
+** Copyright (C) 2025 Ezlo Innovation Inc
 **
 ** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
 **
@@ -37,15 +29,34 @@
 ** ===========================================================================
 */
 
-#ifndef _EZLOPI_SERVICE_LED_INDICATOR_H_
-#define _EZLOPI_SERVICE_LED_INDICATOR_H_
+/**
+ * @file    ezlopi_service_led_indicator.h
+ * @brief   This file contains function definitons for LED indicator for device on, Wifi connected, internet available and connected to cloud
+ * @author  
+ * @version 1.0
+ * @date    April 3, 2024
+ */
+
+#ifndef _EZLOPI_SERVICE_LED_INDICATOR_H___
+#define _EZLOPI_SERVICE_LED_INDICATOR_H___
 
 #ifdef CONFIG_EZPI_ENABLE_LED_INDICATOR
 
+/*******************************************************************************
+ *                          Include Files
+ *******************************************************************************/
+
+/*******************************************************************************
+ *                          C++ Declaration Wrapper
+ *******************************************************************************/
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+
+    /*******************************************************************************
+     *                          Type & Macro Declarations
+     *******************************************************************************/
 
     /**
      * @brief Enum to set the LED indocator
@@ -60,6 +71,13 @@ extern "C"
         PRIORITY_MAX,       /**< Invalid priority state */
     } e_indicator_led_priority_t;
 
+    /*******************************************************************************
+     *                          Extern Data Declarations
+     *******************************************************************************/
+
+    /*******************************************************************************
+     *                          Extern Function Prototypes
+     *******************************************************************************/
     /**
      * @brief Function to initialize LED indicator
      *
@@ -73,7 +91,7 @@ extern "C"
 
 #endif // CONFIG_EZPI_ENABLE_LED_INDICATOR
 
-#endif // _EZLOPI_SERVICE_LED_INDICATOR_H_
+#endif // __EZLOPI_SERVICE_LED_INDICATOR_H__
 
 /*******************************************************************************
  *                          End of File

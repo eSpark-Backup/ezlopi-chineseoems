@@ -1,5 +1,5 @@
 /* ===========================================================================
-** Copyright (C) 2024 Ezlo Innovation Inc
+** Copyright (C) 2025 Ezlo Innovation Inc
 **
 ** Under EZLO AVAILABLE SOURCE LICENSE (EASL) AGREEMENT
 **
@@ -31,30 +31,30 @@
 /**
  * @file    ezlopi_core_actions.h
  * @brief   These functions perform operation on action-methods
- * @author  xx
+ * @author  Krishna Kumar Sah (work.krishnasah@gmail.com)
  * @version 0.1
  * @date    12th DEC 2024
-*/
+ */
 
 #ifndef _EZLOPI_CORE_ACTIONS_H_
 #define _EZLOPI_CORE_ACTIONS_H_
 
 /*******************************************************************************
-*                          Include Files
-*******************************************************************************/
+ *                          Include Files
+ *******************************************************************************/
 #include <string.h>
 
 /*******************************************************************************
-*                          C++ Declaration Wrapper
-*******************************************************************************/
+ *                          C++ Declaration Wrapper
+ *******************************************************************************/
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
     /*******************************************************************************
-    *                          Type & Macro Declarations
-    *******************************************************************************/
+     *                          Type & Macro Declarations
+     *******************************************************************************/
     typedef enum e_ezlopi_actions
     {
 #define EZLOPI_ACTION(action, name) EZLOPI_ACTION_##action,
@@ -62,12 +62,12 @@ extern "C"
 #undef EZLOPI_ACTION
     } e_ezlopi_actions_t;
     /*******************************************************************************
-    *                          Extern Data Declarations
-    *******************************************************************************/
+     *                          Extern Data Declarations
+     *******************************************************************************/
 
     /*******************************************************************************
-    *                          Extern Function Prototypes
-    *******************************************************************************/
+     *                          Extern Function Prototypes
+     *******************************************************************************/
     /**
      * @brief This function returns corresponding 'method-name' for provided 'action-method'
      *
@@ -76,8 +76,6 @@ extern "C"
      */
     char *EZPI_core_actions_to_string(e_ezlopi_actions_t action);
 
-
-
 #ifdef __cplusplus
 }
 #endif
@@ -85,9 +83,5 @@ extern "C"
 #endif // _EZLOPI_CORE_ACTIONS_H_
 
 /*******************************************************************************
-*                          End of File
-*******************************************************************************/
-
-
-
-
+ *                          End of File
+ *******************************************************************************/
