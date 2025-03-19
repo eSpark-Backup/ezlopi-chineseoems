@@ -32,6 +32,10 @@ static void __prepare_lower_limit_item_properties(l_ezlopi_item_t* item, cJSON* 
 static ezlopi_error_t __prepare_fan_device_item(uint32_t parent_id, cJSON* cj_device); 
 static ezlopi_error_t __prepare_power_device_item(uint32_t *parent_id, cJSON* cj_device);
 static ezlopi_error_t __prepare_security_lock_device_item(uint32_t parent_id, cJSON* cj_device);
+static ezlopi_error_t __prepare_temp_format_device_item(uint32_t parent_id, cJSON* cj_device);
+static ezlopi_error_t __prepare_pir_mode_device_item(uint32_t parent_id, cJSON* cj_device);
+static ezlopi_error_t __prepare_upper_limit_device_item(uint32_t parent_id, cJSON* cj_device);
+static ezlopi_error_t __prepare_lower_limit_device_item(uint32_t parent_id, cJSON* cj_device);
 
 
 ezlopi_error_t device_00113_Breeze_Thermostat(e_ezlopi_actions_t action, l_ezlopi_item_t* item, void* args, void* user_arg)
@@ -71,6 +75,19 @@ ezlopi_error_t device_00113_Breeze_Thermostat(e_ezlopi_actions_t action, l_ezlop
     return error;
 }
 
+void heartBeat_task(void *arg)
+{
+    TRACE_I("-------hb task main aagaya");
+    while(1)
+    {
+        TRACE_I("-------while main aagaya");
+        send_command(CMD_HEARTBEAT,0);
+        TRACE_I("Heart_beat sent");
+        vTaskDelay(4000 / portTICK_PERIOD_MS);
+    }
+    vTaskDelete(NULL);
+}
+
 static ezlopi_error_t __prepare(void* arg)
 {
     ezlopi_error_t error = EZPI_ERR_PREP_DEVICE_PREP_FAILED;
@@ -88,7 +105,23 @@ static ezlopi_error_t __prepare(void* arg)
         }
         if (-1 == (error = __prepare_security_lock_device_item(parent_id, prep_arg->cjson_device)))
         {
-            TRACE_E("UNABLE TO PREPARE FAN DEVICE");
+            TRACE_E("UNABLE TO PREPARE SECURITY LOCK DEVICE");
+        }
+        if (-1 == (error = __prepare_temp_format_device_item(parent_id, prep_arg->cjson_device)))
+        {
+            TRACE_E("UNABLE TO PREPARE TEMPERATURE FORMAT DEVICE");
+        }
+        if (-1 == (error = __prepare_pir_mode_device_item(parent_id, prep_arg->cjson_device)))
+        {
+            TRACE_E("UNABLE TO PREPARE PIR MODE DEVICE");
+        }
+        if (-1 == (error = __prepare_upper_limit_device_item(parent_id, prep_arg->cjson_device)))
+        {
+            TRACE_E("UNABLE TO PREPARE UPPER LIMIT DEVICE");
+        }
+        if (-1 == (error = __prepare_lower_limit_device_item(parent_id, prep_arg->cjson_device)))
+        {
+            TRACE_E("UNABLE TO PREPARE LOWER LIMIT DEVICE");
         }
     }
 
@@ -116,6 +149,7 @@ static ezlopi_error_t __init(l_ezlopi_item_t* item)
             else
             {
                 intitialized = true;
+                xTaskCreate(heartBeat_task,"Heart_beat_task: ",3*1024,NULL,1,NULL);
             }
             
         }
@@ -140,7 +174,7 @@ static ezlopi_error_t __set_value(l_ezlopi_item_t* item, void* arg)
             if (ezlopi_item_name_thermostat_fan_mode == item->cloud_properties.item_name)
             {
                 send_command(CMD_FAN, cj_value->valueint);
-                intensity_update(cj_value->valueint);
+                // intensity_update(cj_value->valueint);
             }
             else if (ezlopi_item_name_switch == item->cloud_properties.item_name)
             {
@@ -150,6 +184,26 @@ static ezlopi_error_t __set_value(l_ezlopi_item_t* item, void* arg)
             else if (ezlopi_item_name_child_lock == item->cloud_properties.item_name)
             {
                 send_command(CMD_LOCK, cj_value->valueint);
+                power_update(cj_value->valueint);
+            }
+            else if (ezlopi_item_name_thermostat_setpoint == item->cloud_properties.item_name)
+            {
+                send_command(CMD_FORMAT, cj_value->valueint);
+                power_update(cj_value->valueint);
+            }
+            else if (ezlopi_item_name_undefined == item->cloud_properties.item_name)
+            {
+                send_command(CMD_PIR, cj_value->valueint);
+                power_update(cj_value->valueint);
+            }
+            else if (ezlopi_item_name_acceleration_x_axis == item->cloud_properties.item_name)
+            {
+                send_command(CMD_UP_LIMIT, cj_value->valueint);
+                power_update(cj_value->valueint);
+            }
+            else if (ezlopi_item_name_acceleration_y_axis == item->cloud_properties.item_name)
+            {
+                send_command(CMD_LOW_LIMIT, cj_value->valueint);
                 power_update(cj_value->valueint);
             }
             EZPI_core_device_value_updated_from_device_broadcast(item);
@@ -169,17 +223,24 @@ static ezlopi_error_t __get_value_cjson(l_ezlopi_item_t* item, void* args)
     }
 
     error = EZPI_SUCCESS;
-
-    if (ezlopi_item_name_dimmer == item->cloud_properties.item_name)
+    TRACE_I("--------------------------------------------------Get_value.,.,.,.");
+    if (ezlopi_item_name_thermostat_fan_mode == item->cloud_properties.item_name)
     {
-        EZPI_core_valueformatter_uint32_to_cjson(cj_params, breeze_amb_temp_value(), item->cloud_properties.scale);
+        EZPI_core_valueformatter_uint32_to_cjson(cj_params, breeze_fan_value(), item->cloud_properties.scale);
+        TRACE_I("--------------------------------------------------fan.,.,.,.");
     }
     else if (ezlopi_item_name_switch == item->cloud_properties.item_name)
     {
         EZPI_core_valueformatter_bool_to_cjson(cj_params, breeze_power_value(), item->cloud_properties.scale);
+        TRACE_I("--------------------------------------------------power.,.,.,.");
     }
-    if (ezlopi_item_name_temp == item->cloud_properties.item_name) {
-        EZPI_core_valueformatter_uint32_to_cjson(cj_params, get_temp_value(), item->cloud_properties.scale);
+    else if (ezlopi_item_name_child_lock == item->cloud_properties.item_name) {
+        EZPI_core_valueformatter_uint32_to_cjson(cj_params, lock_value(), item->cloud_properties.scale);
+        TRACE_I("--------------------------------------------------lock.,.,.,.");
+    }
+    else if (ezlopi_item_name_thermostat_setpoint == item->cloud_properties.item_name) {
+        EZPI_core_valueformatter_uint32_to_cjson(cj_params, breeze_format_value(), item->cloud_properties.scale);
+        TRACE_I("--------------------------------------------------format.,.,.,.");
     }
     
     return error;
@@ -361,7 +422,7 @@ static void __prepare_upper_limit_item_properties(l_ezlopi_item_t* item, cJSON* 
     item->cloud_properties.show = true;
     item->cloud_properties.has_getter = true;
     item->cloud_properties.has_setter = true;
-    item->cloud_properties.item_name = ezlopi_item_name_undefined;
+    item->cloud_properties.item_name = ezlopi_item_name_acceleration_x_axis;
     item->cloud_properties.value_type = value_type_int;
     item->cloud_properties.item_id = EZPI_core_cloud_generate_item_id();
     item->cloud_properties.scale = NULL;
@@ -388,7 +449,7 @@ static void __prepare_lower_limit_item_properties(l_ezlopi_item_t* item, cJSON* 
     item->cloud_properties.show = true;
     item->cloud_properties.has_getter = true;
     item->cloud_properties.has_setter = true;
-    item->cloud_properties.item_name = ezlopi_item_name_undefined;
+    item->cloud_properties.item_name = ezlopi_item_name_acceleration_y_axis;
     item->cloud_properties.value_type = value_type_int;
     item->cloud_properties.item_id = EZPI_core_cloud_generate_item_id();
     item->cloud_properties.scale = NULL;
@@ -481,7 +542,114 @@ static ezlopi_error_t __prepare_security_lock_device_item(uint32_t parent_id, cJ
 }
 
 
+static ezlopi_error_t __prepare_temp_format_device_item(uint32_t parent_id, cJSON* cj_device)
+{
+    ezlopi_error_t error = EZPI_ERR_PREP_DEVICE_PREP_FAILED;
 
+    l_ezlopi_device_t *device = EZPI_core_device_add_device(cj_device, "Temp_format");
+    if (device)
+    {
+        error = EZPI_SUCCESS;
+        __prepare_temp_format_cloud_properties(device);
+        device->cloud_properties.parent_device_id = parent_id;
+        l_ezlopi_item_t *item = EZPI_core_device_add_item_to_device(device, device_00113_Breeze_Thermostat);
+        if (item)
+        {
+            __prepare_temp_format_item_properties(item, cj_device);
+        }
+
+        else
+        {
+            error = EZPI_FAILED;
+            EZPI_core_device_free_device(device);
+        }
+
+    }
+
+    return error;
+}
+
+
+static ezlopi_error_t __prepare_pir_mode_device_item(uint32_t parent_id, cJSON* cj_device)
+{
+    ezlopi_error_t error = EZPI_ERR_PREP_DEVICE_PREP_FAILED;
+
+    l_ezlopi_device_t *device = EZPI_core_device_add_device(cj_device, "PIR_Mode");
+    if (device)
+    {
+        error = EZPI_SUCCESS;
+        __prepare_pir_mode_cloud_properties(device);
+        device->cloud_properties.parent_device_id = parent_id;
+        l_ezlopi_item_t *item = EZPI_core_device_add_item_to_device(device, device_00113_Breeze_Thermostat);
+        if (item)
+        {
+            __prepare_pir_mode_item_properties(item, cj_device);
+        }
+
+        else
+        {
+            error = EZPI_FAILED;
+            EZPI_core_device_free_device(device);
+        }
+
+    }
+
+    return error;
+}
+
+static ezlopi_error_t __prepare_upper_limit_device_item(uint32_t parent_id, cJSON* cj_device)
+{
+    ezlopi_error_t error = EZPI_ERR_PREP_DEVICE_PREP_FAILED;
+
+    l_ezlopi_device_t *device = EZPI_core_device_add_device(cj_device, "Upper_Limit");
+    if (device)
+    {
+        error = EZPI_SUCCESS;
+        __prepare_upper_limit_cloud_properties(device);
+        device->cloud_properties.parent_device_id = parent_id;
+        l_ezlopi_item_t *item = EZPI_core_device_add_item_to_device(device, device_00113_Breeze_Thermostat);
+        if (item)
+        {
+            __prepare_upper_limit_item_properties(item, cj_device);
+        }
+
+        else
+        {
+            error = EZPI_FAILED;
+            EZPI_core_device_free_device(device);
+        }
+
+    }
+
+    return error;
+}
+
+static ezlopi_error_t __prepare_lower_limit_device_item(uint32_t parent_id, cJSON* cj_device)
+{
+    ezlopi_error_t error = EZPI_ERR_PREP_DEVICE_PREP_FAILED;
+
+    l_ezlopi_device_t *device = EZPI_core_device_add_device(cj_device, "Lower_Limit");
+    if (device)
+    {
+        error = EZPI_SUCCESS;
+        __prepare_lower_limit_cloud_properties(device);
+        device->cloud_properties.parent_device_id = parent_id;
+        l_ezlopi_item_t *item = EZPI_core_device_add_item_to_device(device, device_00113_Breeze_Thermostat);
+        if (item)
+        {
+            __prepare_lower_limit_item_properties(item, cj_device);
+        }
+
+        else
+        {
+            error = EZPI_FAILED;
+            EZPI_core_device_free_device(device);
+        }
+
+    }
+
+    return error;
+}
 
 
 

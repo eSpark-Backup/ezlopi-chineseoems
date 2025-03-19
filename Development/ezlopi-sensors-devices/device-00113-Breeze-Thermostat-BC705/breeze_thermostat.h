@@ -18,11 +18,14 @@
 #define CMD_FORMAT      9
 #define CMD_UP_LIMIT    10
 #define CMD_LOW_LIMIT   11
+#define CMD_PIR         12
+#define CMD_HEARTBEAT   13
 
 bool breeze_power_value();
-uint32_t get_temp_value();
+bool lock_value();
+bool breeze_fan_value();
+bool breeze_format_value();
 void power_update(bool value);
-uint16_t breeze_amb_temp_value();
 void intensity_update(uint8_t value);
 
 void send_command(uint8_t cmd, int value);
