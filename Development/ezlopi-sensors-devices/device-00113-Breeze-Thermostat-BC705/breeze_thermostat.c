@@ -21,14 +21,15 @@
 #define UP_LIMIT_C      0x13
 #define UP_LIMIT_F      0x12
 #define LOW_LIMIT_C     0x1A                
-#define LOW_LIMIT_F     0x14                
+#define LOW_LIMIT_F     0x14   
+#define MODE            0x40             
 
 
 #define IN_MIN          0x000A
 #define IN_MAX          0x0073
 #define OUT_MIN         0x0032
 #define OUT_MAX         0x01F4
-#define COMMAND         0x05
+#define COMMAND         0x07
 
 static uint64_t start_time = 0;
 
@@ -36,20 +37,31 @@ static uint64_t start_time = 0;
 
 void power(uint8_t* buffer);
 void fan(uint8_t* buffer);
-void intensity(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_object_handle_t uart_object_handle);
+void lock(uint8_t* buffer);
+void format(uint8_t* buffer);
+void c_lower(uint8_t* buffer);
+void f_lower(uint8_t* buffer);
+void c_upper(uint8_t* buffer);
+void f_upper(uint8_t* buffer);
+
+
+
 
 typedef struct values
 {
-    bool power_value;
     bool lock_value;
-    uint32_t temp_value;
+    bool power_value;
+    uint32_t c_lower_value;
+    uint32_t f_lower_value;
+    uint32_t c_upper_value;
+    uint32_t f_upper_value;
     bool format_value;
     bool fan_value;
 }values_t;
 
 values_t Values;
 // Values.temp_value = 32;
-s_ezlopi_uart_object_handle_t breeze_uart_object_handle;
+
 
 int map(int x, int in_min, int in_max, int out_min, int out_max) {
     // return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
@@ -85,6 +97,42 @@ void format(uint8_t* buffer)
     if (buffer)
     {
         Values.format_value = buffer[10];
+    }
+}
+
+void c_lower(uint8_t* buffer)
+{
+    if (buffer)
+    {
+        Values.c_lower_value = 0;
+        Values.c_lower_value = ((buffer[27]<<8) | (buffer[28])) / 10;
+    }
+}
+
+void f_lower(uint8_t* buffer)
+{
+    if (buffer)
+    {
+        Values.f_lower_value = 0;
+        Values.f_lower_value = ((buffer[12]<<8) | (buffer[13])) / 10;
+    }
+}
+
+void c_upper(uint8_t* buffer)
+{
+    if (buffer)
+    {
+        Values.c_upper_value = 0;
+        Values.c_upper_value = ((buffer[27]<<8) | (buffer[28])) / 10;
+    }
+}
+
+void f_upper(uint8_t* buffer)
+{
+    if (buffer)
+    {
+        Values.f_upper_value = 0;
+        Values.f_upper_value = ((buffer[12]<<8) | (buffer[13])) / 10;
     }
 }
 
@@ -128,6 +176,15 @@ bool breeze_format_value()
 
 bool lock_value() {
     return Values.lock_value;
+}
+
+uint32_t upper_value() {
+    return Values.format_value?Values.f_upper_value:Values.c_upper_value;
+    // return Values.f_upper_value;
+}
+
+uint32_t lower_value() {
+    return Values.format_value?Values.f_lower_value:Values.c_lower_value;
 }
 
 uint8_t checksum(uint8_t *packet, uint8_t length) {
@@ -204,6 +261,13 @@ void create_packet(uint8_t cmd, uint8_t *packet, uint8_t *length, int value)
             packet[12] = (value >> 8) & 0xFF; packet[13] = value & 0xFF;
             packet[14] = checksum(packet, *length);
             TRACE_I("--------------------------------------------------Packet: %x %x",packet[12],packet[13]);
+        break;
+        case CMD_MODE:
+            //55 AA 00 06 00 05 40 04 00 01 00 4F
+            packet[3] = 0x06; packet[4] = 0x00; packet[5] = 0x05; packet[6] = 0x40; packet[7] = 0x04; 
+            packet[8] = 0x00; packet[9] = 0x01; packet[10] =  value;
+            *length = 12;
+            packet[11] = checksum(packet, *length);
         break;
         case CMD_PAIR:
             //55 aa 00 03 00 01 00 03
@@ -340,10 +404,16 @@ void breeze_callback(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_object_
             {
                 TRACE_I("lower_item NULL");
             }
-            if(power_item && fan_item && lock_item && format_item && pir_item && upper_item && lower_item && buffer[5] == COMMAND)
+            l_ezlopi_item_t* mode_item = device->next->next->next->next->next->next->next->items;
+            if (lower_item == NULL)
+            {
+                TRACE_I("mode_item NULL");
+            }
+            if(power_item && fan_item && lock_item && format_item && pir_item && upper_item && lower_item && mode_item && buffer[3] == COMMAND)
             {
                 if ((buffer[6] == POWER))
                 {
+                    // 55 AA 03 07 00 05 01 01 00 01 00 11
                     for (int i=0;i<output_len;i++) {
                         TRACE_I("%x",buffer[i]);
                     }
@@ -353,6 +423,7 @@ void breeze_callback(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_object_
                 }
                 else if (buffer[6] == FAN)
                 {
+                    // 55 AA 03 07 00 05 02 04 00 01 00 15
                     for (int i=0;i<output_len;i++) {
                         TRACE_I("%x",buffer[i]);
                     }
@@ -361,6 +432,7 @@ void breeze_callback(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_object_
                 }
                 else if (buffer[6] == LOCK)
                 {
+                    // 55 AA 03 07 00 05 28 01 00 01 00 38
                     for (int i=0;i<output_len;i++) {
                         TRACE_I("%x",buffer[i]);
                     }
@@ -369,13 +441,83 @@ void breeze_callback(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_object_
                 }
                 else if (buffer[6] == FORMAT)
                 {
+                    // 55 AA 03 07 00 05 17 04 00 01 00 2A
                     for (int i=0;i<output_len;i++) {
                         TRACE_I("%x",buffer[i]);
                     }
                     format(buffer);
                     EZPI_core_device_value_updated_from_device_broadcast(format_item);
                 }
+                else if ((buffer[21] == LOW_LIMIT_C) && (Values.format_value == 0))
+                {
+                    // 55 AA 03 07 00 08 1A 02 00 04 00 00 00 32 63
+                    for (int i=0;i<output_len;i++) {
+                        TRACE_I("%x",buffer[i]);
+                    }
+                    c_lower(buffer);
+                    TRACE_I("-------------------------------------------c_lower");
+                    // format(buffer);
+                    EZPI_core_device_value_updated_from_device_broadcast(lower_item);
+                }
+                else if ((buffer[21] == UP_LIMIT_C) && (Values.format_value == 0))
+                {
+                    // 55 AA 03 07 00 08 13 02 00 04 00 00 01 C2 ED
+                    for (int i=0;i<output_len;i++) {
+                        TRACE_I("%x",buffer[i]);
+                    }
+                    c_upper(buffer);
+                    TRACE_I("-------------------------------------------c _upper");
+                    // format(buffer);
+                    EZPI_core_device_value_updated_from_device_broadcast(upper_item);
+                }
+                else if ((buffer[6] == LOW_LIMIT_F) && (Values.format_value == 1))
+                {
+                    // 55 AA 03 07 00 08 1A 02 00 04 00 00 00 32 63
+                    for (int i=0;i<output_len;i++) {
+                        TRACE_I("%x",buffer[i]);
+                    }
+                    f_lower(buffer);
+                    TRACE_I("-------------------------------------------f_lower");
+                    // format(buffer);
+                    EZPI_core_device_value_updated_from_device_broadcast(lower_item);
+                }
+                else if ((buffer[6] == UP_LIMIT_F) && (Values.format_value == 1))
+                {
+                    // 55 AA 03 07 00 08 13 02 00 04 00 00 01 C2 ED
+                    for (int i=0;i<output_len;i++) {
+                        TRACE_I("%x",buffer[i]);
+                    }
+                    f_upper(buffer);
+                    TRACE_I("-------------------------------------------f _upper");
+                    // format(buffer);
+                    EZPI_core_device_value_updated_from_device_broadcast(upper_item);
+                }
+                else if ((buffer[6] == MODE) )
+                {
+                    // 55 AA 03 07 00 08 13 02 00 04 00 00 01 C2 ED
+                    for (int i=0;i<output_len;i++) {
+                        TRACE_I("%x",buffer[i]);
+                    }
+                    // f_upper(buffer);
+                    // TRACE_I("-------------------------------------------f _upper");
+                    // format(buffer);
+                    EZPI_core_device_value_updated_from_device_broadcast(mode_item);
+                }
             }
+            if ((buffer[3] == 0x22) && (buffer[6] == FORMAT))
+            {
+                if (buffer[10])
+                {
+                    TRACE_I("-------------------------------------------HOGAYAAA!!");
+                }
+                else
+                {
+                    TRACE_I("-------------------------------------------NHII HOAA!!");
+                }
+                
+                
+            }
+            
         }
     }
 }

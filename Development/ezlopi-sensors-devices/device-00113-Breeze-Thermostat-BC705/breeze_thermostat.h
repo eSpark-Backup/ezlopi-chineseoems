@@ -26,10 +26,13 @@ bool lock_value();
 bool breeze_fan_value();
 bool breeze_format_value();
 void power_update(bool value);
-void intensity_update(uint8_t value);
+uint32_t upper_value();
+uint32_t lower_value();
 
 void send_command(uint8_t cmd, int value);
 void create_packet(uint8_t cmd, uint8_t *packet, uint8_t *length, int data);
 bool breeze_init(s_ezlopi_uart_t *breeze_uart_config);
+
+s_ezlopi_uart_object_handle_t breeze_uart_object_handle;
 
 #endif//__DEVICE_00113_BREEZE_THERMOSTAT_H__

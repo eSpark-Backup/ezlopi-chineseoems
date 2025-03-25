@@ -36,6 +36,9 @@ static ezlopi_error_t __prepare_temp_format_device_item(uint32_t parent_id, cJSO
 static ezlopi_error_t __prepare_pir_mode_device_item(uint32_t parent_id, cJSON* cj_device);
 static ezlopi_error_t __prepare_upper_limit_device_item(uint32_t parent_id, cJSON* cj_device);
 static ezlopi_error_t __prepare_lower_limit_device_item(uint32_t parent_id, cJSON* cj_device);
+static ezlopi_error_t __prepare_mode_device_item(uint32_t parent_id, cJSON* cj_device);
+
+void init_sequence();
 
 
 ezlopi_error_t device_00113_Breeze_Thermostat(e_ezlopi_actions_t action, l_ezlopi_item_t* item, void* args, void* user_arg)
@@ -78,12 +81,16 @@ ezlopi_error_t device_00113_Breeze_Thermostat(e_ezlopi_actions_t action, l_ezlop
 void heartBeat_task(void *arg)
 {
     TRACE_I("-------hb task main aagaya");
+
+    // send_command(CMD_HEARTBEAT,0);
+    // TRACE_I("Heart_beat sent");
+    // vTaskDelay(500 / portTICK_PERIOD_MS);
+    
     while(1)
     {
-        TRACE_I("-------while main aagaya");
         send_command(CMD_HEARTBEAT,0);
         TRACE_I("Heart_beat sent");
-        vTaskDelay(4000 / portTICK_PERIOD_MS);
+        vTaskDelay(15000 / portTICK_PERIOD_MS);
     }
     vTaskDelete(NULL);
 }
@@ -123,6 +130,10 @@ static ezlopi_error_t __prepare(void* arg)
         {
             TRACE_E("UNABLE TO PREPARE LOWER LIMIT DEVICE");
         }
+        if (-1 == (error = __prepare_mode_device_item(parent_id, prep_arg->cjson_device)))
+        {
+            TRACE_E("UNABLE TO PREPARE MODE DEVICE");
+        }
     }
 
     return error;
@@ -142,14 +153,14 @@ static ezlopi_error_t __init(l_ezlopi_item_t* item)
         error = EZPI_SUCCESS;
         if (item->interface.uart.enable)
         {
-            if (false == breeze_init(&item->interface.uart))
+            if (false == breeze_init(&item->interface.uart)) 
             {
                 error = EZPI_FAILED;
             }
             else
             {
                 intitialized = true;
-                xTaskCreate(heartBeat_task,"Heart_beat_task: ",3*1024,NULL,1,NULL);
+                init_sequence();
             }
             
         }
@@ -206,6 +217,11 @@ static ezlopi_error_t __set_value(l_ezlopi_item_t* item, void* arg)
                 send_command(CMD_LOW_LIMIT, cj_value->valueint);
                 power_update(cj_value->valueint);
             }
+            else if (ezlopi_item_name_program_mode_selection == item->cloud_properties.item_name)
+            {
+                send_command(CMD_MODE, cj_value->valueint);
+                power_update(cj_value->valueint);
+            }
             EZPI_core_device_value_updated_from_device_broadcast(item);
         }
     }
@@ -241,6 +257,14 @@ static ezlopi_error_t __get_value_cjson(l_ezlopi_item_t* item, void* args)
     else if (ezlopi_item_name_thermostat_setpoint == item->cloud_properties.item_name) {
         EZPI_core_valueformatter_uint32_to_cjson(cj_params, breeze_format_value(), item->cloud_properties.scale);
         TRACE_I("--------------------------------------------------format.,.,.,.");
+    }
+    else if (ezlopi_item_name_acceleration_x_axis == item->cloud_properties.item_name) {
+        // EZPI_core_valueformatter_uint32_to_cjson(cj_params, breeze_format_value(), item->cloud_properties.scale);
+        TRACE_I("--------------------------------------------------upper limit: %d", upper_value());
+    }
+    else if (ezlopi_item_name_acceleration_y_axis == item->cloud_properties.item_name) {
+        // EZPI_core_valueformatter_uint32_to_cjson(cj_params, breeze_format_value(), item->cloud_properties.scale);
+        TRACE_I("--------------------------------------------------lower limit: %d", lower_value());
     }
     
     return error;
@@ -651,8 +675,105 @@ static ezlopi_error_t __prepare_lower_limit_device_item(uint32_t parent_id, cJSO
     return error;
 }
 
+static ezlopi_error_t __prepare_mode_device_item(uint32_t parent_id, cJSON* cj_device)
+{
+    ezlopi_error_t error = EZPI_ERR_PREP_DEVICE_PREP_FAILED;
+
+    l_ezlopi_device_t *device = EZPI_core_device_add_device(cj_device, "mode");
+    if (device)
+    {
+        error = EZPI_SUCCESS;
+        __prepare_programming_mode_cloud_properties(device);
+        device->cloud_properties.parent_device_id = parent_id;
+        l_ezlopi_item_t *item = EZPI_core_device_add_item_to_device(device, device_00113_Breeze_Thermostat);
+        if (item)
+        {
+            __prepare_programming_mode_item_properties(item, cj_device);
+        }
+
+        else
+        {
+            error = EZPI_FAILED;
+            EZPI_core_device_free_device(device);
+        }
+
+    }
+
+    return error;
+}
 
 
+void init_sequence() {
+    uint8_t packet3[] = {0x55, 0xAA, 0x00, 0x34, 0x00, 0x02, 0x01, 0x00, 0x36};
+    uint8_t packet2[] = {0x55, 0xAA, 0x00, 0x03, 0x00, 0x01, 0x02, 0x05};
+    uint8_t packet[] = {0x55, 0xAA, 0x00, 0x01, 0x00, 0x00, 0x00};
+    // 55 AA 00 02 00 00 01
+
+    send_command(CMD_HEARTBEAT,0);
+    TRACE_I("Heart_beat sent");
+    vTaskDelay(50 / portTICK_PERIOD_MS);
+    send_command(CMD_HEARTBEAT,0);
+    TRACE_I("Heart_beat sent");
+    vTaskDelay(50 / portTICK_PERIOD_MS);
+    // send_command(CMD_HEARTBEAT,0);
+    // TRACE_I("Heart_beat sent");
+    
+    // vTaskDelay(500 / portTICK_PERIOD_MS);
+    // send_command(CMD_HEARTBEAT,0);
+    // TRACE_I("Heart_beat sent");
+
+    // // vTaskDelay(500 / portTICK_PERIOD_MS);
+    
+    
+    
+    // vTaskDelay(3000 / portTICK_PERIOD_MS);
+    // uart_write_bytes(breeze_uart_object_handle->ezlopi_uart.channel, (const char*)packet, sizeof(packet));
+    // TRACE_I("first sent");
+    // vTaskDelay(2000 / portTICK_PERIOD_MS);
+    
+    // packet[3]=0x02;packet[6]=0x01;
+    // uart_write_bytes(breeze_uart_object_handle->ezlopi_uart.channel, (const char*)packet, sizeof(packet));
+    // TRACE_I("second sent");
+    vTaskDelay(2000 / portTICK_PERIOD_MS);
+    
+    uart_write_bytes(breeze_uart_object_handle->ezlopi_uart.channel, (const char*)packet2, sizeof(packet2));
+    TRACE_I("third sent");
+    
+    // vTaskDelay(500 / portTICK_PERIOD_MS);
+    // send_command(CMD_HEARTBEAT,0);
+    // TRACE_I("Heart_beat sent");
+    
+    // vTaskDelay(2000 / portTICK_PERIOD_MS);
+    // packet[3]=0x08;packet[6]=0x07;
+    // uart_write_bytes(breeze_uart_object_handle->ezlopi_uart.channel, (const char*)packet, sizeof(packet));
+    // TRACE_I("fourth sent");
+    vTaskDelay(2000 / portTICK_PERIOD_MS);
+    
+    packet2[6]=0x04;packet2[7]=0x07;
+    uart_write_bytes(breeze_uart_object_handle->ezlopi_uart.channel, (const char*)packet2, sizeof(packet2));
+    TRACE_I("fifth sent");
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    
+    
+    for (uint8_t i=0;i<38;i++) {
+        packet2[3]=0x23;packet2[6]=0x01;packet2[7]=0x24;
+        uart_write_bytes(breeze_uart_object_handle->ezlopi_uart.channel, (const char*)packet2, sizeof(packet2));
+        TRACE_I("sixth.%d",i+1);
+
+        // if (i==18)
+        // {
+        //     uart_write_bytes(breeze_uart_object_handle->ezlopi_uart.channel, (const char*)packet3, sizeof(packet3));
+        //     vTaskDelay(100 / portTICK_PERIOD_MS);
+        // }
+        vTaskDelay(100 / portTICK_PERIOD_MS);
+    }
+
+    // uart_write_bytes(breeze_uart_object_handle->ezlopi_uart.channel, (const char*)packet3, sizeof(packet3));
+    // TRACE_I("seventh sent");
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    xTaskCreate(heartBeat_task,"Heart_beat_task: ",3*1024,NULL,1,NULL);
+
+}
 
 
 

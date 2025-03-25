@@ -484,7 +484,7 @@ static void __event_handler(void *arg, esp_event_base_t event_base, int32_t even
         case WIFI_EVENT_STA_CONNECTED:
         {
             TRACE_D("wifi-connected!");
-            send_command(CMD_PAIRED, 1);
+            // send_command(CMD_PAIRED, 1);
             break;
         }
         default:
