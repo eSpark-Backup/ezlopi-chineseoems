@@ -38,7 +38,8 @@ static uint64_t start_time = 0;
 void power(uint8_t* buffer);
 void fan(uint8_t* buffer);
 void lock(uint8_t* buffer);
-void format(uint8_t* buffer);
+void format(uint8_t* buffer, uint8_t output_len);
+void mode(uint8_t* buffer);
 void c_lower(uint8_t* buffer);
 void f_lower(uint8_t* buffer);
 void c_upper(uint8_t* buffer);
@@ -47,19 +48,6 @@ void f_upper(uint8_t* buffer);
 
 
 
-typedef struct values
-{
-    bool lock_value;
-    bool power_value;
-    uint32_t c_lower_value;
-    uint32_t f_lower_value;
-    uint32_t c_upper_value;
-    uint32_t f_upper_value;
-    bool format_value;
-    bool fan_value;
-}values_t;
-
-values_t Values;
 // Values.temp_value = 32;
 
 
@@ -92,11 +80,26 @@ void lock(uint8_t* buffer)
     }
 }
 
-void format(uint8_t* buffer)
+void format(uint8_t* buffer, uint8_t output_len)
 {
     if (buffer)
     {
-        Values.format_value = buffer[10];
+        if (output_len == 21)
+        {
+            Values.format_value = buffer[19];
+        }
+        else
+        {
+            Values.format_value = buffer[10];
+        }
+    }
+}
+
+void mode(uint8_t* buffer)
+{
+    if (buffer)
+    {
+        Values.mode_value = buffer[10];
     }
 }
 
@@ -151,9 +154,38 @@ void lock_update(uint8_t value)
     Values.lock_value = value;
 }
 
+void mode_update(uint8_t value)
+{
+    Values.mode_value = value;
+}
+
 void format_update(bool value)
 {
     Values.format_value = value;
+}
+
+void up_limit_update(uint32_t value)
+{
+    if (Values.format_value)
+    {
+        Values.f_upper_value = value;
+    }
+    else
+    {
+        Values.c_upper_value = value;
+    }
+}
+
+void low_limit_update(uint32_t value)
+{
+    if (Values.format_value)
+    {
+        Values.f_lower_value = value;
+    }
+    else
+    {
+        Values.c_lower_value = value;
+    }
 }
 
 bool breeze_power_value()
@@ -172,6 +204,12 @@ bool breeze_format_value()
 {
     // TRACE_I("----------POWER----------: %d",Values.power_value);
     return Values.format_value;
+}
+
+uint8_t breeze_mode_value()
+{
+    // TRACE_I("----------POWER----------: %d",Values.power_value);
+    return Values.mode_value;
 }
 
 bool lock_value() {
@@ -409,9 +447,9 @@ void breeze_callback(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_object_
             {
                 TRACE_I("mode_item NULL");
             }
-            if(power_item && fan_item && lock_item && format_item && pir_item && upper_item && lower_item && mode_item && buffer[3] == COMMAND)
+            if(power_item && fan_item && lock_item && format_item && pir_item && upper_item && lower_item && mode_item)
             {
-                if ((buffer[6] == POWER))
+                if ((buffer[6] == POWER) && (buffer[3] == COMMAND || buffer[3] == 0x22))
                 {
                     // 55 AA 03 07 00 05 01 01 00 01 00 11
                     for (int i=0;i<output_len;i++) {
@@ -439,14 +477,24 @@ void breeze_callback(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_object_
                     lock(buffer);
                     EZPI_core_device_value_updated_from_device_broadcast(lock_item);
                 }
-                else if (buffer[6] == FORMAT)
+                else if ((buffer[6] == FORMAT) || (output_len == 21 && buffer[15] == FORMAT))
                 {
                     // 55 AA 03 07 00 05 17 04 00 01 00 2A
                     for (int i=0;i<output_len;i++) {
                         TRACE_I("%x",buffer[i]);
                     }
-                    format(buffer);
+                    format(buffer,output_len);
                     EZPI_core_device_value_updated_from_device_broadcast(format_item);
+                }
+                else if (buffer[6] == MODE)
+                {
+                    // 55 AA 03 22 00 05 40 04 00 01 00 6E
+                    for (int i=0;i<output_len;i++) {
+                        TRACE_I("%x",buffer[i]);
+                    }
+                    mode(buffer);
+                    TRACE_I("-------------------------------------------mode");
+                    EZPI_core_device_value_updated_from_device_broadcast(mode_item);
                 }
                 else if ((buffer[21] == LOW_LIMIT_C) && (Values.format_value == 0))
                 {
@@ -491,17 +539,6 @@ void breeze_callback(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_object_
                     TRACE_I("-------------------------------------------f _upper");
                     // format(buffer);
                     EZPI_core_device_value_updated_from_device_broadcast(upper_item);
-                }
-                else if ((buffer[6] == MODE) )
-                {
-                    // 55 AA 03 07 00 08 13 02 00 04 00 00 01 C2 ED
-                    for (int i=0;i<output_len;i++) {
-                        TRACE_I("%x",buffer[i]);
-                    }
-                    // f_upper(buffer);
-                    // TRACE_I("-------------------------------------------f _upper");
-                    // format(buffer);
-                    EZPI_core_device_value_updated_from_device_broadcast(mode_item);
                 }
             }
             if ((buffer[3] == 0x22) && (buffer[6] == FORMAT))
