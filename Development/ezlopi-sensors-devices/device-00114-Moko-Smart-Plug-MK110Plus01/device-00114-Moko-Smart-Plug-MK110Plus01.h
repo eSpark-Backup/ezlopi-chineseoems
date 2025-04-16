@@ -1,5 +1,5 @@
-#ifndef _DEVICE_00112_CORUNSMART_WIFI_CHARGER_SOCKET_H_
-#define _DEVICE_00112_CORUNSMART_WIFI_CHARGER_SOCKET_H_
+#ifndef _DEVICE_00114_MOKO_SMART_PLUG_H_
+#define _DEVICE_00114_MOKO_SMART_PLUG_H_
 
 #include "ezlopi_core_actions.h"
 #include "ezlopi_core_devices.h"
@@ -20,7 +20,5 @@
 #include "ezlopi_core_valueformatter.h"
 #include "ezlopi_core_device_value_updated.h"
 
-// static bool reset;
-
-ezlopi_error_t device_00112_Corunsmart_Wifi_Charger_Socket(e_ezlopi_actions_t action, l_ezlopi_item_t *item, void *args, void *user_arg);
-#endif // _DEVICE_00112_CORUNSMART_WIFI_CHARGER_SOCKET_H_
+ezlopi_error_t device_00114_Moko_Smart_Plug(e_ezlopi_actions_t action, l_ezlopi_item_t *item, void *args, void *user_arg);
+#endif // _DEVICE_00114_MOKO_SMART_PLUG_H_

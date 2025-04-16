@@ -53,8 +53,8 @@ extern "C"
         *                          Type & Macro Declarations
         *******************************************************************************/
 
-#if (1 == DEVICE_00112_CORUNSMART_WIFI_CHARGER_SOCKET)
-        EZLOPI_DEVICE_LIST("device-corunsmart-wifi-charger-socket         ", 112, device_00112_Corunsmart_Wifi_Charger_Socket)
+#if (1 == DEVICE_00114_MOKO_SMART_PLUG)
+        EZLOPI_DEVICE_LIST("device-moko-smart-plug         ", 114, device_00114_Moko_Smart_Plug)
 #endif // DEVICE_00109_XUGUANG_WIFI_DIMMER_SWITCH
 
                 //////// End of sensor/device list

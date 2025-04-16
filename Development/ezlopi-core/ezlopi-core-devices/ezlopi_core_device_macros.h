@@ -56,7 +56,7 @@ extern "C"
     *                          Type & Macro Declarations
     *******************************************************************************/
 
-#define DEVICE_00112_CORUNSMART_WIFI_CHARGER_SOCKET               1
+#define DEVICE_00114_MOKO_SMART_PLUG                     1
 
 
     /*******************************************************************************

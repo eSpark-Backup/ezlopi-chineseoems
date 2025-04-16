@@ -24,7 +24,7 @@ set(EZLOPI_CLOUD_COMPONENTS
         ezlopi-cloud-items
 )
 set(EZLOPI_SENSOR_DEVICE_COMPONENTS 
-        device-00112-Corunsmart-Wifi-Smart-Charger-Socket
+        device-00114-Moko-Smart-Plug-MK110Plus01
 )
 
 

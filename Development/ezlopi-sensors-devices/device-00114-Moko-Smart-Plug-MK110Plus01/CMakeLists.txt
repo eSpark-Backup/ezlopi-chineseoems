@@ -1,7 +1,7 @@
 
 
 
-idf_component_register(SRCS "device_00112_Corunsmart_Wifi_Charger_Socket.c"
+idf_component_register(SRCS "device-00114-Moko-Smart-Plug-MK110Plus01.c"
                         INCLUDE_DIRS .
                         REQUIRES    ezlopi-util-trace 
                                     # ezlopi-core-timer 

@@ -326,21 +326,3 @@ static esp_err_t _http_event_handler(esp_http_client_event_t *evt)
 /*******************************************************************************
 *                          End of File
 *******************************************************************************/
-
-
-void during_ota_task(void *args) {
-    uint8_t toggle = 0;
-    while (true)
-    {
-        for (size_t i = 0; i < 6; i++)
-        {
-            gpio_set_level(17,toggle);
-            toggle = !(toggle);
-            vTaskDelay(200 / portTICK_PERIOD_MS);
-        }
-        gpio_set_level(17,toggle);
-        toggle = !(toggle);
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-    }
-    vTaskDelete(NULL);
-}
