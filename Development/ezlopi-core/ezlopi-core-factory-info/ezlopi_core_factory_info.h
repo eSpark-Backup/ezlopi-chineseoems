@@ -62,7 +62,7 @@ extern "C"
 #define EZLOPI_DEVICE_TYPE_TEST_DEVICE -1
 #define EZLOPI_DEVICE_TYPE_GENERIC 0
 
-#if CONFIG_EZPI_DEV_TYPE_TEST == 1
+#if CONFIG_EZPI_DEV_TYPE_TEST == 0
 #define EZLOPI_DEVICE_TYPE EZLOPI_DEVICE_TYPE_TEST_DEVICE
 #else
 #define EZLOPI_DEVICE_TYPE EZLOPI_DEVICE_TYPE_GENERIC
@@ -173,7 +173,7 @@ extern "C"
 
 #elif (EZLOPI_DEVICE_TYPE_TEST_DEVICE == EZLOPI_DEVICE_TYPE)
 #if defined(CONFIG_IDF_TARGET_ESP32)
-    static const char* ezlopi_config_test = "{\"cmd\":3,\"dev_detail\":[{\"dev_type\":114,\"dev_name\":\"Moko\",\"id_room\":\"\",\"id_item\":114,\"gpio_out\":18,\"op_inv\":false,\"val_op\":false}],\"config_id\":\"1234567\",\"config_time\":1696508363,\"config_name\":\"Moko\",\"chipset\":\"ESP32\"}";//
+    static const char* ezlopi_config_test = "{\"cmd\":3,\"dev_detail\":[{\"dev_type\":114,\"dev_name\":\"Moko\",\"id_room\":\"\",\"id_item\":114,\"gpio_out\":22,\"op_inv\":false,\"val_op\":false}],\"config_id\":\"1234567\",\"config_time\":1696508363,\"config_name\":\"Moko\",\"chipset\":\"ESP32\"}";//
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
     static const char *ezlopi_config_test =
         "{\

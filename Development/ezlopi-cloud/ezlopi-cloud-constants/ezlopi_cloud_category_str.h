@@ -163,7 +163,7 @@ extern "C"
      * @brief Variable to be used for power meter type cloud category
      *
      */
-    // extern const  char *category_power_meter;
+    extern const  char *category_power_meter;
     /**
      * @brief Variable to be used for alarm panel type cloud category
      *

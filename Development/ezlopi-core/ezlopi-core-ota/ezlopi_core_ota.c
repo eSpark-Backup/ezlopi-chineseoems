@@ -67,11 +67,6 @@
 #include "ezlopi_service_ota.h"
 #include "EZLOPI_USER_CONFIG.h"
 
-extern TaskHandle_t button_handle;
-TaskHandle_t ota_handle = NULL;
-
-void during_ota_task(void *args);
-
 /*******************************************************************************
 *                          Extern Data Declarations
 *******************************************************************************/
@@ -167,10 +162,7 @@ static void ezlopi_ota_process(void *pv)
         pattern_item->user_arg = "mode_4";
     }
     TRACE_S("Starting OTA ");
-    gpio_set_level(19,0);
-    gpio_set_level(21,0);
-    gpio_set_level(17,0);
-    xTaskCreate(during_ota_task,"during_OTA_task",1024*2,NULL,1,&ota_handle);
+
 #ifdef CONFIG_FIRMWARE_UPGRADE_BIND_IF
     esp_netif_t *netif = get_example_netif_from_desc(bind_interface_name);
     if (netif == NULL)
@@ -218,38 +210,38 @@ static void ezlopi_ota_process(void *pv)
     __byte_count = 0;
 
     esp_err_t ret = esp_https_ota(&config);
-    if (ret == ESP_OK)
-    {
-        uint8_t toggle = 0;
-        __ota_in_process = EZLOPI_OTA_STATE_FINISH;
-        TRACE_W("Firmware Upgrade Successful, restarting !");
-        vTaskDelete(ota_handle);
-        for (size_t i = 0; i < 50; i++)
-        {
-            gpio_set_level(17,toggle);
-            toggle = !(toggle);
-            vTaskDelay(50 / portTICK_PERIOD_MS);
-        }
+    // if (ret == ESP_OK)
+    // {
+    //     uint8_t toggle = 0;
+    //     __ota_in_process = EZLOPI_OTA_STATE_FINISH;
+    //     TRACE_W("Firmware Upgrade Successful, restarting !");
+    //     vTaskDelete(ota_handle);
+    //     for (size_t i = 0; i < 50; i++)
+    //     {
+    //         gpio_set_level(17,toggle);
+    //         toggle = !(toggle);
+    //         vTaskDelay(50 / portTICK_PERIOD_MS);
+    //     }
         
-        EZPI_core_reset_reboot();
-    }
-    else
-    {
-        uint8_t toggle = 0;
-        __ota_in_process = EZLOPI_OTA_STATE_FAILED;
-        TRACE_E("Firmware upgrade failed");
-        vTaskDelete(ota_handle);
-        gpio_set_level(17,1);
-        vTaskDelay(4000 / portTICK_PERIOD_MS);
-        for (size_t i = 0; i < 20; i++)
-        {
-            gpio_set_level(17,toggle);
-            toggle = !(toggle);
-            vTaskDelay(100 / portTICK_PERIOD_MS);
-        }
+    //     EZPI_core_reset_reboot();
+    // }
+    // else
+    // {
+    //     uint8_t toggle = 0;
+    //     __ota_in_process = EZLOPI_OTA_STATE_FAILED;
+    //     TRACE_E("Firmware upgrade failed");
+    //     vTaskDelete(ota_handle);
+    //     gpio_set_level(17,1);
+    //     vTaskDelay(4000 / portTICK_PERIOD_MS);
+    //     for (size_t i = 0; i < 20; i++)
+    //     {
+    //         gpio_set_level(17,toggle);
+    //         toggle = !(toggle);
+    //         vTaskDelay(100 / portTICK_PERIOD_MS);
+    //     }
         
-        EZPI_core_reset_reboot();
-    }
+    //     EZPI_core_reset_reboot();
+    // }
 
 #if defined(CONFIG_FREERTOS_USE_TRACE_FACILITY)
     EZPI_core_process_set_is_deleted(ENUM_EZLOPI_CORE_OTA_PROCESS_TASK);
@@ -293,12 +285,6 @@ static esp_err_t _http_event_handler(esp_http_client_event_t *evt)
         __ota_in_process = EZLOPI_OTA_STATE_UPDATING;
 
         TRACE_D("HTTP_EVENT_ON_DATA, len=%d", evt->data_len);
-        
-        if (button_handle != NULL)
-        {
-            vTaskDelete(button_handle);
-            button_handle = NULL;
-        }
         
         __byte_count += evt->data_len;
         TRACE_D("Received Bytes: %d", __byte_count);
