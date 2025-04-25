@@ -1,9 +1,20 @@
 #include "bl0942.h"
+#include "ezlopi_core_reset.h"
 #include "device_00114_Moko_Smart_Plug_MK110Plus01.h"
 
-#define RED_LED     32
-#define BLUE_LED    25
-#define GREEN_LED   33
+#define SW          26
+#define RED_LED     32 // Output Off
+#define BLUE_LED    25 // Output On
+#define GREEN_LED   33 // WiFi Status
+
+#define OFF        0
+#define ON         1
+
+#define LONG_PRESS_TIME_US   10000000       // 10 seconds in microseconds
+#define BOOT_WINDOW_TIME_US  60000000       // 1 minute in microseconds
+#define CHECK_INTERVAL_MS    100
+
+uint8_t count = 0;
 
 static ezlopi_error_t __prepare(void* arg);
 static ezlopi_error_t __init(l_ezlopi_item_t* item);
@@ -51,22 +62,149 @@ ezlopi_error_t device_00114_Moko_Smart_Plug(e_ezlopi_actions_t action, l_ezlopi_
     return error;
 }
 
+void ota_update()
+{
+    TRACE_I("Starting OTA update...");
+    gpio_set_level(RED_LED, ON);
+    gpio_set_level(BLUE_LED, ON);
+    gpio_set_level(GREEN_LED, ON);
+    cJSON *cj_data = cJSON_CreateObject(__FUNCTION__);
+    if (cj_data)
+    {
+        cJSON_AddStringToObject(__FUNCTION__, cj_data, "method", "hub.firmware.update.start");
+        cJSON_AddStringToObject(__FUNCTION__, cj_data, "id", "_ID_");
+        cJSON *params = cJSON_CreateObject(__FUNCTION__);
+        if (params)
+        {
+            cJSON_AddItemToObject(__FUNCTION__, cj_data, "params", params);
+            if(__send_cjson_data_to_nma_websocket(cj_data) == EZPI_SUCCESS)
+            {
+                TRACE_E("OTA METHOD SENT");
+            }
+            else{
+                TRACE_E("OTA METHOD NOT SENT");
+            }
+        }
+        cJSON_Delete(__FUNCTION__, cj_data);
+    }
+}
+
+void factory_reset()
+{
+    TRACE_I("Performing factory reset...");
+    count = 2;
+    gpio_set_level(BLUE_LED, OFF);
+    gpio_set_level(GREEN_LED, OFF);
+    for (size_t i = 0; i < 10; i++)
+    {
+        gpio_set_level(RED_LED, ON);
+        vTaskDelay(100 / portTICK_PERIOD_MS);
+        gpio_set_level(RED_LED,OFF);
+        vTaskDelay(100 / portTICK_PERIOD_MS);
+    }
+    EZPI_core_reset_factory_restore();
+}
+
+void button_task(void *arg)
+{
+    gpio_config_t io_conf = {
+        .pin_bit_mask = (1ULL << SW),
+        .mode = GPIO_MODE_INPUT,
+        .pull_up_en = GPIO_PULLUP_ENABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type = GPIO_INTR_DISABLE
+    };
+    gpio_config(&io_conf);
+
+    int64_t boot_time = esp_timer_get_time();
+    bool pressed = false;
+
+    while (1)
+    {
+        if (gpio_get_level(SW) == 0)  // Button pressed
+        {
+            pressed = true;
+            int64_t press_start = esp_timer_get_time();
+
+            while (gpio_get_level(SW) == 0)
+            {
+                vTaskDelay(pdMS_TO_TICKS(CHECK_INTERVAL_MS));
+
+                if ((esp_timer_get_time() - press_start) >= LONG_PRESS_TIME_US)
+                {
+                    // Long press detected
+                    if ((press_start - boot_time) <= BOOT_WINDOW_TIME_US)
+                    {
+                        factory_reset();  // Within 1 minute
+                    } else
+                    {
+                        TRACE_W("Long press ignored (outside boot window)");
+                    }
+                    vTaskDelete(NULL);
+                }
+            }
+
+            // If released before 10s → short press
+            if (pressed && (esp_timer_get_time() - press_start) < LONG_PRESS_TIME_US)
+            {
+                ota_update();
+                vTaskDelete(NULL);
+            }
+        }
+
+        vTaskDelay(pdMS_TO_TICKS(CHECK_INTERVAL_MS));
+    }
+}
+
+void wifi_status_task(void *args)
+{
+    while (1)
+    {
+        int wifi_connection_stat = EZPI_core_wifi_got_ip();
+        if(wifi_connection_stat && !count)
+        {
+            count = true;
+            gpio_set_level(GREEN_LED, OFF);
+            gpio_set_level(RED_LED, ON);
+        }
+        else if(!wifi_connection_stat && count == 1)
+        {
+            count = false;
+            gpio_set_level(GREEN_LED, OFF);
+            gpio_set_level(RED_LED, OFF);
+            gpio_set_level(BLUE_LED, OFF);
+        }
+        else if(!wifi_connection_stat && !count)
+        {
+            gpio_set_level(GREEN_LED, ON);
+            gpio_set_level(RED_LED, OFF);
+            gpio_set_level(BLUE_LED, OFF);
+        }
+        else if(count == 2)
+        {
+            vTaskDelete(NULL);
+        }
+        vTaskDelay(500 / portTICK_PERIOD_MS);
+    }
+}
+
 static ezlopi_error_t __prepare(void* arg)
 {
     ezlopi_error_t error = EZPI_ERR_PREP_DEVICE_PREP_FAILED;
     uint32_t parent_id = 0;
     s_ezlopi_prep_arg_t* prep_arg = (s_ezlopi_prep_arg_t*)arg;
-    
+    xTaskCreate(wifi_status_task, "wifi_status", 1024, NULL, 5, NULL);
+
     if (prep_arg)
     {
         if (-1 == (error = __prepare_smart_plug_device_item(&parent_id, prep_arg->cjson_device)))
         {
             TRACE_E("UNABLE TO PREPARE PARENT DEVICE");
         }
-        if (-1 == (error = __prepare_metering_device_item(parent_id, prep_arg->cjson_device)))
-        {
-            TRACE_E("UNABLE TO PREPARE PARENT DEVICE");
-        }
+        // if (-1 == (error = __prepare_metering_device_item(parent_id, prep_arg->cjson_device)))
+        // {
+        //     TRACE_E("UNABLE TO PREPARE PARENT DEVICE");
+        // }
     }
     
     return error;
@@ -83,6 +221,10 @@ static ezlopi_error_t __init(l_ezlopi_item_t* item)
 
     if (item)
     {
+        gpio_set_direction(RED_LED,GPIO_MODE_OUTPUT);
+        gpio_set_direction(BLUE_LED,GPIO_MODE_OUTPUT);
+        gpio_set_direction(GREEN_LED,GPIO_MODE_OUTPUT);
+
         if(item->cloud_properties.item_name == ezlopi_item_name_switch)
         {
             if (GPIO_IS_VALID_GPIO(item->interface.gpio.gpio_out.gpio_num) &&
@@ -102,15 +244,8 @@ static ezlopi_error_t __init(l_ezlopi_item_t* item)
                     .intr_type = GPIO_INTR_DISABLE,
                 };
                 if (0 == gpio_config(&io_conf))
-                {   
-                    const gpio_config_t io_conf = {
-                        .pin_bit_mask = (1ULL << RED_LED) | (1ULL << RED_LED),
-                        .mode = GPIO_MODE_OUTPUT,
-                        .pull_up_en = GPIO_PULLUP_DISABLE,
-                        .pull_down_en = GPIO_PULLDOWN_ENABLE,
-                        .intr_type = GPIO_INTR_POSEDGE,
-                    };
-                    gpio_config(&io_conf);
+                {
+                    xTaskCreate(button_task, "button_task", 4096, NULL, 5, NULL);
                     error = EZPI_SUCCESS;
                 }
                 else
@@ -119,21 +254,21 @@ static ezlopi_error_t __init(l_ezlopi_item_t* item)
                 }
             }
         }
-        else if(item->cloud_properties.item_name == ezlopi_item_name_current)
-        {
-            if(EZPI_SUCCESS == bl0942_init())
-            {
-                TRACE_I("BL0942 SPI initialized in 3-wire mode.");
-            }
-            else
-            {
-                TRACE_E("BL0942 SPI init failed!");
-            }
-        }
-        else if(item->cloud_properties.item_name == ezlopi_item_name_voltage)
-        {
+        // else if(item->cloud_properties.item_name == ezlopi_item_name_current)
+        // {
+        //     if(EZPI_SUCCESS == bl0942_init())
+        //     {
+        //         TRACE_I("BL0942 SPI initialized in 3-wire mode.");
+        //     }
+        //     else
+        //     {
+        //         TRACE_E("BL0942 SPI init failed!");
+        //     }
+        // }
+        // else if(item->cloud_properties.item_name == ezlopi_item_name_voltage)
+        // {
 
-        }
+        // }
     }
     
     return error;
@@ -167,7 +302,16 @@ static ezlopi_error_t __set_value(l_ezlopi_item_t* item, void* arg)
                 }
                 item->user_arg = (void *) value;
                 gpio_set_level(item->interface.gpio.gpio_out.gpio_num, item->user_arg);
-                gpio_set_level(RED_LED, item->user_arg);
+                if(item->user_arg)
+                {
+                    gpio_set_level(BLUE_LED, ON);
+                    gpio_set_level(RED_LED, OFF);
+                }
+                else
+                {
+                    gpio_set_level(BLUE_LED, OFF);
+                    gpio_set_level(RED_LED, ON);
+                }
                 EZPI_core_device_value_updated_from_device_broadcast(item);
             }
         }

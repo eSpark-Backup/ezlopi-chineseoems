@@ -136,7 +136,6 @@ void EZPI_firmware_info_get(cJSON *cj_request, cJSON *cj_response)
     }
 }
 
-
 cJSON *EZPI_firmware_send_firmware_query_to_nma_server(uint32_t message_count)
 {
     cJSON *cj_request = cJSON_CreateObject(__FUNCTION__);
@@ -168,7 +167,7 @@ cJSON *EZPI_firmware_send_firmware_query_to_nma_server(uint32_t message_count)
                 cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_firmware_type_str, ezlopi_generic_str);
             }
 
-            cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_firmware_hardware_str, "epi_d01");
+            cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_firmware_hardware_str, "esp32");
         }
     }
 
