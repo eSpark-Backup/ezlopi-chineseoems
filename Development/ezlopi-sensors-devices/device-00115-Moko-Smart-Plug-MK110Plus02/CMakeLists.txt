@@ -1,7 +1,7 @@
 
 
 
-idf_component_register(SRCS "bl0942.c" "device_00114_Moko_Smart_Plug_MK110Plus01.c"
+idf_component_register(SRCS "device_00115_Moko_Smart_Plug_MK110Plus02.c" "bl0942.c"
                         INCLUDE_DIRS .
                         REQUIRES    ezlopi-util-trace 
                                     # ezlopi-core-timer 

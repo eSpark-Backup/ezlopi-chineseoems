@@ -53,9 +53,9 @@ extern "C"
         *                          Type & Macro Declarations
         *******************************************************************************/
 
-#if (1 == DEVICE_00114_MOKO_SMART_PLUG)
-        EZLOPI_DEVICE_LIST("device-moko-smart-plug         ", 114, device_00114_Moko_Smart_Plug)
-#endif // DEVICE_00109_XUGUANG_WIFI_DIMMER_SWITCH
+#if (1 == DEVICE_00115_MOKO_SMART_PLUG)
+        EZLOPI_DEVICE_LIST("device-moko-smart-plug         ", 115, device_00115_Moko_Smart_Plug)
+#endif // DEVICE_00115_MOKO_SMART_PLUG
 
                 //////// End of sensor/device list
                 EZLOPI_DEVICE_LIST(NULL, 0, NULL)

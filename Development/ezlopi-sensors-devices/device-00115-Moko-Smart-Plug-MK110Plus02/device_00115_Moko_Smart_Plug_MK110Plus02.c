@@ -1,6 +1,6 @@
 #include "bl0942.h"
 #include "ezlopi_core_reset.h"
-#include "device_00114_Moko_Smart_Plug_MK110Plus01.h"
+#include "device_00115_Moko_Smart_Plug_MK110Plus02.h"
 
 #define SW          26
 #define RED_LED     32 // Output Off
@@ -25,7 +25,7 @@ static ezlopi_error_t __get_value_cjson(l_ezlopi_item_t* item, void* arg);
 static ezlopi_error_t __prepare_smart_plug_device_item(uint32_t *parent_id, cJSON* cjson_device);
 static ezlopi_error_t __prepare_metering_device_item(uint32_t parent_id, cJSON* cjson_device);
 
-ezlopi_error_t device_00114_Moko_Smart_Plug(e_ezlopi_actions_t action, l_ezlopi_item_t* item, void* args, void* user_arg)
+ezlopi_error_t device_00115_Moko_Smart_Plug(e_ezlopi_actions_t action, l_ezlopi_item_t* item, void* args, void* user_arg)
 {
     ezlopi_error_t error = 0;
 
@@ -416,7 +416,7 @@ static ezlopi_error_t __prepare_smart_plug_device_item(uint32_t *parent_id, cJSO
         error = EZPI_SUCCESS;
         __setup_device_cloud_properties(device);
         *parent_id = device->cloud_properties.device_id;
-        l_ezlopi_item_t *item = EZPI_core_device_add_item_to_device(device, device_00114_Moko_Smart_Plug);
+        l_ezlopi_item_t *item = EZPI_core_device_add_item_to_device(device, device_00115_Moko_Smart_Plug);
         if (item)
         {
             item->user_arg = malloc(sizeof(bool));
@@ -446,7 +446,7 @@ static ezlopi_error_t __prepare_metering_device_item(uint32_t parent_id, cJSON* 
     {
         error = EZPI_SUCCESS;
         __setup_metering_device_cloud_properties(device);
-        l_ezlopi_item_t *item1 = EZPI_core_device_add_item_to_device(device, device_00114_Moko_Smart_Plug);
+        l_ezlopi_item_t *item1 = EZPI_core_device_add_item_to_device(device, device_00115_Moko_Smart_Plug);
         if (item1)
         {
             item1->user_arg = malloc(sizeof(bool));
@@ -459,7 +459,7 @@ static ezlopi_error_t __prepare_metering_device_item(uint32_t parent_id, cJSON* 
             EZPI_core_device_free_device(device);
         }
         
-        l_ezlopi_item_t *item2 = EZPI_core_device_add_item_to_device(device, device_00114_Moko_Smart_Plug);
+        l_ezlopi_item_t *item2 = EZPI_core_device_add_item_to_device(device, device_00115_Moko_Smart_Plug);
         if (item2)
         {
             item2->user_arg = malloc(sizeof(bool));

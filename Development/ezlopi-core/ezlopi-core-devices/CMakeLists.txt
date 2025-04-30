@@ -24,7 +24,7 @@ set(EZLOPI_CLOUD_COMPONENTS
         ezlopi-cloud-items
 )
 set(EZLOPI_SENSOR_DEVICE_COMPONENTS 
-        device-00114-Moko-Smart-Plug-MK110Plus01
+        device-00115-Moko-Smart-Plug-MK110Plus02
 )
 
 
