@@ -172,6 +172,7 @@ const  char *ezlopi_item_name_security_threat = "security_threat";
 const char *ezlopi_item_name_solar_radiation = "solar_radiation";
 const char *ezlopi_item_name_switch = "switch";
 const char *ezlopi_item_name_temp = "temp";
+const char *ezlopi_item_name_time = "time";
 // const  char *ezlopi_item_name_thermostat_fan_mode = "thermostat_fan_mode";
 // const  char *ezlopi_item_name_thermostat_fan_state = "thermostat_fan_state";
 const  char *ezlopi_item_name_thermostat_mode = "thermostat_mode";

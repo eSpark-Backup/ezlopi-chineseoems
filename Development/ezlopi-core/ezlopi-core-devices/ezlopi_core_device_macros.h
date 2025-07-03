@@ -56,7 +56,8 @@ extern "C"
     *                          Type & Macro Declarations
     *******************************************************************************/
 
-#define DEVICE_00102_BECA_BHT003_GCLW                   1
+#define DEVICE_00102_BECA_BHT003_GCLW                   0
+#define DEVICE_00116_BECA_1000_3A                       1
 
     /*******************************************************************************
     *                          Extern Data Declarations

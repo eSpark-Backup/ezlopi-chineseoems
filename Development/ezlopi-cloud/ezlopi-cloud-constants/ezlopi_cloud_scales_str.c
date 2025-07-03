@@ -45,6 +45,7 @@
 /// @brief Temperature
 const char *scales_celsius = "celsius";
 const char *scales_fahrenheit = "fahrenheit";
+const char *scales_time = "seconds";
 
 /// @brief humidity
 const char *scales_percent = "percent";

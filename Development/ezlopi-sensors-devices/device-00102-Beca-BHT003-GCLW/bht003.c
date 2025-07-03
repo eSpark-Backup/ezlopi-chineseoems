@@ -36,7 +36,7 @@ typedef struct values
     uint32_t temp_sp_value;
     uint32_t amb_temp_value;
     uint8_t mode_selection_value;
-    bool energy_saving_value;
+     bool energy_saving_value;
     bool child_lock_value;
     uint32_t floor_temp_value;
 }values_t;

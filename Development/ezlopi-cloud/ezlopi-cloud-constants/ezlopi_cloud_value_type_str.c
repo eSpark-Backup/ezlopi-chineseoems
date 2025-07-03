@@ -86,6 +86,7 @@ const char *value_type_moisture = "moisture";
 // const  char *value_type_energy = "energy";
 // const  char *value_type_rf_signal_strength = "rf_signal_strength";
 const char *value_type_temperature = "temperature";
+const char *value_type_time = "Time";
 // const  char *value_type_button_state = "button_state";
 // const  char *value_type_action = "action";
 // const  char *value_type_user_lock_operation = "user_lock_operation";

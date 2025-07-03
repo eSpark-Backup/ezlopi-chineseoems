@@ -57,6 +57,11 @@ extern "C"
 EZLOPI_DEVICE_LIST("device-beca-bht003                 ", 102, device_00102_BECA_BHT003_GCLW)
 #endif // DEVICE_00102_BECA_BHT003_GCLW
 
+#if (1 == DEVICE_00116_BECA_1000_3A)
+EZLOPI_DEVICE_LIST("device-beca-10003A                 ", 116, device_00116_BECA_1000_3A)
+#endif // DEVICE_00116_BECA_1000_3A
+
+
                 //////// End of sensor/device list
                 EZLOPI_DEVICE_LIST(NULL, 0, NULL)
                 /*******************************************************************************

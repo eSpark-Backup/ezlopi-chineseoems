@@ -602,8 +602,8 @@ static ezlopi_error_t __prepare_beca_bht003_ambient_temp_device_item(uint32_t *p
         else
         {
             error = EZPI_SUCCESS;
-            EZPI_core_device_free_device(device);
         }
+        EZPI_core_device_free_device(device);
     }
     else
     {
