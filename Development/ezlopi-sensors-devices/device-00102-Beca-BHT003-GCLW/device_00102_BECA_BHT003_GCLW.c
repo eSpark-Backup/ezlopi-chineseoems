@@ -1,8 +1,8 @@
+#include "ezlopi_core_valueformatter.h"
 #include "bht003.h"
 #include "ezlopi_core_wifi.h"
 #include "ezlopi_cloud_items.h"
 #include "ezlopi_cloud_constants.h"
-#include "ezlopi_core_valueformatter.h"
 #include "device_00102_BECA_BHT003_GCLW.h"
 #include "ezlopi_core_device_value_updated.h"
 
@@ -88,7 +88,7 @@ ezlopi_error_t device_00102_BECA_BHT003_GCLW(e_ezlopi_actions_t action, l_ezlopi
         }
         case EZLOPI_ACTION_GET_EZLOPI_VALUE:
         {
-            error = __get_value_cjson(item, args);
+            // error = __get_value_cjson(item, args);
             break;
         }
         case EZLOPI_ACTION_NOTIFY_1000_MS:
@@ -167,6 +167,7 @@ static ezlopi_error_t __set_value(l_ezlopi_item_t* item, void* arg)
                 }
                 else if(ezlopi_item_name_child_lock == item->cloud_properties.item_name)
                 {
+
                     if(!strcmp(cj_value->valuestring, child_lock_token[0]))
                     {
                         send_command(CMD_LOCK_ENABLE);
