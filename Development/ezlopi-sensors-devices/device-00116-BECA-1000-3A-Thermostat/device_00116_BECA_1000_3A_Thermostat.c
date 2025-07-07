@@ -86,7 +86,7 @@ ezlopi_error_t device_00116_BECA_1000_3A(e_ezlopi_actions_t action, l_ezlopi_ite
     }
     case EZLOPI_ACTION_NOTIFY_1000_MS:
     {
-        // error = __notify(item);
+        error = __notify(item);
         break;
     }
 

@@ -33,7 +33,7 @@ bool beca10003A_child_lock_value();
 bool beca10003A_power_value();
 uint8_t beca10003A_operational_mode_selection_value();
 void send_command(CommandType cmd);
-void send_temp_sp(int value,CommandType cmd);
+void send_temp_sp(float value,CommandType cmd);
 
 
 

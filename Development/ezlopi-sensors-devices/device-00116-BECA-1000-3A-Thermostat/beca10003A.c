@@ -62,13 +62,17 @@ command_t dpid_cmd[] = {
     {.command = CHILD_LOCK,     .callback = child_lock}
 };
 
-int map(int x, int in_min, int in_max, int out_min, int out_max) {
-    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
-}
+
 
 float map_to_float_range(float x, float in_min, float in_max, float out_min, float out_max) {
     if (in_max == in_min) return out_min; // optional: prevent divide-by-zero
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
+
+int mapFloatToIntRange(float x, float in_min, float in_max, int out_min, int out_max) {
+    if (in_max == in_min) return out_min; // Avoid divide-by-zero
+    float ratio = (x - in_min) / (in_max - in_min);
+    return (int)(ratio * (out_max - out_min) + out_min + 0.5f); // +0.5 for rounding
 }
 
 void start_packet(s_ezlopi_uart_object_handle_t uart_object_handle)
@@ -230,7 +234,7 @@ uint8_t beca10003A_operational_mode_selection_value()
 
 
 
-void create_packet(CommandType cmd, uint8_t *packet, uint8_t *length, int data)
+void create_packet(CommandType cmd, uint8_t *packet, uint8_t *length , float fdata)
 {
     packet[0] = 0x55;
     packet[1] = 0xAA;
@@ -284,14 +288,21 @@ void create_packet(CommandType cmd, uint8_t *packet, uint8_t *length, int data)
 
      //3
     case CMD_TEMP:
-        Values.command_sent = 3;
-        *length = 15;
-        packet[3] = 0x06; packet[4] = 0x00; packet[5] = 0x08; packet[6] = 0x02; packet[7] = 0x02;
-        packet[8] = 0x00; packet[9] = 0x04; packet[10] = 0x00; packet[11] = 0x00;
-        packet[12] = 0x00; packet[13] = map(data, 0,61 , 10, 70); packet[14] = 0x00;
-        for (int i = 1; i < *length; i++) 
+
+        if(fdata != 0)
         {
-            packet[14] += packet[i-1];
+            Values.command_sent = 3;
+            *length = 15;
+            packet[3] = 0x06; packet[4] = 0x00; packet[5] = 0x08; packet[6] = 0x02; packet[7] = 0x02;
+            packet[8] = 0x00; packet[9] = 0x04; packet[10] = 0x00; packet[11] = 0x00;
+            packet[12] = 0x00; 
+            packet[13] = mapFloatToIntRange (fdata, 5.00,35.00 , 10, 70); // 0x46 max , 0x0A min
+            packet[14] = 0x00;
+
+            for (int i = 1; i < *length; i++) 
+            {
+                packet[14] += packet[i-1];
+            }
         }
         break;
 
@@ -306,8 +317,7 @@ void send_command(CommandType cmd)
 {
     uint8_t packet[15];
     uint8_t length; 
-    uint8_t value=0;
-    create_packet(cmd, packet, &length, value);
+    create_packet(cmd, packet, &length, 0);
     uart_write_bytes(beca10003A_uart_object_handle->ezlopi_uart.channel, (const char *)packet, length);
 
     // TRACE_I("Command sent:");
@@ -316,11 +326,11 @@ void send_command(CommandType cmd)
     // }
 }
 
-void send_temp_sp(int value,CommandType cmd)
+void send_temp_sp(float fvalue,CommandType cmd)
 {
     uint8_t packet[15];
     uint8_t length;
-    create_packet(cmd, packet, &length, value);
+    create_packet(cmd, packet, &length , fvalue);
     uart_write_bytes(beca10003A_uart_object_handle->ezlopi_uart.channel, (const char *)packet, length);
 
     // TRACE_I("Command sent:");
