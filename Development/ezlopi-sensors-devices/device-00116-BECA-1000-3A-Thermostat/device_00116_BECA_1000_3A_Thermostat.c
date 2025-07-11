@@ -1,8 +1,8 @@
+#include "ezlopi_core_valueformatter.h"
 #include "beca10003A.h"
 #include "ezlopi_core_wifi.h"
 #include "ezlopi_cloud_items.h"
 #include "ezlopi_cloud_constants.h"
-#include "ezlopi_core_valueformatter.h"
 #include "ezlopi_core_device_value_updated.h"
 #include "device_00116_BECA_1000_3A_Thermostat.h"
 
@@ -502,20 +502,13 @@ static ezlopi_error_t __get_value_cjson(l_ezlopi_item_t *item, void *args)
 
     if (ezlopi_item_name_temp == item->cloud_properties.item_name)
     {
-        // EZPI_core_valueformatter_float_to_cjson(cj_params, Amb_temp.prev, item->cloud_properties.scale);
-        cJSON_AddNumberToObject(__FUNCTION__, cj_params, ezlopi_value_str, Amb_temp.prev);
-        char valueFormatted[16];
-        snprintf(valueFormatted, sizeof(valueFormatted), "%.02f", Amb_temp.prev);
-        cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_valueFormatted_str, valueFormatted);
+        EZPI_core_valueformatter_float_to_cjson(cj_params, Amb_temp.prev, item->cloud_properties.scale);
+
     }
     else if (ezlopi_item_name_thermostat_setpoint == item->cloud_properties.item_name)
     {
-        // EZPI_core_valueformatter_float_to_cjson(cj_params, beca10003A_temp_sp_value(), item->cloud_properties.scale);
-        cJSON_AddNumberToObject(__FUNCTION__, cj_params, ezlopi_value_str, beca10003A_temp_sp_value());
-        char valueFormatted[16];
-        snprintf(valueFormatted, sizeof(valueFormatted), "%.02f", beca10003A_temp_sp_value());
-        cJSON_AddStringToObject(__FUNCTION__, cj_params, ezlopi_valueFormatted_str, valueFormatted);
-    }
+        EZPI_core_valueformatter_float_to_cjson(cj_params, beca10003A_temp_sp_value(), item->cloud_properties.scale);
+
     else if(ezlopi_item_name_child_lock == item->cloud_properties.item_name)
     {
         if(beca10003A_child_lock_value() == true)

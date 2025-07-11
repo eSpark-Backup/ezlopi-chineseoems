@@ -24,7 +24,6 @@ set(EZLOPI_CLOUD_COMPONENTS
         ezlopi-cloud-items
 )
 set(EZLOPI_SENSOR_DEVICE_COMPONENTS 
-        device-00102-Beca-BHT003-GCLW
         device-00116-BECA-1000-3A-Thermostat
 )
 
