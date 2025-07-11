@@ -173,8 +173,7 @@ extern "C"
 
 #elif (EZLOPI_DEVICE_TYPE_TEST_DEVICE == EZLOPI_DEVICE_TYPE)
 #if defined(CONFIG_IDF_TARGET_ESP32)
-    static const char* ezlopi_config_test = "{\"cmd\":3,\"dev_detail\":[{\"dev_type\":116,\"dev_name\":\"Beca Thermostat\",\"id_room\":\"\",\"id_item\":116,\"gpio_tx\":15,\"gpio_rx\":14,\"baud\":9600}],\"config_id\":\"2578723617\",\"config_time\":1722960582,\"config_name\":\"BECA10003A\",\"chipset\":\"ESP32\"}";
-    // static const char* ezlopi_config_test = "{\"cmd\":3,\"dev_detail\":[{\"dev_type\":116,\"dev_name\":\"Beca Thermostat\",\"id_room\":\"\",\"id_item\":116,\"gpio_tx\":18,\"gpio_rx\":5,\"baud\":9600}],\"config_id\":\"2578723617\",\"config_time\":1722960582,\"config_name\":\"BECA10003A\",\"chipset\":\"ESP32\"}";
+    static const char* ezlopi_config_test = "{\"cmd\":3,\"dev_detail\":[{\"dev_type\":116,\"dev_name\":\"Beca Thermostat\",\"id_room\":\"\",\"id_item\":116,\"gpio_tx\":18,\"gpio_rx\":5,\"baud\":9600}],\"config_id\":\"2578723617\",\"config_time\":1722960582,\"config_name\":\"BECA10003A\",\"chipset\":\"ESP32\"}";
 
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
     static const char *ezlopi_config_test =
