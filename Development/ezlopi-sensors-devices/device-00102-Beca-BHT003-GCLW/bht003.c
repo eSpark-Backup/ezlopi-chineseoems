@@ -33,7 +33,8 @@ typedef struct values
 {
     uint8_t command_sent;
     bool power_value;
-    uint32_t temp_sp_value;
+    // uint32_t temp_sp_value;
+    float temp_sp_value;
     uint32_t amb_temp_value;
     uint8_t mode_selection_value;
     bool energy_saving_value;
@@ -67,6 +68,18 @@ command_t dpid_cmd[] = {
     {.command = ENERGY_SAVING,  .callback = energy_saving},
     {.command = CHILD_LOCK,     .callback = child_lock},
 };
+
+int mapFloatToIntRange(float x, float in_min, float in_max, int out_min, int out_max) {
+    if (in_max == in_min) return out_min; // Avoid divide-by-zero
+    float ratio = (x - in_min) / (in_max - in_min);
+    return (int)(ratio * (out_max - out_min) + out_min + 0.5f); // +0.5 for rounding
+}
+
+float map_to_float_range(float x, float in_min, float in_max, float out_min, float out_max) {
+    if (in_max == in_min) return out_min; // optional: prevent divide-by-zero
+    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
+
 
 int map(int x, int in_min, int in_max, int out_min, int out_max) {
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
@@ -138,7 +151,8 @@ void temp_sp(uint8_t* buffer, uint32_t output_len, s_ezlopi_uart_object_handle_t
     if (buffer)
     {
         l_ezlopi_device_t* device_head = EZPI_core_device_get_head();
-        Values.temp_sp_value = map(buffer[13], 10, 70, 0, 50);
+        // Values.temp_sp_value = map(buffer[13], 10, 70, 0, 50);
+        Values.temp_sp_value = map_to_float_range(buffer[13], 10, 70, 5.0, 35.0);
         // TRACE_I("----------TEMP SP Received----------: %d",Values.temp_sp_value);
         if(device_head)
         {
@@ -274,7 +288,7 @@ float bht003_floor_temp_value()
     return (Values.floor_temp_value/2.00);
 }
 
-void create_packet(CommandType cmd, uint8_t *packet, uint8_t *length, int data)
+void create_packet(CommandType cmd, uint8_t *packet, uint8_t *length, int data ,float fdata)
 {
     packet[0] = 0x55;
     packet[1] = 0xAA;
@@ -340,7 +354,10 @@ void create_packet(CommandType cmd, uint8_t *packet, uint8_t *length, int data)
         *length = 15;
         packet[3] = 0x06; packet[4] = 0x00; packet[5] = 0x08; packet[6] = 0x02; packet[7] = 0x02;
         packet[8] = 0x00; packet[9] = 0x04; packet[10] = 0x00; packet[11] = 0x00;
-        packet[12] = 0x00; packet[13] = map(data, 0, 50, 10, 70); packet[14] = 0x00;
+        packet[12] = 0x00; 
+        packet[13] = mapFloatToIntRange (fdata, 5.00,35.00 , 10, 70); // 0x46 max , 0x0A min
+        packet[14] = 0x00;
+
         for (int i = 1; i < *length; i++) 
         {
             packet[14] += packet[i-1];
@@ -388,7 +405,7 @@ void send_command(CommandType cmd)
     uint8_t packet[15];
     uint8_t length;
     uint8_t value=0;
-    create_packet(cmd, packet, &length, value);
+    create_packet(cmd, packet, &length, value , 0);
     uart_write_bytes(bht003_uart_object_handle->ezlopi_uart.channel, (const char *)packet, length);
 
     // TRACE_I("Command sent:");
@@ -397,11 +414,11 @@ void send_command(CommandType cmd)
     // }
 }
 
-void send_temp_sp(int value,CommandType cmd)
+void send_temp_sp(float value,CommandType cmd)
 {
     uint8_t packet[15];
     uint8_t length;
-    create_packet(cmd, packet, &length, value);
+    create_packet(cmd, packet, &length, 0 , value);
     uart_write_bytes(bht003_uart_object_handle->ezlopi_uart.channel, (const char *)packet, length);
 
     // TRACE_I("Command sent:");

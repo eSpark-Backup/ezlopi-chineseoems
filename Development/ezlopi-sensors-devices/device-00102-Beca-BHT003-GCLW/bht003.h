@@ -22,9 +22,9 @@ typedef enum
 
 void starting_cmd(starting_cmd);
 void send_command(CommandType cmd);
-void send_temp_sp(int value, CommandType cmd);
+void send_temp_sp(float value,CommandType cmd);
 bool bht003_init(s_ezlopi_uart_t *bht003_uart_config);
-void create_packet(CommandType cmd, uint8_t *packet, uint8_t *length, int data);
+void create_packet(CommandType cmd, uint8_t *packet, uint8_t *length, int data ,float fdata);
 
 bool bht003_power_value();
 float bht003_amb_temp_value();
